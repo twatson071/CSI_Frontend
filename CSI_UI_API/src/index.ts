@@ -1,4 +1,5 @@
 import { Hono } from 'hono/quick'
+import { swaggerUI } from '@hono/swagger-ui'
 
 const app = new Hono()
 
@@ -22,6 +23,77 @@ app.use('*', (c, next) => {
 
 app.get('/', (c) => {
   return c.text('Hello Hono!')
+});
+// Use the middleware to serve Swagger UI at /ui
+app.get('/ui', swaggerUI({ url: '/doc' }))
+
+// Serve OpenAPI definition at /doc
+app.get('/doc', (c) => {
+  const openApiSpec = {
+    openapi: '3.0.0',
+    info: {
+      title: 'CSI Tripplite PDUMH20 API',
+      version: '1.0.0',
+      description: 'API for managing the Tripplite PDUMH20 device.',
+    },
+    paths: {
+      [`/${serviceName}/parameters`]: {
+        get: {
+          summary: 'Get parameters',
+          description: 'Fetch parameters for the Tripplite PDUMH20 device.',
+          responses: {
+            '200': {
+              description: 'Successful response',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      [`/${serviceName}`]: {
+        get: {
+          summary: 'Get device information',
+          description: 'Fetch general information about the Tripplite PDUMH20 device.',
+          responses: {
+            '200': {
+              description: 'Successful response',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      [`/${serviceName}/sensors`]: {
+        get: {
+          summary: 'Get sensors',
+          description: 'Fetch sensor data for the Tripplite PDUMH20 device.',
+          responses: {
+            '200': {
+              description: 'Successful response',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+  return c.json(openApiSpec);
 });
 
 // Parameters endpoint

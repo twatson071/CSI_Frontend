@@ -19,6 +19,7 @@
     flex-direction: column;
     align-items: center;
     gap: 5px;
+    cursor: pointer; /* Indicate clickable element */
 }
 
 .plug-label {
