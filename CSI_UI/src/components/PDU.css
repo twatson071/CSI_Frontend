@@ -1,0 +1,73 @@
+.status-indicators {
+    display: flex;
+  }
+  
+  .status-indicators rux-monitoring-icon {
+    margin-inline: var(--spacing-3);
+  }
+  
+  .app-icon-pop-up {
+    height: calc(var(--spacing-14, 3.5rem) + var(--spacing-050, 0.125rem));
+  }
+  
+  rux-toast-stack {
+    top: 96px;
+  }
+  
+  rux-toast:nth-child(n + 5) {
+    display: none;
+  }
+  
+  rux-menu-item[value="themeToggle"] span {
+    display: flex;
+    gap: var(--spacing-2);
+    align-items: center;
+  }
+  
+  rux-global-status-bar {
+    padding-right: var(--spacing-3);
+    z-index: 100;
+  }
+  
+  .app-switcher-icon:focus {
+    outline-offset: -1px;
+  }
+
+  .pdu {
+    text-align: center;
+    background-color: #003f5c;
+    padding: 20px;
+    border-radius: 10px;
+    color: white;
+  }
+
+  .plug-row {
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 20px;
+    gap: 20px; /* Spacing between plugs */
+  }
+
+  .plug-container {
+    display: flex;
+    flex-direction: row; /* Ensure horizontal alignment */
+    align-items: center;
+    gap: 10px; /* Spacing between icon and label */
+    height: auto; /* Ensure height adjusts to content */
+  }
+
+  .plug-icon {
+    width: 50px;
+    height: 50px;
+    color: #ffffff; /* Default color for "off" state */
+  }
+
+  .plug-icon.on {
+    color: #00ff00; /* Astro UXDS green for "on" state */
+  }
+
+  .toggle-label {
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+  }

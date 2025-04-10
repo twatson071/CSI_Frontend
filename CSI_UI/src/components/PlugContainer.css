@@ -1,0 +1,28 @@
+.plug-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.plug-row {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 20px;
+    width: 80%;
+}
+
+.plug-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.plug-label {
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+}

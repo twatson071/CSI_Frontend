@@ -57,6 +57,22 @@ rux-container.constellation {
   border-right: none;
 }
 
+.pdu {
+  grid-column: span 3; /* Ensure PDU spans the full width of the grid */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.plug-row {
+  display: flex !important; /* Force flex layout */
+  flex-wrap: nowrap; /* Prevent wrapping */
+  justify-content: space-around;
+  align-items: center;
+  width: 80%; /* Ensure it spans the full width */
+}
+
 /* GlOBAL TABLE STYLES */
 
 .table-wrapper {

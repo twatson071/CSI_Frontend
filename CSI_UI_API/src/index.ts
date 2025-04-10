@@ -5,6 +5,14 @@ const app = new Hono()
 const serviceName = 'csi_tripplite_pdumh20';
 const externalApiBaseUrl = 'http://127.0.0.1:8090/service/csi_tripplite_pdumh20';
 
+// Middleware to enable CORS
+app.use('*', async (c, next) => {
+  c.header('Access-Control-Allow-Origin', '*'); // Allow all origins
+  c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'); // Allow specific HTTP methods
+  c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-Key-CSI-Maestro-SystemOperator, X-API-Key-CSI-Maestro-Hub'); // Allow specific headers
+  await next();
+});
+
 // Middleware to add required headers
 app.use('*', (c, next) => {
   c.req.header['X-API-Key-CSI-Maestro-SystemOperator'] = 'SystemOperator-1';
