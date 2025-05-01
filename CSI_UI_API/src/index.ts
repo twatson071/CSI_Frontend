@@ -1,5 +1,6 @@
 import { Hono } from 'hono/quick'
 import { swaggerUI } from '@hono/swagger-ui'
+import outletGroupRoutes from './routes/pdu/outletGroupRoutes'
 
 const app = new Hono()
 
@@ -24,8 +25,12 @@ app.use('*', (c, next) => {
 app.get('/', (c) => {
   return c.text('Hello Hono!')
 });
+
 // Use the middleware to serve Swagger UI at /ui
 app.get('/ui', swaggerUI({ url: '/doc' }))
+
+// Mount the PDU routes
+app.route('/', outletGroupRoutes);
 
 // Serve OpenAPI definition at /doc
 app.get('/doc', (c) => {
@@ -73,10 +78,9 @@ app.get('/doc', (c) => {
           },
         },
       },
-      [`/${serviceName}/sensors`]: {
+      [`/${serviceName}/parameters?outlet_index=2`]: {
         get: {
-          summary: 'Get sensors',
-          description: 'Fetch sensor data for the Tripplite PDUMH20 device.',
+          summary: 'Get outlet 2 parameters',
           responses: {
             '200': {
               description: 'Successful response',
@@ -91,6 +95,100 @@ app.get('/doc', (c) => {
           },
         },
       },
+      [`/${serviceName}/parameters/outlet_groups/{index}/state`]: {
+        get: {
+          summary: 'Get outlet group state',
+          description: 'Get the current state of an outlet group.',
+          parameters: [
+            {
+              name: 'index',
+              in: 'path',
+              required: true,
+              schema: {
+                type: 'integer'
+              }
+            }
+          ],
+          responses: {
+            '200': {
+              description: 'Successful response',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      state: {
+                        type: 'string',
+                        enum: ['POWER_ON', 'POWER_OFF', 'POWER_MIXED', 'REBOOT']
+                      },
+                      success: {
+                        type: 'boolean'
+                      },
+                      message: {
+                        type: 'string'
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        post: {
+          summary: 'Set outlet group state',
+          description: 'Set the state of an outlet group.',
+          parameters: [
+            {
+              name: 'index',
+              in: 'path',
+              required: true,
+              schema: {
+                type: 'integer'
+              }
+            }
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    state: {
+                      type: 'string',
+                      enum: ['POWER_ON', 'POWER_OFF', 'POWER_MIXED', 'REBOOT']
+                    }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': {
+              description: 'Successful response',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      state: {
+                        type: 'string',
+                        enum: ['POWER_ON', 'POWER_OFF', 'POWER_MIXED', 'REBOOT']
+                      },
+                      success: {
+                        type: 'boolean'
+                      },
+                      message: {
+                        type: 'string'
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     },
   };
   return c.json(openApiSpec);

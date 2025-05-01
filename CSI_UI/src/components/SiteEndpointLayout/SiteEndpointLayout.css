@@ -1,0 +1,22 @@
+.site-endpoint-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr; /* Sidebar and main content */
+  grid-template-rows: auto; /* Adjust height dynamically */
+  height: calc(100vh - 120px); /* Full height minus the top navbar */
+  background-color: var(--color-background-base-default);
+}
+
+.sidebar {
+  grid-column: 1 / 2;
+  background-color: var(--color-background-surface-default);
+  border-right: 1px solid var(--color-border-divider);
+  padding: 0; /* Remove extra padding */
+  overflow-y: auto;
+}
+
+.main-content {
+  grid-column: 2 / 3;
+  padding: 0; /* Remove extra padding */
+  overflow-y: auto;
+  background-color: var(--color-background-base-default);
+}

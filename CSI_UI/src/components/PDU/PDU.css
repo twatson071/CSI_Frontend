@@ -33,27 +33,31 @@
     outline-offset: -1px;
   }
 
-  .pdu {
-    text-align: center;
-    background-color: #003f5c;
+  .pdu-container {
+    background-color: var(--color-background-surface-default);
     padding: 20px;
     border-radius: 10px;
-    color: white;
+    color: var(--color-text-primary);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
-
+  
+  .pdu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-background-surface-default);
+    padding: 20px;
+    border-radius: 10px;
+    color: var(--color-text-primary);
+  }
+  
   .plug-row {
+    display: flex;
     justify-content: space-around;
     align-items: center;
-    margin-top: 20px;
-    gap: 20px; /* Spacing between plugs */
-  }
-
-  .plug-container {
-    display: flex;
-    flex-direction: row; /* Ensure horizontal alignment */
-    align-items: center;
-    gap: 10px; /* Spacing between icon and label */
-    height: auto; /* Ensure height adjusts to content */
+    width: 100%;
+    gap: 20px;
   }
 
   .plug-icon {

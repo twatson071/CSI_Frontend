@@ -1,11 +1,8 @@
-// App.tsx
 import React from 'react';
-import GlobalStatusBar from './components/Navbar';
-import PDU from './components/PDU';
-import SiteEndpointsTree from './components/SiteEndpointsTree';
-import SiteEndpointLayout from './components/SiteEndpointLayout';
+import GlobalStatusBar from './components/Navbar/Navbar';
+import PDU from './components/PDU/PDU';
+import SiteEndpointLayout from './components/SiteEndpointLayout/SiteEndpointLayout';
 import './App.css';
-import '@astrouxds/astro-web-components/dist/astro-web-components/astro-web-components.css';
 
 const App: React.FC = () => {
   return (
@@ -13,7 +10,6 @@ const App: React.FC = () => {
       <GlobalStatusBar />
       <SiteEndpointLayout>
         <PDU />
-        <SiteEndpointsTree />
       </SiteEndpointLayout>
     </div>
   );

@@ -11,7 +11,7 @@ import {
   RuxToastStack,
 } from "@astrouxds/react";
 import type { Status } from "@astrouxds/mock-data";
-import { addToast } from "../utils/toast";
+import { addToast } from "../../utils/toast";
 import "./Navbar.css";
 
 const Navbar = () => {

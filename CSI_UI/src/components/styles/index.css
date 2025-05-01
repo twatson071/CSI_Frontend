@@ -1,3 +1,8 @@
+:root {
+  --color-background-base-default: #101923; /* Define your background color here */
+  --color-text-primary: white; /* Example: Define a primary text color */
+}
+
 body {
   box-sizing: border-box;
   height: 100vh;
@@ -7,11 +12,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  background-color: var(--color-background-base-default); /* Use the variable */
+  color: var(--color-text-primary); /* Use the variable */
 }
 
 #root {

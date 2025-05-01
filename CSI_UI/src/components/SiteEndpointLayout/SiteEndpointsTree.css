@@ -1,0 +1,37 @@
+.site-endpoints-tree {
+  font-family: Arial, sans-serif;
+  color: var(--color-text-primary);
+}
+
+.site-endpoints-tree h2 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.site-endpoints-tree rux-tree {
+  background-color: var(--color-background-surface-default);
+  border-radius: 5px;
+}
+.site-endpoints-tree li {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.site-endpoints-tree li:hover {
+  background-color: var(--color-background-hover);
+}
+
+.site-endpoints-tree li.active {
+  background-color: var(--color-background-active);
+  color: var(--color-text-active);
+  font-weight: bold;
+}
+
+.site-endpoints-tree ul {
+  padding-left: 1rem;
+  margin: 0;
+  border-left: 1px solid var(--color-border-divider);
+}
