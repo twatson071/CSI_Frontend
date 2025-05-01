@@ -4,7 +4,7 @@ import { swaggerUI } from '@hono/swagger-ui'
 const app = new Hono()
 
 const serviceName = 'csi_tripplite_pdumh20';
-const externalApiBaseUrl = 'http://127.0.0.1:8090/service/csi_tripplite_pdumh20';
+const externalApiBaseUrl = 'http://127.0.0.1:8090/service/csi_tripplite_pdumh20_0';
 
 // Middleware to enable CORS
 app.use('*', async (c, next) => {
