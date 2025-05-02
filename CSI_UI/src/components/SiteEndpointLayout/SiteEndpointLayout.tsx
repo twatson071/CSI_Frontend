@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import SiteEndpointsTree from './SiteEndpointsTree';
 import PDU from '../PDU/PDU';
-import { fetchPDUData, PDUData } from '../../services/tripplitePDU';
+import { fetchPDUData, PDUData, toggleOutletPower } from '../../services/tripplitePDU';
 import './SiteEndpointLayout.css';
 import { RuxContainer } from '@astrouxds/react';
 
@@ -20,12 +20,18 @@ const SiteEndpointLayout: React.FC = () => {
     fetchData();
   }, []);
 
-  const toggleStatus = (index: number) => {
-    setStatuses((prevStatuses) =>
-      prevStatuses.map((status, i) =>
-        i === index ? (status === 'normal' ? 'off' : 'normal') : status
-      )
-    );
+  const toggleStatus = async (index: number) => {
+    if (!pduData) return;
+    const currentStatus = statuses[index];
+    const newState = currentStatus === 'normal' ? 'POWER_OFF' : 'POWER_ON';
+    try {
+      await toggleOutletPower(index + 1, newState);
+      const data = await fetchPDUData();
+      setPduData(data);
+      setStatuses(data.statuses || []);
+    } catch (error) {
+      console.error('Failed to toggle outlet power:', error);
+    }
   };
 
   return (

@@ -1,4 +1,3 @@
-// filepath: /home/thomas/Documents/work/CSI_Frontend/CSI_UI/src/components/PDU/PDU.tsx
 import React from 'react';
 import PlugContainer from './PlugContainer';
 import { RuxContainer } from '@astrouxds/react';
