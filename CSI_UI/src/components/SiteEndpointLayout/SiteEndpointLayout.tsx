@@ -9,15 +9,19 @@ import { RuxContainer } from '@astrouxds/react';
 const SiteEndpointLayout: React.FC = () => {
   const [pduData, setPduData] = useState<PDUData | null>(null);
   const [statuses, setStatuses] = useState<string[]>([]);
-
+//TODO: Change to websocket
   useEffect(() => {
     const fetchData = async () => {
       const data = await fetchPDUData();
       setPduData(data);
-      setStatuses(data.statuses || []); // Initialize statuses
+      setStatuses(data.statuses || []);
     };
-
-    fetchData();
+  
+    fetchData(); // Initial fetch
+  
+    const interval = setInterval(fetchData, 5000); // Poll every 60 seconds
+  
+    return () => clearInterval(interval); // Cleanup on unmount
   }, []);
 
   const toggleStatus = async (index: number) => {
