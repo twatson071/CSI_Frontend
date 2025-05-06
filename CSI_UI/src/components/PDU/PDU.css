@@ -35,7 +35,6 @@
 
   .pdu-container {
     background-color: var(--color-background-surface-default);
-    padding: 20px;
     border-radius: 10px;
     color: var(--color-text-primary);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);

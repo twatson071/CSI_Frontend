@@ -7,6 +7,7 @@ interface PDUProps {
   pduData: {
     make: string;
     model: string;
+    label: string;
     statuses: string[];
   };
   toggleStatus: (index: number) => void;
@@ -15,7 +16,7 @@ interface PDUProps {
 const PDU: React.FC<PDUProps> = ({ pduData, toggleStatus }) => {
   return (
     <RuxContainer class="pdu-container">
-      <div slot="header">{`${pduData.make} ${pduData.model}`}</div>
+      <div slot="header">{`${pduData.label} ${pduData.make} ${pduData.model}`}</div>
       <PlugContainer statuses={pduData.statuses} toggleStatus={toggleStatus} />
     </RuxContainer>
   );
