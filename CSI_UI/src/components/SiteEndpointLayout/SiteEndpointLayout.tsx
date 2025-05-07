@@ -42,7 +42,7 @@ const SiteEndpointLayout: React.FC = () => {
             ...prev,
             {
               x: now.toISOString(),
-              y: data.totalDrawWatts + Math.random() * 100 || 0, //Simulated data wtih Math.random()
+              y: (data.totalDrawWatts ?? 0) + Math.random() * 100, //Simulated data with Math.random()
             },
           ].slice(-50); // Limit to the last 50 entries
           return newWattsHistory;
@@ -63,7 +63,7 @@ const SiteEndpointLayout: React.FC = () => {
             ...prev,
             {
               x: now.toISOString(),
-              y: data.totalDrawAmps + Math.random() * 100 || 0, // Simulated data wtih Math.random()
+              y: (data.totalDrawAmps ?? 0) + Math.random() * 100, // Simulated data with Math.random()
             },
           ].slice(-50); // Limit to the last 50 entries
           return newAmpsHistory;
