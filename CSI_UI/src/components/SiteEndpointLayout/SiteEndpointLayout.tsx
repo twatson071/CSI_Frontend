@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { ResponsiveLine } from "@nivo/line"; // Import Nivo Line Chart
 import SiteEndpointsTree from "./SiteEndpointsTree";
 import PDU from "../PDU/PDU";
 import AddSiteEndpointForm from "./SiteEndpointForm";
@@ -31,26 +30,45 @@ const SiteEndpointLayout: React.FC = () => {
       setStatuses(data.statuses || []);
 
       setLoadHistory((prev) => {
-        const newWattsHistory = [
-          ...prev,
-          {
-            x: new Date().toISOString(),
-            y: data.totalDrawWatts || 0,
-          },
-        ].slice(-1);
+        const now = new Date();
+        const lastEntry = prev[prev.length - 1];
+        const isNewInterval =
+          !lastEntry ||
+          Math.floor(new Date(lastEntry.x).getTime() / (1 * 60 * 1000)) !==
+            Math.floor(now.getTime() / (1 * 60 * 1000));
 
-        return newWattsHistory;
+        if (isNewInterval) {
+          const newWattsHistory = [
+            ...prev,
+            {
+              x: now.toISOString(),
+              y: data.totalDrawWatts + 1 || 0,
+            },
+          ].slice(-50); // Limit to the last 50 entries
+          return newWattsHistory;
+        }
+        return prev; // No update if not a new interval
       });
-      setLoadHistoryAmps((prev) => {
-        const newAmpsHistory = [
-          ...prev,
-          {
-            x: new Date().toISOString(),
-            y: data.totalDrawAmps || 0,
-          },
-        ].slice(-1);
 
-        return newAmpsHistory;
+      setLoadHistoryAmps((prev) => {
+        const now = new Date();
+        const lastEntry = prev[prev.length - 1];
+        const isNewInterval =
+          !lastEntry ||
+          Math.floor(new Date(lastEntry.x).getTime() / (1 * 60 * 1000)) !==
+            Math.floor(now.getTime() / (1 * 60 * 1000));
+
+        if (isNewInterval) {
+          const newAmpsHistory = [
+            ...prev,
+            {
+              x: now.toISOString(),
+              y: data.totalDrawAmps || 0,
+            },
+          ].slice(-50); // Limit to the last 50 entries
+          return newAmpsHistory;
+        }
+        return prev; // No update if not a new interval
       });
     };
 

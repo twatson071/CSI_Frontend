@@ -26,7 +26,7 @@ const GenericLineChart: React.FC<GenericLineChartProps> = ({
   axisLeftLegend = "Value",
   height = "300px",
   width = "450px",
-  colors = ["#00A6ED"], // Default color for Watts
+  colors = ["#00A6ED"],
 }) => {
   return (
     <div
@@ -64,7 +64,7 @@ const GenericLineChart: React.FC<GenericLineChartProps> = ({
         axisBottom={{
           format: xScaleType === "time" ? "%H:%M" : undefined,
           tickRotation: -45,
-          tickValues: "every 5 minutes",
+          tickValues: "every 1 minute",
           legend: axisBottomLegend,
           legendOffset: 36,
           legendPosition: "middle",
