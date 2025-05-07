@@ -14,6 +14,7 @@ interface GenericLineChartProps {
   axisLeftLegend?: string;
   height?: string;
   width?: string;
+  colors?: string[];
 }
 
 const GenericLineChart: React.FC<GenericLineChartProps> = ({
@@ -21,11 +22,11 @@ const GenericLineChart: React.FC<GenericLineChartProps> = ({
   xScaleType = "time",
   xFormat = "time:%H:%M",
   yScaleMin = 0,
-  yScaleMax = "auto",
   axisBottomLegend = "Time",
   axisLeftLegend = "Value",
   height = "300px",
   width = "450px",
+  colors = ["#00A6ED"], // Default color for Watts
 }) => {
   return (
     <div
@@ -42,21 +43,28 @@ const GenericLineChart: React.FC<GenericLineChartProps> = ({
       <ResponsiveLine
         data={data}
         margin={{ top: 20, right: 20, bottom: 50, left: 60 }}
-        xScale={{
-          type: xScaleType,
-          format: xScaleType === "time" ? "%Y-%m-%dT%H:%M:%S.%LZ" : undefined,
-          precision: xScaleType === "time" ? "minute" : undefined,
-        }}
+        xScale={
+          xScaleType === "time"
+            ? {
+                type: "time",
+                format: "%Y-%m-%dT%H:%M:%S.%LZ",
+                precision: "minute",
+              }
+            : {
+                type: xScaleType,
+              }
+        }
         xFormat={xFormat}
         yScale={{
           type: "linear",
           min: yScaleMin,
-          max: yScaleMax,
+          max: undefined,
           stacked: false,
         }}
         axisBottom={{
           format: xScaleType === "time" ? "%H:%M" : undefined,
           tickRotation: -45,
+          tickValues: "every 5 minutes",
           legend: axisBottomLegend,
           legendOffset: 36,
           legendPosition: "middle",
@@ -66,7 +74,7 @@ const GenericLineChart: React.FC<GenericLineChartProps> = ({
           legendOffset: -40,
           legendPosition: "middle",
         }}
-        colors={["#00A6ED"]}
+        colors={colors} // Pass colors to the chart
         pointColor={{ from: "color" }}
         pointBorderColor={{ from: "serieColor" }}
         pointBorderWidth={2}
@@ -77,19 +85,29 @@ const GenericLineChart: React.FC<GenericLineChartProps> = ({
           axis: {
             ticks: {
               text: {
-                fill: "#FFFFFF",
+                fill: "#FFFFFF", // Axis tick text color
               },
             },
             legend: {
               text: {
-                fill: "#FFFFFF",
+                fill: "#FFFFFF", // Axis legend text color
               },
             },
           },
           grid: {
             line: {
-              stroke: "#444444",
+              stroke: "#444444", // Grid line color
               strokeWidth: 1,
+            },
+          },
+          tooltip: {
+            container: {
+              background: "#333333", // Tooltip background color
+              color: "#FFFFFF", // Tooltip text color
+              fontSize: "12px",
+              borderRadius: "4px",
+              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.5)", // Add a shadow for better visibility
+              padding: "8px",
             },
           },
         }}

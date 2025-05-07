@@ -38,31 +38,31 @@ const AddSiteEndpointForm: React.FC<AddSiteEndpointFormProps> = ({
       <RuxInput
         label="Site Name"
         value={siteName}
-        onChange={(e) => setSiteName(e.target.value)}
+        onChange={(e) => setSiteName((e.target as HTMLInputElement).value)}
         required
       ></RuxInput>
       <RuxInput
         label="Endpoint Name"
         value={endpointName}
-        onChange={(e) => setSiteName(e.target.value)}
+        onChange={(e) => setEndpointName(e.currentTarget.value)}
         required
       ></RuxInput>
       <RuxInput
         label="Equipment Type"
         value={equipmentType}
-        onChange={(e) => setSiteName(e.target.value)}
+        onChange={(e) => setEquipmentType(e.currentTarget.value)}
         required
       ></RuxInput>
       <RuxInput
         label="Equipment Make"
         value={equipmentMake}
-        onChange={(e) => setSiteName(e.target.value)}
+        onChange={(e) => setEquipmentMake(e.currentTarget.value)}
         required
       ></RuxInput>
       <RuxInput
         label="Equipment Model"
         value={equipmentModel}
-        onChange={(e) => setSiteName(e.target.value)}
+        onChange={(e) => setEquipmentModel(e.currentTarget.value)}
         required
       ></RuxInput>
       <div className="form-actions">

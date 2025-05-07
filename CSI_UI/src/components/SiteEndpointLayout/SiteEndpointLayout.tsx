@@ -20,27 +20,38 @@ const SiteEndpointLayout: React.FC = () => {
   const [loadHistory, setLoadHistory] = useState<{ x: string; y: number }[]>(
     []
   );
+  const [loadHistoryAmps, setLoadHistoryAmps] = useState<
+    { x: string; y: number }[]
+  >([]);
 
   useEffect(() => {
     const fetchData = async () => {
       const data = await fetchPDUData();
-      console.log("Fetched PDU Data:", data); // Debug fetched data
       setPduData(data);
       setStatuses(data.statuses || []);
 
-      if (data.totalDrawWatts != null) {
-        setLoadHistory((prev) => {
-          const newHistory = [
-            ...prev,
-            {
-              x: new Date().toISOString(),
-              y: data.totalDrawWatts,
-            },
-          ];
-          console.log("Updated Load History:", newHistory); // Log updated history
-          return newHistory.slice(-50); // Limit to the last 50 entries
-        });
-      }
+      setLoadHistory((prev) => {
+        const newWattsHistory = [
+          ...prev,
+          {
+            x: new Date().toISOString(),
+            y: data.totalDrawWatts || 0,
+          },
+        ].slice(-1);
+
+        return newWattsHistory;
+      });
+      setLoadHistoryAmps((prev) => {
+        const newAmpsHistory = [
+          ...prev,
+          {
+            x: new Date().toISOString(),
+            y: data.totalDrawAmps || 0,
+          },
+        ].slice(-1);
+
+        return newAmpsHistory;
+      });
     };
 
     fetchData();
@@ -53,21 +64,7 @@ const SiteEndpointLayout: React.FC = () => {
   return (
     <div className="site-endpoint-layout">
       <RuxContainer class="sidebar">
-        <div slot="header">
-          Site Endpoints
-          <RuxButton onClick={() => setShowAddForm(true)}>
-            Add Endpoint
-          </RuxButton>
-        </div>
-        {showAddForm && (
-          <AddSiteEndpointForm
-            onSave={(endpoint) => {
-              setSiteEndpoints([...siteEndpoints, endpoint]);
-              setShowAddForm(false);
-            }}
-            onCancel={() => setShowAddForm(false)}
-          />
-        )}
+        <div slot="header">Site Endpoints</div>
         {pduData && (
           <SiteEndpointsTree
             pduData={{ ...pduData, statuses }}
@@ -88,14 +85,38 @@ const SiteEndpointLayout: React.FC = () => {
             }}
           />
         )}
+        <div slot="footer">
+          <RuxButton onClick={() => setShowAddForm(true)}>
+            Add Endpoint
+          </RuxButton>
+          {showAddForm && (
+            <AddSiteEndpointForm
+              onSave={(endpoint) => {
+                setSiteEndpoints([...siteEndpoints, endpoint]);
+                setShowAddForm(false);
+              }}
+              onCancel={() => setShowAddForm(false)}
+            />
+          )}
+        </div>
       </RuxContainer>
       <div className="main-content">
         {pduData && (
           <>
-            <PDU pduData={{ ...pduData, statuses }} toggleStatus={() => {}} />
+            <PDU
+              pduData={{
+                ...pduData,
+                label: pduData.label || "Unknown Label",
+                statuses,
+              }}
+              toggleStatus={() => {}}
+            />
             <RuxContainer class="chart-container">
               <div slot="header">Load History</div>
-              <LoadHistoryChart loadHistory={loadHistory} />
+              <LoadHistoryChart
+                wattsData={loadHistory}
+                ampsData={loadHistoryAmps}
+              />
             </RuxContainer>
           </>
         )}
