@@ -127,7 +127,21 @@ const SiteEndpointLayout: React.FC = () => {
                 label: pduData.label || "Unknown Label",
                 statuses,
               }}
-              toggleStatus={() => {}}
+              toggleStatus={(index) => {
+                if (!pduData) return;
+                const currentStatus = statuses[index];
+                const newState =
+                  currentStatus === "normal" ? "POWER_OFF" : "POWER_ON";
+                toggleOutletPower(index + 1, newState)
+                  .then(() => fetchPDUData())
+                  .then((data) => {
+                    setPduData(data);
+                    setStatuses(data.statuses || []);
+                  })
+                  .catch((error) =>
+                    console.error("Failed to toggle outlet power:", error)
+                  );
+              }}
             />
             <RuxContainer class="chart-container">
               <div slot="header">Load History</div>
