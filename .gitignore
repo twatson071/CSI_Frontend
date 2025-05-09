@@ -1,4 +1,10 @@
 CSI_UI/package-lock.json
+CSI_UI_API/package-lock.json
+CSI_UI/package.json
+CSI_UI_API/package.json
+CSI_UI/package-lock.json
+CSI_UI_API/package-lock.json
+CSI_UI_API/node_modules
 CSI_UI/node_modules
 CSI_UI/dist
 CSI_UI/.DS_Store
