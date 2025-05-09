@@ -3,7 +3,7 @@ import { parseRequestBody } from "../../utils/parseRequestBody";
 
 const serviceName = "csi_tripplite_pdumh20";
 const externalApiBaseUrl =
-  "http://127.0.0.1:8090/service/csi_tripplite_pdumh20_0";
+  "http://192.168.7.161:8090/service/csi_tripplite_pdumh20_0";
 
 export const postToggleOutlet = async (c: Context) => {
   try {
