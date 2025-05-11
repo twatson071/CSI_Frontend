@@ -29,3 +29,5 @@ CSI_UI/coverage-*.json.gz
 CSI_UI/coverage-*.json.gz.map
 CSI_UI/coverage-*.json.gz
 CSI_UI/coverage-*.json.gz
+bun.lock
+CSI_UI_API/package.json

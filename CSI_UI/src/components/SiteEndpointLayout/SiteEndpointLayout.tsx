@@ -3,104 +3,77 @@ import SiteEndpointsTree from "./SiteEndpointsTree";
 import PDU from "../PDU/PDU";
 import AddSiteEndpointForm from "./SiteEndpointForm";
 import {
-  fetchPDUData,
-  PDUData,
-  toggleOutletPower,
-} from "../../services/tripplitePDU";
+  fetchSitesWithDevices,
+  SiteWithDevices,
+} from "../../services/siteService";
+import { PDUData, toggleOutletPower } from "../../services/PDUservice";
 import "./SiteEndpointLayout.css";
 import { RuxContainer, RuxButton } from "@astrouxds/react";
 import LoadHistoryChart from "./LoadHistoryChart";
 
 const SiteEndpointLayout: React.FC = () => {
+  // each `site.devices[*].data` already holds the PDUData
+  const [sites, setSites] = useState<SiteWithDevices[]>([]);
+
+  // track selection
+  const [selectedSiteIdx, setSelectedSiteIdx] = useState(0);
+  const [selectedDevIdx, setSelectedDevIdx] = useState(0);
+
+  // what we pass down to <PDU>
   const [pduData, setPduData] = useState<PDUData | null>(null);
+  // compute statuses from data.parameters.outlets
   const [statuses, setStatuses] = useState<string[]>([]);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [siteEndpoints, setSiteEndpoints] = useState<any[]>([]);
-  const [loadHistory, setLoadHistory] = useState<{ x: string; y: number }[]>(
-    []
-  );
-  const [loadHistoryAmps, setLoadHistoryAmps] = useState<
-    { x: string; y: number }[]
-  >([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const data = await fetchPDUData();
-      setPduData(data);
-      setStatuses(data.statuses || []);
+    const fetchAll = async () => {
+      // load sites → devices → data in one call
+      const siteList = await fetchSitesWithDevices();
+      setSites(siteList);
 
-      setLoadHistory((prev) => {
-        const now = new Date();
-        const lastEntry = prev[prev.length - 1];
-        const isNewInterval =
-          !lastEntry ||
-          Math.floor(new Date(lastEntry.x).getTime() / (1 * 60 * 1000)) !==
-            Math.floor(now.getTime() / (1 * 60 * 1000));
-
-        if (isNewInterval) {
-          const newWattsHistory = [
-            ...prev,
-            {
-              x: now.toISOString(),
-              y: (data.totalDrawWatts ?? 0) + Math.random() * 100, //Simulated data with Math.random()
-            },
-          ].slice(-50); // Limit to the last 50 entries
-          return newWattsHistory;
-        }
-        return prev; // No update if not a new interval
-      });
-
-      setLoadHistoryAmps((prev) => {
-        const now = new Date();
-        const lastEntry = prev[prev.length - 1];
-        const isNewInterval =
-          !lastEntry ||
-          Math.floor(new Date(lastEntry.x).getTime() / (1 * 60 * 1000)) !==
-            Math.floor(now.getTime() / (1 * 60 * 1000));
-
-        if (isNewInterval) {
-          const newAmpsHistory = [
-            ...prev,
-            {
-              x: now.toISOString(),
-              y: (data.totalDrawAmps ?? 0) + Math.random() * 100, // Simulated data with Math.random()
-            },
-          ].slice(-50); // Limit to the last 50 entries
-          return newAmpsHistory;
-        }
-        return prev; // No update if not a new interval
-      });
+      // initialize first PDU
+      if (siteList.length && siteList[0].devices.length) {
+        const raw = siteList[0].devices[0].data as any;
+        setPduData(raw);
+        // derive statuses from parameters.outlets
+        const sts = Object.keys(raw.parameters.outlets)
+          .sort()
+          .map((k) =>
+            raw.parameters.outlets[k].state === "POWER_ON" ? "normal" : "off"
+          );
+        setStatuses(sts);
+      }
     };
 
-    fetchData();
-
-    const interval = setInterval(fetchData, 5000);
-
+    fetchAll();
+    const interval = setInterval(fetchAll, 5000);
     return () => clearInterval(interval);
   }, []);
 
+  const onSelect = (siteIdx: number, devIdx: number) => {
+    setSelectedSiteIdx(siteIdx);
+    setSelectedDevIdx(devIdx);
+    const raw = sites[siteIdx].devices[devIdx].data as any;
+    setPduData(raw);
+    // update statuses when user picks a new device
+    const sts = Object.keys(raw.parameters.outlets)
+      .sort()
+      .map((k) =>
+        raw.parameters.outlets[k].state === "POWER_ON" ? "normal" : "off"
+      );
+    setStatuses(sts);
+  };
+
+  const [showAddForm, setShowAddForm] = useState(false);
   return (
     <div className="site-endpoint-layout">
       <RuxContainer class="sidebar">
         <div slot="header">Site Endpoints</div>
-        {pduData && (
+        {sites.length > 0 && (
           <SiteEndpointsTree
-            pduData={{ ...pduData, statuses }}
-            toggleStatus={(index) => {
-              if (!pduData) return;
-              const currentStatus = statuses[index];
-              const newState =
-                currentStatus === "normal" ? "POWER_OFF" : "POWER_ON";
-              toggleOutletPower(index + 1, newState)
-                .then(() => fetchPDUData())
-                .then((data) => {
-                  setPduData(data);
-                  setStatuses(data.statuses || []);
-                })
-                .catch((error) =>
-                  console.error("Failed to toggle outlet power:", error)
-                );
-            }}
+            sites={sites}
+            selectedSite={selectedSiteIdx}
+            selectedDevice={selectedDevIdx}
+            onSelect={onSelect}
           />
         )}
         <div slot="footer">
@@ -122,34 +95,30 @@ const SiteEndpointLayout: React.FC = () => {
         {pduData && (
           <>
             <PDU
-              pduData={{
-                ...pduData,
-                label: pduData.label || "Unknown Label",
-                statuses,
-              }}
+              // pass computed statuses into the PDU component
+              pduData={{ ...pduData!, statuses }}
               toggleStatus={(index) => {
-                if (!pduData) return;
-                const currentStatus = statuses[index];
-                const newState =
-                  currentStatus === "normal" ? "POWER_OFF" : "POWER_ON";
-                toggleOutletPower(index + 1, newState)
-                  .then(() => fetchPDUData())
-                  .then((data) => {
-                    setPduData(data);
-                    setStatuses(data.statuses || []);
+                const current = statuses[index];
+                const next = current === "normal" ? "POWER_OFF" : "POWER_ON";
+                // toggle and then re-fetch the combined site/device/data list
+                toggleOutletPower(index + 1, next)
+                  .then(() => fetchSitesWithDevices())
+                  .then((newSites) => {
+                    setSites(newSites);
+                    const dev =
+                      newSites[selectedSiteIdx].devices[selectedDevIdx];
+                    setPduData(dev.data as PDUData);
                   })
-                  .catch((error) =>
-                    console.error("Failed to toggle outlet power:", error)
-                  );
+                  .catch(console.error);
               }}
             />
-            <RuxContainer class="chart-container">
+            {/* <RuxContainer class="chart-container">
               <div slot="header">Load History</div>
               <LoadHistoryChart
                 wattsData={loadHistory}
                 ampsData={loadHistoryAmps}
               />
-            </RuxContainer>
+            </RuxContainer> */}
           </>
         )}
       </div>
