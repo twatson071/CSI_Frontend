@@ -9,7 +9,7 @@ interface SiteEndpointsTreeProps {
   selectedDevice: number;
   onSelect: (siteIdx: number, devIdx: number) => void;
 }
-
+//TODO: make this more generic to accomodate for more than PDU? Or a new tree for each?
 const SiteEndpointsTree: React.FC<SiteEndpointsTreeProps> = ({
   sites,
   onSelect,
@@ -20,47 +20,51 @@ const SiteEndpointsTree: React.FC<SiteEndpointsTreeProps> = ({
         {sites.map((site, si) => (
           <RuxTreeNode key={site.siteId}>
             {site.siteName}
-            {site.devices.map((dev, di) => {
-              // grab outlets and compute statuses
-              const outlets = (dev.data as any).parameters.outlets || {};
-              const outletStates = Object.values(outlets).map((o) =>
-                o.state === "POWER_ON" ? "normal" : "critical"
-              );
-              const overallStatus = outletStates.every((s) => s === "normal")
-                ? "normal"
-                : "critical";
+            {site.devices &&
+              site.devices.length > 0 &&
+              site.devices.map((dev, di) => {
+                // grab outlets and compute statuses
+                const outlets = (dev.data as any).parameters.outlets || {};
+                const outletStates = Object.values(outlets).map((o) =>
+                  o.state === "POWER_ON" ? "normal" : "critical"
+                );
+                const overallStatus = outletStates.every((s) => s === "normal")
+                  ? "normal"
+                  : "critical";
 
-              return (
-                <RuxTreeNode
-                  key={dev.deviceId}
-                  slot="node"
-                  onClick={() => onSelect(si, di)}
-                >
-                  {/* device‐level icon */}
-                  <RuxStatus slot="prefix" status={overallStatus} />
-                  {dev.name}
+                return (
+                  <RuxTreeNode
+                    key={dev.deviceId}
+                    slot="node"
+                    onClick={() => onSelect(si, di)}
+                  >
+                    {/* device‐level icon */}
+                    <RuxStatus slot="prefix" status={overallStatus} />
+                    {dev.name}
 
-                  {/* per‐outlet icons */}
-                  {Object.entries(outlets)
-                    .sort(([a], [b]) => Number(a) - Number(b))
-                    .map(([key, { state }]) => (
-                      <RuxTreeNode
-                        key={`${dev.deviceId}-outlet-${key}`}
-                        slot="node"
-                        className="outlet-node"
-                      >
-                        <RuxStatus
-                          slot="prefix"
-                          status={state === "POWER_ON" ? "normal" : "critical"}
-                        />
-                        {`Outlet ${key} — ${
-                          state === "POWER_ON" ? "On" : "Off"
-                        }`}
-                      </RuxTreeNode>
-                    ))}
-                </RuxTreeNode>
-              );
-            })}
+                    {/* per‐outlet icons */}
+                    {Object.entries(outlets)
+                      .sort(([a], [b]) => Number(a) - Number(b))
+                      .map(([key, { state }]) => (
+                        <RuxTreeNode
+                          key={`${dev.deviceId}-outlet-${key}`}
+                          slot="node"
+                          className="outlet-node"
+                        >
+                          <RuxStatus
+                            slot="prefix"
+                            status={
+                              state === "POWER_ON" ? "normal" : "critical"
+                            }
+                          />
+                          {`Outlet ${key} — ${
+                            state === "POWER_ON" ? "On" : "Off"
+                          }`}
+                        </RuxTreeNode>
+                      ))}
+                  </RuxTreeNode>
+                );
+              })}
           </RuxTreeNode>
         ))}
       </RuxTree>

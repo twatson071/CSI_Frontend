@@ -23,15 +23,14 @@ const SiteEndpointLayout: React.FC = () => {
   const [pduData, setPduData] = useState<PDUData | null>(null);
   // compute statuses from data.parameters.outlets
   const [statuses, setStatuses] = useState<string[]>([]);
-
+  let toggleEndpointForm = false; //don't show the form by default
   useEffect(() => {
     const fetchAll = async () => {
       // load sites → devices → data in one call
       const siteList = await fetchSitesWithDevices();
-      setSites(siteList);
-
-      // initialize first PDU
-      if (siteList.length && siteList[0].devices.length) {
+      setSites(siteList); // initialize first PDU
+      console.log(siteList);
+      if (siteList[0].devices && siteList[0].devices.length > 0) {
         const raw = siteList[0].devices[0].data as any;
         setPduData(raw);
         // derive statuses from parameters.outlets
@@ -45,8 +44,8 @@ const SiteEndpointLayout: React.FC = () => {
     };
 
     fetchAll();
-    const interval = setInterval(fetchAll, 5000);
-    return () => clearInterval(interval);
+    //const interval = setInterval(fetchAll, 5000);
+    //return () => clearInterval(interval);
   }, []);
 
   const onSelect = (siteIdx: number, devIdx: number) => {
@@ -62,7 +61,6 @@ const SiteEndpointLayout: React.FC = () => {
       );
     setStatuses(sts);
   };
-
   const [showAddForm, setShowAddForm] = useState(false);
   return (
     <div className="site-endpoint-layout">
@@ -77,7 +75,11 @@ const SiteEndpointLayout: React.FC = () => {
           />
         )}
         <div slot="footer">
-          <RuxButton onClick={() => setShowAddForm(true)}>
+          <RuxButton
+            onClick={() =>
+              setShowAddForm((toggleEndpointForm = !toggleEndpointForm))
+            }
+          >
             Add Endpoint
           </RuxButton>
           {showAddForm && (

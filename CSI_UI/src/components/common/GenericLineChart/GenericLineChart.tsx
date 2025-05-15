@@ -26,7 +26,7 @@ const GenericLineChart: React.FC<GenericLineChartProps> = ({
   axisLeftLegend = "Value",
   height = "300px",
   width = "450px",
-  colors = ["#00A6ED"],
+  colors = [" #00c7cb, #938bdb"],
 }) => {
   return (
     <div
@@ -76,7 +76,7 @@ const GenericLineChart: React.FC<GenericLineChartProps> = ({
         }}
         colors={colors} // Pass colors to the chart
         pointColor={{ from: "color" }}
-        pointBorderColor={{ from: "serieColor" }}
+        pointBorderColor={{ from: "seriesColor" }}
         pointBorderWidth={2}
         pointSize={8}
         useMesh={true}

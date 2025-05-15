@@ -1,36 +1,24 @@
 import React, { useState } from "react";
 import "./SiteEndpointForm.css";
 import { RuxButton, RuxInput } from "@astrouxds/react";
+import { createSite } from "../../services";
 interface AddSiteEndpointFormProps {
-  onSave: (endpoint: {
-    siteName: string;
-    endpointName: string;
-    equipmentType: string;
-    equipmentMake: string;
-    equipmentModel: string;
-  }) => void;
+  onSave?: (endpoint: { siteName: string; location: string }) => void;
   onCancel: () => void;
 }
 
 const AddSiteEndpointForm: React.FC<AddSiteEndpointFormProps> = ({
-  onSave,
   onCancel,
 }) => {
   const [siteName, setSiteName] = useState("");
-  const [endpointName, setEndpointName] = useState("");
-  const [equipmentType, setEquipmentType] = useState("");
-  const [equipmentMake, setEquipmentMake] = useState("");
-  const [equipmentModel, setEquipmentModel] = useState("");
-
+  const [location, setLocation] = useState("");
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      siteName,
-      endpointName,
-      equipmentType,
-      equipmentMake,
-      equipmentModel,
-    });
+    const formData = {
+      name: siteName,
+      location: location,
+    };
+    createSite(formData);
   };
 
   return (
@@ -38,31 +26,12 @@ const AddSiteEndpointForm: React.FC<AddSiteEndpointFormProps> = ({
       <RuxInput
         label="Site Name"
         value={siteName}
-        onChange={(e) => setSiteName((e.target as HTMLInputElement).value)}
-        required
+        onChange={(e) => setSiteName(e.target.value)} // ... and update the state variable on any edits!        required
       ></RuxInput>
       <RuxInput
-        label="Endpoint Name"
-        value={endpointName}
-        onChange={(e) => setEndpointName(e.currentTarget.value)}
-        required
-      ></RuxInput>
-      <RuxInput
-        label="Equipment Type"
-        value={equipmentType}
-        onChange={(e) => setEquipmentType(e.currentTarget.value)}
-        required
-      ></RuxInput>
-      <RuxInput
-        label="Equipment Make"
-        value={equipmentMake}
-        onChange={(e) => setEquipmentMake(e.currentTarget.value)}
-        required
-      ></RuxInput>
-      <RuxInput
-        label="Equipment Model"
-        value={equipmentModel}
-        onChange={(e) => setEquipmentModel(e.currentTarget.value)}
+        label="Location"
+        value={location}
+        onChange={(e) => setLocation(e.target.value)}
         required
       ></RuxInput>
       <div className="form-actions">

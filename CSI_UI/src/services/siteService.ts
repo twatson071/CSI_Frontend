@@ -8,13 +8,21 @@ export interface DeviceResponse {
   status: number;
   data: any;
 }
-
+export interface Site {
+  name: string;
+  location: string;
+}
 export interface SiteWithDevices {
   siteId: number;
   siteName: string;
   devices: DeviceResponse[];
 }
-
+export async function createSite(siteData: Site) {
+  const resp = await axios.post<Site>(`${BASE_URL}/sites`, {
+    siteData,
+  });
+  return resp.data;
+}
 export async function fetchSitesWithDevices(): Promise<SiteWithDevices[]> {
   const resp = await axios.get<SiteWithDevices[]>(`${BASE_URL}/sites`);
   return resp.data;
