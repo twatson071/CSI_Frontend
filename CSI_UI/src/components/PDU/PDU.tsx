@@ -12,14 +12,20 @@ interface PDUProps {
     };
     statuses: string[]; // Array of statuses (e.g., "normal", "off", etc.)
   };
-  toggleStatus: (index: number) => void;
+  toggleStatus: (outletId: string, currentState: string | undefined) => void;
 }
 
 const PDU: React.FC<PDUProps> = ({ pduData, toggleStatus }) => {
+  const outlets = pduData.statuses.reduce((acc, status, index) => {
+    const outletId = (index + 1).toString();
+    acc[outletId] = { id: outletId, state: status };
+    return acc;
+  }, {} as Record<string, { id: string; state: string | undefined }>);
+
   return (
     <RuxContainer class="pdu-container">
       <div slot="header">{`${pduData.device.label} ${pduData.device.make} ${pduData.device.model}`}</div>
-      <PlugContainer statuses={pduData.statuses} toggleStatus={toggleStatus} />
+      <PlugContainer outlets={outlets} onToggleOutlet={toggleStatus} />
     </RuxContainer>
   );
 };

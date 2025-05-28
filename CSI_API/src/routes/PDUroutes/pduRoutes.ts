@@ -1,8 +1,16 @@
 import { Hono, Context } from "hono";
 import "dotenv/config";
 import { db } from "../../db";
+import { PduResponseSchema, CreatePduSchema } from "./pduValidationSchemas";
+import { z } from "zod";
 
 const app = new Hono();
+
+// Define a schema for the expected POST body structure for fetching PDUs
+const FetchPduBodySchema = z.object({
+  parameters: z.record(z.any()).optional().default({}), // parameters should be an object
+});
+
 async function fetchAllPdus(c: Context, method: "GET" | "POST") {
   const EXTERNAL_BASE_URL = process.env.EXTERNAL_BASE_URL!;
   const SYSTEM_OPERATOR_KEY = process.env.SYSTEM_OPERATOR_KEY!;
@@ -21,14 +29,24 @@ async function fetchAllPdus(c: Context, method: "GET" | "POST") {
   if (pduDevices.length === 0) {
     return c.text(`No devices found for serviceUrl: ${serviceUrl}`, 404);
   }
-
-  // if POST, parse body once up-front (so we don’t consume the stream multiple times)
-  let bodyObj: unknown = undefined;
+  let validatedBody: { parameters: Record<string, any> } | undefined =
+    undefined;
   if (method === "POST") {
     try {
-      bodyObj = await c.req.json();
-    } catch {
-      return c.text("Invalid JSON body", 400);
+      const rawBody = await c.req.json();
+      const validation = FetchPduBodySchema.safeParse(rawBody);
+      if (!validation.success) {
+        return c.json(
+          {
+            error: "Invalid JSON body or parameters structure",
+            details: validation.error.issues,
+          },
+          400
+        );
+      }
+      validatedBody = validation.data;
+    } catch (e) {
+      return c.json({ error: "Invalid JSON body" }, 400);
     }
   }
 
@@ -43,29 +61,34 @@ async function fetchAllPdus(c: Context, method: "GET" | "POST") {
           ...(method === "POST" && { "Content-Type": "application/json" }),
         },
       };
-      if (method === "POST") {
-        const client = bodyObj as Record<string, any>;
-        const parameters = client.parameters || {}; // Ensure parameters is always an object
-        if (typeof parameters !== "object") {
-          console.error("Invalid parameters:", parameters); // Debug log
-          return c.text("Missing or invalid parameters", 400);
-        }
+      if (method === "POST" && validatedBody) {
         init.body = JSON.stringify({
-          payload: JSON.stringify({ parameters }), // Convert payload to a string
+          payload: JSON.stringify({ parameters: validatedBody.parameters }),
         });
       }
 
       const res = await fetch(url, init);
-      const responseText = await res.text(); // Read the response as text
+      const responseText = await res.text();
+
+      let responseData: any = responseText;
+      try {
+        responseData = JSON.parse(responseText);
+        console.log("Parsed response data:", responseData);
+      } catch (e) {
+        console.warn(
+          "Response was not valid JSON, keeping as text",
+          responseText
+        );
+      }
+
       return {
         deviceId: dev.id,
         name: dev.name,
         status: res.status,
-        data: responseText,
+        data: responseData,
       };
     })
   );
-
   return c.json(results);
 }
 app.get("/:serviceUrl", (c) => fetchAllPdus(c, "GET"));

@@ -1,0 +1,66 @@
+rux-pop-up.proxy_input-pop-up {
+    margin-inline: var(--spacing-2);
+  }
+  rux-pop-up.proxy_input-pop-up::part(arrow) {
+    display: none;
+  }
+  
+  rux-pop-up.proxy_input-pop-up::part(popup-content) {
+    margin-block-start: var(--spacing-1);
+    /* the containing div - the button on the right */
+    width: calc(100% - 43rem);
+  }
+  
+  
+  rux-menu.proxy_input-menu {
+    height: 300px;
+    overflow-y: scroll;
+  }
+  
+  rux-menu.proxy_input-menu rux-menu-item > * {
+    pointer-events: none;
+  }
+  
+  rux-menu.proxy_input-menu h4.menu-title {
+    margin: 0;
+    padding: var(--spacing-2);
+    font-weight: var(--font-weights-regular);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+  }
+  
+  .proxy_no-match {
+    height: 100px;
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: var(--spacing-2);
+    background-color: var(--color-background-surface-default);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+  }
+.proxy_container {
+  display: flex;
+  align-items: center; /* Align items vertically */
+  gap: var(--spacing-2, 0.5rem); /* Consistent gap between elements */
+  width: 100%;
+}
+
+.proxy_container rux-input {
+  flex-grow: 1; /* Allow the input field to take available space */
+}
+
+/* Ensure the popup trigger button doesn't shrink too much */
+.proxy_container rux-pop-up rux-button[slot="trigger"] {
+  flex-shrink: 0;
+}
+
+/* Style for the "Add Service" button if needed, e.g., to match other form buttons */
+.proxy_container > rux-button:not([slot="trigger"]) {
+ flex-shrink: 0; /* Prevent the add button from shrinking */
+}

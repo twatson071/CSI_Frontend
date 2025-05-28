@@ -1,28 +1,85 @@
-// filepath: /home/thomas/Documents/work/CSI_Frontend/CSI_UI/src/components/PDU/PlugContainer.tsx
-import React from 'react';
-import { RuxMonitoringIcon } from '@astrouxds/react';
-import './PlugContainer.css';
+import React from "react";
+import { RuxMonitoringIcon } from "@astrouxds/react";
+import "./PlugContainer.css";
 
-interface PlugContainerProps {
-  statuses: string[]; // Array of statuses (e.g., "normal", "off", etc.)
-  toggleStatus: (index: number) => void; // Function to toggle status
+export interface Outlet {
+  id: string; // Outlet identifier (e.g., "1", "A1", "Output 1")
+  state?: string; // e.g., "ON", "OFF", "NORMAL", "UNKNOWN"
+  name?: string; // Optional display name for the outlet
 }
 
-const PlugContainer: React.FC<PlugContainerProps> = ({ statuses = [], toggleStatus }) => {
+interface PlugContainerProps {
+  outlets: Record<string, Outlet>;
+  onToggleOutlet: (outletId: string, currentState: string | undefined) => void;
+}
+
+const PlugContainer: React.FC<PlugContainerProps> = ({
+  outlets = {},
+  onToggleOutlet,
+}) => {
+  const getIconStatus = (
+    outletState: string | undefined
+  ): "normal" | "off" | "standby" | "critical" | undefined => {
+    if (!outletState || outletState.trim() === "") {
+      return "off";
+    }
+    const lowerState = outletState.trim().toLowerCase();
+    if (
+      lowerState === "on" ||
+      lowerState === "normal" ||
+      lowerState === "power_on"
+    ) {
+      return "normal";
+    }
+    if (lowerState === "off" || lowerState === "power_off") {
+      return "off";
+    }
+    if (lowerState === "standby") {
+      return "standby";
+    }
+
+    if (
+      lowerState.includes("error") ||
+      lowerState.includes("critical") ||
+      lowerState.includes("fault")
+    ) {
+      return "critical";
+    }
+
+    return "standby";
+  };
+
+  const getStatusLabel = (outletState: string | undefined): string => {
+    if (!outletState || outletState.trim() === "") {
+      return "UNKNOWN";
+    }
+    const lowerState = outletState.trim().toLowerCase();
+
+    if (
+      lowerState === "on" ||
+      lowerState === "normal" ||
+      lowerState === "power_on"
+    )
+      return "ON";
+    if (lowerState === "off" || lowerState === "power_off") return "OFF";
+
+    return outletState.toUpperCase(); // Show other states as is
+  };
+
   return (
     <div className="plug-container">
       <div className="plug-row">
-        {statuses.map((status, index) => (
-          <div key={index} className="plug-item">
+        {Object.entries(outlets).map(([outletId, outletData]) => (
+          <div key={outletId} className="plug-item">
             <RuxMonitoringIcon
-              status={(status as 'normal' | 'off' | undefined) || 'off'} // Default to 'off' if status is undefined
+              status={getIconStatus(outletData.state)}
               icon="power"
-              label={`Plug ${index + 1}`}
-              onClick={() => toggleStatus(index)} // Call toggleStatus on click
-              title={`Toggle Plug ${index + 1}`} // Accessibility
+              label={outletData.name || `Outlet ${outletId}`}
+              onClick={() => onToggleOutlet(outletId, outletData.state)}
+              title={`Toggle ${outletData.name || `Outlet ${outletId}`}`}
             />
             <span className="plug-label">
-              {status === 'normal' ? 'ON' : 'OFF'}
+              {getStatusLabel(outletData.state)}
             </span>
           </div>
         ))}

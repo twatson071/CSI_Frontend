@@ -8,6 +8,13 @@
       "when": 1746980001366,
       "tag": "0000_volatile_vermin",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1747436907963,
+      "tag": "0001_living_young_avengers",
+      "breakpoints": true
     }
   ]
 }
