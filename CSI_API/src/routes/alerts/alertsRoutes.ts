@@ -2,6 +2,10 @@ import { Hono, Context } from "hono";
 import { db } from "../../db";
 import { alerts } from "../../db/schema";
 import { eq, asc, desc } from "drizzle-orm";
+import {
+  CreateAlertSchema,
+  UpdateAlertSchema,
+} from "./alertsValidationSchemas";
 import { z } from "zod";
 
 const app = new Hono();
@@ -43,9 +47,14 @@ app.get("/:id", async (c: Context) => {
 // Create a new alert
 app.post("/", async (c: Context) => {
   const body = await c.req.json();
-  // TODO: Add validation logic here if needed
+  const validation = CreateAlertSchema.safeParse(body);
+
+  if (!validation.success) {
+    return c.json({ error: "Invalid input", details: validation.error.issues }, 400);
+  }
+
   try {
-    const newAlertResult = await db.insert(alerts).values(body).returning();
+    const newAlertResult = await db.insert(alerts).values(validation.data).returning();
     if (newAlertResult.length === 0) {
       return c.json({ error: "Failed to create alert" }, 500);
     }
@@ -62,14 +71,22 @@ app.put("/:id", async (c: Context) => {
   if (isNaN(id)) {
     return c.json({ error: "Invalid alert ID" }, 400);
   }
+
   const body = await c.req.json();
-  if (Object.keys(body).length === 0) {
+  const validation = UpdateAlertSchema.safeParse(body);
+
+  if (!validation.success) {
+    return c.json({ error: "Invalid input", details: validation.error.issues }, 400);
+  }
+
+  if (Object.keys(validation.data).length === 0) {
     return c.json({ error: "No fields to update" }, 400);
   }
+
   try {
     const updatedAlertResult = await db
       .update(alerts)
-      .set(body)
+      .set(validation.data)
       .where(eq(alerts.id, id))
       .returning();
     if (updatedAlertResult.length === 0) {
