@@ -50,3 +50,13 @@ export async function updateDevice(
   );
   return resp.data;
 }
+export async function fetchDeviceMetrics(deviceId: number) {
+  const resp = await axios.get<
+    {
+      metricType: string;
+      value: number;
+      createdAt: string;
+    }[]
+  >(`${API_URL}/devices/${deviceId}/metrics`);
+  return resp.data;
+}

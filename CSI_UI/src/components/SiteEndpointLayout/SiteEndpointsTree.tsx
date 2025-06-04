@@ -5,7 +5,7 @@ import "./SiteEndpointsTree.css";
 import {
   SiteWithOptionalDevices,
   DeviceResponse as Device,
-} from "../../services/siteService";
+} from "../../services/SiteService";
 
 // Define DeviceStatus type alias
 type DeviceStatus =
@@ -53,22 +53,26 @@ const SiteEndpointsTree: React.FC<SiteEndpointsTreeProps> = ({
   selectedDevice,
 }) => {
   const handleNodeSelected = (e: any) => {
-    const selectedNodeElement = e.currentTarget as HTMLElement | null;
-    if (selectedNodeElement) {
-      const siteIdxStr = selectedNodeElement.dataset.siteIndex;
-      const deviceIndexStr = selectedNodeElement.dataset.deviceIndex;
-      if (siteIdxStr !== undefined) {
-        const siteIdx = parseInt(siteIdxStr, 10);
-        if (isNaN(siteIdx)) return;
-        if (deviceIndexStr !== undefined) {
-          const devIdx = parseInt(deviceIndexStr, 10);
-          if (!isNaN(devIdx)) {
-            onSelect(siteIdx, devIdx);
-          }
-        } else {
-          onSelect(siteIdx, -1);
-        }
+    const el = e.currentTarget as HTMLElement | null;
+    if (!el) return;
+
+    const siteIdxStr = el.dataset.siteIndex;
+    const deviceIndexStr = el.dataset.deviceIndex;
+
+    if (siteIdxStr === undefined) return;
+    const siteIdx = parseInt(siteIdxStr, 10);
+    if (isNaN(siteIdx)) return;
+    if (deviceIndexStr !== undefined) {
+      const devIdx = parseInt(deviceIndexStr, 10);
+      if (isNaN(devIdx)) return;
+      if (siteIdx !== selectedSite) {
+        onSelect(siteIdx, -1);
+        setTimeout(() => onSelect(siteIdx, devIdx), 0);
+      } else {
+        onSelect(siteIdx, devIdx);
       }
+    } else {
+      onSelect(siteIdx, -1);
     }
   };
 
@@ -132,7 +136,6 @@ const SiteEndpointsTree: React.FC<SiteEndpointsTreeProps> = ({
                       slot="node"
                       data-site-index={si.toString()}
                       data-device-index={di.toString()}
-                      // A device node is selected if its site's index matches AND its own index matches
                       selected={si === selectedSite && di === selectedDevice}
                     >
                       <RuxStatus
@@ -145,10 +148,10 @@ const SiteEndpointsTree: React.FC<SiteEndpointsTreeProps> = ({
                         Object.entries(
                           dev.data.parameters.outlets as Record<
                             string,
-                            { state: string; list_id?: string } // Added list_id for better display
+                            { state: string; list_id?: string }
                           >
                         )
-                          .sort(([keyA], [keyB]) => Number(keyA) - Number(keyB)) // Sort by outlet number
+                          .sort(([keyA], [keyB]) => Number(keyA) - Number(keyB))
                           .map(([key, outletData]) => (
                             <RuxTreeNode
                               key={`${dev.deviceId}-outlet-${key}`}

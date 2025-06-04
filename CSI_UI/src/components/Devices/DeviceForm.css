@@ -5,43 +5,45 @@
   /* Removed padding and background from the form itself, as RuxContainer handles it */
 }
 
-.add-device-endpoint-form-inner { /* New class for the form element inside RuxContainer */
+.add-device-endpoint-form-inner {
+  /* New class for the form element inside RuxContainer */
   display: flex;
   flex-direction: column;
   gap: var(--spacing-4, 1rem);
-  padding: var(--spacing-4, 1rem); /* Padding for the form content inside the container body */
+  padding: var(
+    --spacing-4,
+    1rem
+  ); /* Padding for the form content inside the container body */
 }
-
 
 .add-device-endpoint-form-inner rux-input,
 .add-device-endpoint-form-inner rux-select,
-.add-device-endpoint-form-inner .proxy_container { /* Ensure SearchProxy container is also full width */
+.add-device-endpoint-form-inner .proxy_container {
+  /* Ensure SearchProxy container is also full width */
   width: 100%;
 }
 
 /* Styles for the RuxContainer wrapping the form */
-rux-container::part(body){ 
+rux-container::part(body) {
   overflow-x: hidden;
-  background: var(--color-background-surface-default);
-  padding: 0; 
-  border-top: 1px solid var(--color-border-interactive-muted, #394a5a);
-  background: var(--color-background-surface-default);
+  padding: 0;
 }
 
 rux-container.add-device-endpoint-form::part(footer) {
   padding: 0;
 }
-.add-device-endpoint-form div[slot="footer"] {
+
+/* Shared footer style for all RuxContainers with buttons */
+rux-container div[slot="footer"] {
   display: flex;
   gap: var(--spacing-3, 0.75rem);
   justify-content: flex-end;
-  box-shadow: 0 -0.5rem 1.25rem rgba(0, 0, 0, 0.25);
-  border-top: 1px solid var(--logHeaderBackgroundColor, rgb(20, 32, 44));
   padding: 0.75rem;
   position: sticky;
   bottom: 0;
+  background-color: var(--color-background-surface-default);
+  border-top: 1px solid var(--color-border-divider);
 }
-
 
 /* Add a little more space above the SearchProxy if it feels cramped after Device Type */
 .add-device-endpoint-form-inner .proxy_container {
@@ -51,7 +53,8 @@ rux-container.add-device-endpoint-form::part(footer) {
 /* Ensure labels are clear and have good contrast (usually handled by Rux components) */
 .add-device-endpoint-form-inner rux-input::part(label),
 .add-device-endpoint-form-inner rux-select::part(label) {
-  margin-bottom: var(--spacing-1, 0.25rem); /* Small space between label and control */
+  margin-bottom: var(
+    --spacing-1,
+    0.25rem
+  ); /* Small space between label and control */
 }
-
-

@@ -1,46 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useImperativeHandle, forwardRef } from "react";
 import "./SiteEndpointForm.css";
-import { RuxButton, RuxInput, RuxDialog } from "@astrouxds/react";
+import { RuxInput } from "@astrouxds/react";
 
-interface AddSiteEndpointFormProps {
-  open: boolean; // To control the dialog's visibility
-  onSave: (endpoint: { name: string; location: string }) => void; // Changed to 'name' to match formData
-  onCancel: () => void; // For the cancel button action
-  onRuxclosed: () => void; // For dialog close events (like ESC)
+export interface AddSiteEndpointFormHandles {
+  getFormData: () => { name: string; location: string } | null;
+  reset: () => void;
 }
 
-const AddSiteEndpointForm: React.FC<AddSiteEndpointFormProps> = ({
-  open,
-  onSave,
-  onCancel,
-  onRuxclosed,
-}) => {
+interface AddSiteEndpointFormProps {
+  // No onSave/onCancel here; parent handles actions
+}
+
+const AddSiteEndpointForm = forwardRef<
+  AddSiteEndpointFormHandles,
+  AddSiteEndpointFormProps
+>((props, ref) => {
   const [siteName, setSiteName] = useState("");
   const [location, setLocation] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = {
-      name: siteName,
-      location: location,
-    };
-    onSave(formData); // Call the onSave prop passed from the parent
-    // Reset fields after save
-    setSiteName("");
-    setLocation("");
-  };
-
-  const handleCancel = () => {
-    // Reset fields on cancel
-    setSiteName("");
-    setLocation("");
-    onCancel(); // Call the onCancel prop
-  };
+  useImperativeHandle(ref, () => ({
+    getFormData: () => {
+      if (!siteName.trim() || !location.trim()) return null;
+      return { name: siteName, location: location };
+    },
+    reset: () => {
+      setSiteName("");
+      setLocation("");
+    },
+  }));
 
   return (
-    <RuxDialog open={open}>
-      <div slot="header">Add New Site</div>
-      <form className="add-site-endpoint-form" onSubmit={handleSubmit}>
+    <div className="add-site-endpoint-form-container">
+      <h3>Add New Site</h3>
+      <form
+        className="add-site-endpoint-form"
+        onSubmit={(e) => e.preventDefault()}
+      >
         <RuxInput
           label="Site Name"
           value={siteName}
@@ -53,21 +48,9 @@ const AddSiteEndpointForm: React.FC<AddSiteEndpointFormProps> = ({
           onRuxinput={(e: any) => setLocation(e.target.value)}
           required
         ></RuxInput>
-        <div className="form-actions">
-          {/* These buttons are now part of the form, not the dialog's direct footer slot */}
-          {/* The RuxDialog's own footer slot can be used if needed for other dialog-level actions */}
-        </div>
       </form>
-      <div slot="footer">
-        <RuxButton type="button" onClick={handleCancel} secondary>
-          Cancel
-        </RuxButton>
-        <RuxButton type="button" onClick={handleSubmit}>
-          Save
-        </RuxButton>
-      </div>
-    </RuxDialog>
+    </div>
   );
-};
+});
 
 export default AddSiteEndpointForm;

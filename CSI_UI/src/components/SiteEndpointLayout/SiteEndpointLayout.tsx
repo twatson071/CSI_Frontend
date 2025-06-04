@@ -1,18 +1,22 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import SiteEndpointsTree from "./SiteEndpointsTree";
-import AddSiteEndpointForm from "./SiteEndpointForm";
+import AddSiteEndpointForm, {
+  AddSiteEndpointFormHandles,
+} from "./SiteEndpointForm";
 import MainContentDisplay from "./MainContentDisplay";
 import DeviceForm from "../Devices/DeviceForm";
+import DeviceStatusDashboard from "../Devices/DeviceStatusDashboard";
 import {
   fetchSiteSummaries,
   fetchDevicesForSite,
   SiteWithOptionalDevices,
   SiteCreateData,
-} from "../../services/siteService";
+} from "../../services/SiteService";
 import { PDUData, toggleOutletPower } from "../../services/PDUservice";
 import { Device } from "../../services/DeviceService";
 import "./SiteEndpointLayout.css";
 import { RuxContainer, RuxButton } from "@astrouxds/react";
+import AlertsPanel from "../Alerts/AlertsPanel";
 
 const extractPduDataAndStatuses = (
   deviceData: any
@@ -91,7 +95,12 @@ const SiteEndpointLayout: React.FC = () => {
   const [statuses, setStatuses] = useState<string[]>([]);
   const [showAddSiteModal, setShowAddSiteModal] = useState(false);
   const [showAddDeviceForm, setShowAddDeviceForm] = useState(false);
+  const [showDeviceStatusDashboard, setShowDeviceStatusDashboard] =
+    useState(false);
   const [isLoadingDevices, setIsLoadingDevices] = useState(false);
+  const [wattsData, setWattsData] = useState<{ x: string; y: number }[]>([]);
+  const [ampsData, setAmpsData] = useState<{ x: string; y: number }[]>([]);
+  const addSiteFormRef = useRef<AddSiteEndpointFormHandles>(null);
 
   const updatePduDisplayCallback = useCallback(
     (siteIdxToUpdate: number, deviceIndexToUpdate: number) => {
@@ -103,9 +112,21 @@ const SiteEndpointLayout: React.FC = () => {
           extractPduDataAndStatuses(device.data);
         setPduData(newPduData);
         setStatuses(newStatuses);
+
+        // Extract and append sensor data for chart
+        const sensors = device.data.sensors;
+        if (sensors && typeof sensors === "object") {
+          const now = new Date().toISOString();
+          const watts = Number(sensors.total_draw_w) || 0;
+          const amps = Number(sensors.total_draw_a) || 0;
+          setWattsData((prev) => [...prev, { x: now, y: watts }].slice(-100));
+          setAmpsData((prev) => [...prev, { x: now, y: amps }].slice(-100));
+        }
       } else {
         setPduData(null);
         setStatuses([]);
+        setWattsData([]);
+        setAmpsData([]);
       }
     },
     [sites]
@@ -345,9 +366,23 @@ const SiteEndpointLayout: React.FC = () => {
     }
   };
 
+  const toggleAddDeviceForm = (show: boolean) => {
+    setShowAddDeviceForm(show);
+    if (show) {
+      setShowDeviceStatusDashboard(false);
+    }
+  };
+
+  const toggleDeviceStatusDashboard = (show: boolean) => {
+    setShowDeviceStatusDashboard(show);
+    if (show) {
+      setShowAddDeviceForm(false);
+    }
+  };
+
   return (
     <div className="main-container" data-active="true">
-      <RuxContainer className="alerts">
+      <RuxContainer className="site-endpoints">
         <div
           slot="header"
           style={{
@@ -358,39 +393,50 @@ const SiteEndpointLayout: React.FC = () => {
         >
           <span>Site Endpoints</span>
         </div>
-        <SiteEndpointsTree
-          sites={sites}
-          selectedSite={selectedSiteIdx}
-          selectedDevice={selectedDevIdx}
-          onSelect={onSelect}
-        />
-        <div slot="footer">
-          <RuxButton onClick={() => setShowAddSiteModal(true)}>
-            Add Site
-          </RuxButton>
-        </div>
+        {!showAddSiteModal ? (
+          <>
+            <SiteEndpointsTree
+              sites={sites}
+              selectedSite={selectedSiteIdx}
+              selectedDevice={selectedDevIdx}
+              onSelect={onSelect}
+            />
+            <div slot="footer">
+              <RuxButton onClick={() => setShowAddSiteModal(true)}>
+                Add Site
+              </RuxButton>
+            </div>
+          </>
+        ) : (
+          <>
+            <AddSiteEndpointForm ref={addSiteFormRef} />
+            <div slot="footer">
+              <RuxButton
+                type="button"
+                secondary
+                onClick={() => {
+                  addSiteFormRef.current?.reset();
+                  setShowAddSiteModal(false);
+                }}
+              >
+                Cancel
+              </RuxButton>
+              <RuxButton
+                type="button"
+                onClick={() => {
+                  const data = addSiteFormRef.current?.getFormData();
+                  if (data) {
+                    handleSaveSite(data);
+                    addSiteFormRef.current?.reset();
+                  }
+                }}
+              >
+                Save
+              </RuxButton>
+            </div>
+          </>
+        )}
       </RuxContainer>
-
-      {showAddSiteModal && (
-        <AddSiteEndpointForm
-          open={showAddSiteModal}
-          onSave={handleSaveSite}
-          onCancel={() => setShowAddSiteModal(false)}
-          onRuxclosed={() => setShowAddSiteModal(false)}
-        />
-      )}
-
-      <MainContentDisplay
-        className="pass-plan"
-        selectedSite={selectedSiteObject}
-        selectedDevice={selectedDeviceObject}
-        pduData={pduData}
-        statuses={statuses}
-        handleTogglePower={handleTogglePower}
-        setShowAddDeviceForm={setShowAddDeviceForm}
-        isDeviceFormVisible={showAddDeviceForm}
-        isLoadingDevices={isLoadingDevices}
-      />
 
       {showAddDeviceForm && selectedSiteObject && (
         <DeviceForm
@@ -401,11 +447,30 @@ const SiteEndpointLayout: React.FC = () => {
         />
       )}
 
-      {/* Placeholder for other grid items if they are direct children of main-container */}
-      {/* e.g., <RuxContainer className="link-status">Link Status</RuxContainer> */}
-      {/* <RuxContainer className="subsystems">Subsystems</RuxContainer> */}
-      {/* <RuxContainer className="watcher">Watcher</RuxContainer> */}
-      {/* <RuxContainer className="mnemonics">Mnemonics</RuxContainer> */}
+      {showDeviceStatusDashboard && !showAddDeviceForm && (
+        <DeviceStatusDashboard
+          className="device-dashboard"
+          onClose={() => toggleDeviceStatusDashboard(false)}
+        />
+      )}
+
+      {!showAddDeviceForm && !showDeviceStatusDashboard && (
+        <MainContentDisplay
+          className="pass-plan"
+          selectedSite={selectedSiteObject}
+          selectedDevice={selectedDeviceObject}
+          pduData={pduData}
+          statuses={statuses}
+          handleTogglePower={handleTogglePower}
+          setShowAddDeviceForm={toggleAddDeviceForm}
+          isDeviceFormVisible={showAddDeviceForm}
+          isLoadingDevices={isLoadingDevices}
+          wattsData={wattsData}
+          ampsData={ampsData}
+        />
+      )}
+      <DeviceStatusDashboard />
+      <AlertsPanel />
     </div>
   );
 };

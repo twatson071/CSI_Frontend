@@ -44,15 +44,10 @@ const DeviceStatus: React.FC = () => {
     const deviceStatusDiv = document.querySelector(".device-status-list");
     const tableRows = deviceStatusDiv?.querySelectorAll("rux-table-row");
 
-    tableRows?.forEach((row) => {
-      // Example: Add click listener if needed, or remove this if not
-      // row.addEventListener('click', (event) => console.log('Row clicked', event.target));
-    });
+    tableRows?.forEach((row) => {});
 
     return () => {
-      tableRows?.forEach((row) => {
-        // row.removeEventListener('click', ...);
-      });
+      tableRows?.forEach((row) => {});
     };
   }, [devices]);
 

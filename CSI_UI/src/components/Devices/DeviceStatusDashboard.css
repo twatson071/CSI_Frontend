@@ -1,0 +1,199 @@
+.device-status-dashboard {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-background-base-default);
+  padding: var(--spacing-2);
+  gap: var(--spacing-2);
+}
+
+.container-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.container-header h2 {
+  margin: 0;
+}
+
+.dashboard-content {
+  padding: 1rem;
+  height: fit-content;
+  overflow-y: auto;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.dashboard-metrics {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.metric-card {
+  background-color: var(--color-background-surface-default);
+  padding: 1rem;
+  border-radius: 3px;
+  flex: 1;
+}
+
+.metric-card h3 {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.metric-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weights-bold);
+  color: var(--color-text-primary);
+}
+
+.dashboard-controls {
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: center;
+}
+
+.view-toggle {
+  display: flex;
+  margin-left: var(--spacing-2);
+}
+
+.dashboard-filters {
+  margin-bottom: var(--spacing-2);
+}
+
+.filter-tag {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-1);
+  color: var(--color-palette-green-400);
+  background-color: var(--color-background-surface-default);
+}
+
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-8);
+  color: var(--color-text-secondary);
+}
+
+.device-grid-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-2);
+  overflow-y: auto;
+}
+.device-list-header {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-2);
+  background-color: var(--color-background-surface-default);
+  border-bottom: 1px solid var(--color-border-interactive-muted);
+}
+.device-card {
+  height: 100%;
+  min-height: 150px;
+}
+
+.device-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.device-type {
+  font-weight: var(--font-weights-medium);
+}
+
+.device-ip {
+  color: var(--color-text-secondary);
+  font-family: var(--font-body-family-mono);
+  font-size: var(--font-size-sm);
+}
+.view-details-button {
+  padding-top: var(--spacing-1);
+  padding-bottom: var(--spacing-3);
+}
+.outlet-summary {
+  margin-top: var(--spacing-2);
+  padding-top: var(--spacing-2);
+  border-top: 1px solid var(--color-border-interactive-muted);
+}
+
+.no-devices-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 150px;
+  color: var(--color-text-secondary);
+}
+
+rux-table {
+  width: 100%;
+}
+
+rux-container {
+  height: 100%;
+}
+.table-wrapper.device-status-list rux-table-header-row {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.table-wrapper.device-status-list rux-table-header-cell:nth-of-type(1) {
+  padding-left: var(--spacing-4);
+}
+
+.table-wrapper.device-status-list rux-table-header-cell,
+.table-wrapper.device-status-list rux-table-cell {
+  width: 17%;
+  padding-right: var(--spacing-20);
+}
+
+.table-wrapper.device-status-list rux-table-header-cell:nth-of-type(4),
+.table-wrapper.device-status-list rux-table-cell:nth-of-type(4) {
+  text-align: right;
+}
+
+.table-wrapper.device-status-list rux-table-cell:nth-of-type(4) {
+  padding-left: var(--spacing-3);
+}
+
+.table-wrapper.device-status-list rux-status {
+  float: left;
+  margin-left: var(--spacing-8);
+}
+
+.table-wrapper.device-status-list rux-table-header-row rux-icon {
+  vertical-align: middle;
+  width: 32px;
+}
+
+.table-wrapper.device-status-list rux-table-header-cell:has(rux-icon.visible) {
+  cursor: pointer;
+}
+
+.table-wrapper.device-status-list
+  rux-table-header-cell[data-sortprop="status"] {
+  text-align: center;
+}
+
+.dashboard-footer {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  text-align: right;
+}

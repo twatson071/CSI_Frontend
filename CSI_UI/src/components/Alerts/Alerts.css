@@ -1,9 +1,5 @@
 /* ALERTS CONTAINER HEADER */
 
-.main-container[data-active="false"] {
-  display: none;
-}
-
 .alerts div[slot="header"] {
   display: flex;
   text-align: center;
@@ -24,7 +20,7 @@
 
 .select-menu-div {
   display: flex;
-  max-width: 70%;
+  max-width: 65%;
   gap: 5%;
 }
 
@@ -49,12 +45,13 @@
   margin-inline: 3px;
   margin-block: 0px;
   font-size: var(--font-heading-5-font-size);
-  box-shadow: 0px 3px 3px 0px rgb(0 0 0 / 40%);
+  box-shadow: var(--list-panel-box-shadow);
   padding: var(--spacing-2) var(--spacing-4);
   background-color: var(--color-background-base-header);
   position: sticky;
   top: 0;
   z-index: 90;
+  white-space: nowrap;
 }
 
 .table-wrapper.alert-list::-webkit-scrollbar-track {
@@ -62,6 +59,25 @@
 }
 
 /* ACCORDION ITEM STYLES */
+
+/* .alerts rux-accordion-item::part(label-wrapper) {
+  flex-direction: row-reverse;
+}
+
+.alerts rux-accordion-item::part(indicator) {
+  transform: rotate(-90deg);
+} */
+
+.alert-list {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-background-surface-default);
+  overflow-y: scroll;
+  flex-grow: 1;
+  padding-left: 0;
+  margin: 0;
+  padding-top: 3px;
+}
 
 .alert-list-label {
   display: flex;
@@ -96,7 +112,7 @@
 
 .alert-list-headers span:nth-of-type(2),
 .alert-list-label span:nth-of-type(2) {
-  width: 23%;
+  width: 20%;
   text-transform: capitalize;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -118,19 +134,8 @@
   margin-left: 1rem;
 }
 
-rux-accordion div[slot="label"] rux-status {
+rux-accordion rux-status {
   padding-inline: 1rem;
-}
-
-.alert-list {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--color-background-surface-default);
-  overflow-y: scroll;
-  flex-grow: 1;
-  padding-left: 0;
-  margin: 0;
-  padding-top: 3px;
 }
 
 li {
@@ -161,43 +166,3 @@ rux-button.alerts_clear-filter::part(container) {
 .alerts::part(footer) {
   padding: 0px;
 }
-
-/* SITE ENDPOINT FORM & DIALOG STYLES */
-
-/* Dialog Header (if you style it via the parent component's CSS) */
-/* This assumes SiteEndpointForm is rendered within a RuxDialog in SiteEndpointLayout */
-/* If RuxDialog is *inside* SiteEndpointForm, these rules might target its ::part(header) directly */
-.site-endpoint-dialog div[slot="header"], /* If dialog is outside the form component */
-rux_dialog[open] div[slot="header"] /* If dialog is inside the form component */ {
-  display: flex;
-  text-align: center;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-3) var(--spacing-4);
-  font-size: var(--font-heading-4-font-size);
-  border-bottom: 1px solid var(--color-border-interactive-default);
-}
-
-/* Form specific styling */
-.add-site-endpoint-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-4); /* Space between form elements */
-  padding: var(--spacing-4); /* Padding inside the form */
-}
-
-/* Styling for RuxInput components within the form */
-.add-site-endpoint-form rux-input {
-  width: 100%; /* Make inputs take full width of their container */
-}
-
-/* Form Actions (Save/Cancel buttons container) */
-/* This was .form-actions in a previous version, if you still use it */
-.add-site-endpoint-form .form-actions {
-  display: flex;
-  justify-content: flex-end; /* Align buttons to the right */
-  gap: var(--spacing-2); /* Space between buttons */
-  margin-top: var(--spacing-3); /* Space above the action buttons */
-}
-
-/* Remove dialog/footer blocks that are now handled by the shared style */

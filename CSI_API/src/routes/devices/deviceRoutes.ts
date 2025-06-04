@@ -315,6 +315,20 @@ const getDeviceById = async (c: Context) => {
   return c.json(device);
 };
 
+app.get("/:id/metrics", async (c: Context) => {
+  const deviceId = parseInt(c.req.param("id"));
+  if (isNaN(deviceId)) {
+    return c.json({ error: "Invalid device ID" }, 400);
+  }
+  // Example: fetch last 100 metrics for the device
+  const metrics = await db.query.metrics.findMany({
+    where: (m, { eq }) => eq(m.deviceId, deviceId),
+    orderBy: (m, { desc }) => desc(m.createdAt),
+    limit: 100,
+  });
+  return c.json(metrics);
+});
+
 app.get("/", getDevice);
 app.get("/services", (c) => getServiceList(c, "GET"));
 app.get("/:id", getDeviceById);

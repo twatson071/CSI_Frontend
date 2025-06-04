@@ -1,3 +1,3 @@
 export * from "./PDUservice";
-export * from "./siteService";
+export * from "./SiteService";
 export * from "./DeviceService";

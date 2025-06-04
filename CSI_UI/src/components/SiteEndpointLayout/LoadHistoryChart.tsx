@@ -10,12 +10,16 @@ const LoadHistoryChart: React.FC<LoadHistoryChartProps> = ({
   wattsData,
   ampsData,
 }) => {
+  const chartData = [
+    { id: "Watts", data: wattsData },
+    ...(ampsData && ampsData.length > 0
+      ? [{ id: "Amps", data: ampsData }]
+      : []),
+  ];
+
   return (
     <GenericLineChart
-      data={[
-        { id: "Watts", data: wattsData },
-        { id: "Amps", data: ampsData || [] },
-      ]}
+      data={chartData}
       xScaleType="time"
       xFormat="time:%H:%M"
       yScaleMin={0}

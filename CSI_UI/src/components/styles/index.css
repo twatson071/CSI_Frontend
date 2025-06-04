@@ -21,3 +21,15 @@ code {
 #root {
   height: 100%;
 }
+
+/* Shared footer style for all RuxContainers with buttons */
+rux-container div[slot="footer"] {
+  display: flex;
+  gap: var(--spacing-3, 0.75rem);
+  justify-content: flex-end;
+  padding: 0.75rem;
+  position: sticky;
+  bottom: 0;
+  background-color: var(--color-background-surface-default);
+  border-top: 1px solid var(--color-border-divider);
+}

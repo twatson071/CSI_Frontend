@@ -20,12 +20,17 @@ rux-container::part(body) {
   padding: 0;
 }
 
-rux-container.alerts {
-  grid-area: alerts;
+rux-container.site-endpoints {
+  grid-area: site-endpoints;
 }
-
-rux-container.pass-plan {
+rux-container.alerts rux-container.pass-plan {
   grid-area: pass-plan;
+}
+rux-container.device-status {
+  grid-area: device-status;
+}
+.device-status {
+  grid-area: device-status;
 }
 
 .link-status {
@@ -158,11 +163,11 @@ rux-tree-node::part(node):focus {
   display: grid;
   gap: var(--spacing-2);
   grid-template-columns: calc(30% - 5px) calc(70% - 5px + var(--spacing-2));
-  grid-template-rows: minmax(0, 2fr) minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto auto;
   grid-template-areas:
-    "alerts pass-plan"        /* Main Site List | Main Display Area (e.g., site details, PDU) */
-    "alerts add-device-area"  /* Main Site List | Add Device Form Area */   /* Main Site List | Other content (e.g. watcher, mnemonics) */
-                               /* Note: link-status, subsystems might be *inside* pass-plan or other-content */
+    "site-endpoints pass-plan"
+    "alerts device-status"
+    "alerts     device-status";
 }
 .investigate__content {
   position: relative;
@@ -194,7 +199,6 @@ rux-tree-node::part(node):focus {
   opacity: 0.5;
 }
 
-/* Styling for the header within MainContentDisplay */
 .main-content-header {
   display: flex;
   justify-content: space-between;
