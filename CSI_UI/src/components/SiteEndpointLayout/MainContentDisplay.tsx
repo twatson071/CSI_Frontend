@@ -12,6 +12,8 @@ import {
 import PlugContainer, { Outlet } from "../PDU/PlugContainer";
 import LoadHistoryChart from "./LoadHistoryChart";
 import { fetchDeviceMetrics } from "../../services/DeviceService";
+import { fetchServerData, ServerData } from "../../services/ServerService";
+import ServerDetails from "../Server/ServerDetails";
 import "./MainContentDisplay.css";
 
 interface MainContentDisplayProps {
@@ -47,6 +49,7 @@ const MainContentDisplay: React.FC<MainContentDisplayProps> = ({
   const [ampsData, setAmpsData] = useState<{ x: string; y: number }[]>(
     initialAmpsData || []
   );
+  const [serverData, setServerData] = useState<ServerData | null>(null);
 
   useEffect(() => {
     if (selectedDevice) {
@@ -61,6 +64,19 @@ const MainContentDisplay: React.FC<MainContentDisplayProps> = ({
         setWattsData(wattsData);
         setAmpsData(ampsData);
       });
+    }
+  }, [selectedDevice]);
+
+  useEffect(() => {
+    if (selectedDevice && selectedDevice.type === "Server") {
+      fetchServerData()
+        .then((data) => setServerData(data))
+        .catch((err) => {
+          console.error("Failed to fetch server data", err);
+          setServerData(null);
+        });
+    } else {
+      setServerData(null);
     }
   }, [selectedDevice]);
 
@@ -125,7 +141,6 @@ const MainContentDisplay: React.FC<MainContentDisplayProps> = ({
               <LoadHistoryChart
                 wattsData={wattsData}
                 ampsData={ampsData}
-                title="PDU Load History"
               />
             </div>
           );
@@ -137,20 +152,8 @@ const MainContentDisplay: React.FC<MainContentDisplayProps> = ({
           );
         }
       case "Server":
-        if (typeof serverData !== "undefined" && serverData) {
-          return (
-            <div className="server-details">
-              <h4>Server Details:</h4>
-              <p>
-                Server Name: {selectedDevice.name} <br />
-                Status: {selectedDevice.status}
-              </p>
-              <LoadHistoryChart
-                data={serverData.loadHistory}
-                title="Server Load History"
-              />
-            </div>
-          );
+        if (serverData) {
+          return <ServerDetails server={serverData} />;
         }
       // fall through to default if no serverData
       default:
