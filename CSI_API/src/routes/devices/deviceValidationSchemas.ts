@@ -16,7 +16,7 @@ export const FullDeviceCreateSchema = z.object({
   parameters: z.any().optional(),
   data: z.any().optional(),
   ipAddress: z.string().nullable().optional(),
-  status: z.string().nullable().optional(), // e.g., 'online', 'offline', 'standby'
+  status: z.string().nullable().optional(),
 });
 
 export const DeviceDetailsSchema = z.object({

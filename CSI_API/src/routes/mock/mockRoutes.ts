@@ -209,10 +209,180 @@ const baseServerData = {
       total_bytes: "67309817856",
       cached_bytes: "60301217792",
     },
-    gpus: {},
-    fans: {},
-    processes: {},
-    peripherials: {},
+    gpus: {
+      "1": {
+        index: 1,
+        unique_id: "gpu-nvidia-rtx4090-001",
+        name: "NVIDIA GeForce RTX 4090",
+        utilization_percent: 0.45,
+        temperature_c: 65.0,
+        memory_total_bytes: 25769803776,
+        memory_used_bytes: 8589934592,
+        power_draw_watts: 320.5,
+        fan_speed_percent: 60.0,
+      },
+      "2": {
+        index: 2,
+        unique_id: "gpu-nvidia-rtx4080-002",
+        name: "NVIDIA GeForce RTX 4080",
+        utilization_percent: 0.32,
+        temperature_c: 58.0,
+        memory_total_bytes: 17179869184,
+        memory_used_bytes: 5368709120,
+        power_draw_watts: 245.2,
+        fan_speed_percent: 45.0,
+      },
+    },
+    fans: {
+      "1": {
+        index: 1,
+        unique_id: "fan-system-001",
+        speed_percent: 45.0,
+        status: "NORMAL",
+      },
+      "2": {
+        index: 2,
+        unique_id: "fan-cpu-001",
+        speed_percent: 60.0,
+        status: "NORMAL",
+      },
+      "3": {
+        index: 3,
+        unique_id: "fan-case-front-001",
+        speed_percent: 40.0,
+        status: "NORMAL",
+      },
+      "4": {
+        index: 4,
+        unique_id: "fan-case-rear-001",
+        speed_percent: 50.0,
+        status: "NORMAL",
+      },
+      "5": {
+        index: 5,
+        unique_id: "fan-psu-001",
+        speed_percent: 30.0,
+        status: "WARNING",
+      },
+    },
+    processes: {
+      "1234": {
+        pid: 1234,
+        name: "systemd",
+        cpu_percent: 0.1,
+        memory_bytes: 8388608,
+        status: "RUNNING",
+        user: "root",
+        command: "/lib/systemd/systemd --system --deserialize 31",
+        start_time: "2025-06-05T08:00:00Z",
+      },
+      "5678": {
+        pid: 5678,
+        name: "postgres",
+        cpu_percent: 2.5,
+        memory_bytes: 134217728,
+        status: "RUNNING",
+        user: "postgres",
+        command:
+          "/usr/lib/postgresql/14/bin/postgres -D /var/lib/postgresql/14/main",
+        start_time: "2025-06-05T08:01:30Z",
+      },
+      "9012": {
+        pid: 9012,
+        name: "nginx",
+        cpu_percent: 0.8,
+        memory_bytes: 33554432,
+        status: "RUNNING",
+        user: "www-data",
+        command:
+          "nginx: master process /usr/sbin/nginx -g daemon on; master_process on;",
+        start_time: "2025-06-05T08:02:15Z",
+      },
+      "3456": {
+        pid: 3456,
+        name: "docker",
+        cpu_percent: 1.2,
+        memory_bytes: 67108864,
+        status: "RUNNING",
+        user: "root",
+        command:
+          "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock",
+        start_time: "2025-06-05T08:03:00Z",
+      },
+      "7890": {
+        pid: 7890,
+        name: "node",
+        cpu_percent: 15.3,
+        memory_bytes: 268435456,
+        status: "RUNNING",
+        user: "app",
+        command: "node /app/server.js",
+        start_time: "2025-06-05T09:15:22Z",
+      },
+    },
+    peripherials: {
+      "usb-001": {
+        device_id: "usb-001",
+        unique_id: "usb-logitech-mouse-001",
+        name: "Logitech MX Master 3",
+        type: "USB_MOUSE",
+        vendor: "Logitech",
+        product_id: "0x4082",
+        vendor_id: "0x046d",
+        status: "CONNECTED",
+        port: "USB1",
+        power_draw_watts: 0.5,
+      },
+      "usb-002": {
+        device_id: "usb-002",
+        unique_id: "usb-keyboard-001",
+        name: "Mechanical Keyboard",
+        type: "USB_KEYBOARD",
+        vendor: "Corsair",
+        product_id: "0x1b3c",
+        vendor_id: "0x1b1c",
+        status: "CONNECTED",
+        port: "USB2",
+        power_draw_watts: 0.8,
+      },
+      "usb-003": {
+        device_id: "usb-003",
+        unique_id: "usb-webcam-001",
+        name: "HD Webcam C920",
+        type: "USB_CAMERA",
+        vendor: "Logitech",
+        product_id: "0x082d",
+        vendor_id: "0x046d",
+        status: "CONNECTED",
+        port: "USB3",
+        power_draw_watts: 2.1,
+      },
+      "usb-004": {
+        device_id: "usb-004",
+        unique_id: "usb-storage-001",
+        name: "External SSD",
+        type: "USB_STORAGE",
+        vendor: "Samsung",
+        product_id: "0x6174",
+        vendor_id: "0x04e8",
+        status: "CONNECTED",
+        port: "USB4",
+        power_draw_watts: 3.2,
+        capacity_bytes: 1099511627776,
+      },
+      "serial-001": {
+        device_id: "serial-001",
+        unique_id: "serial-ups-001",
+        name: "UPS Monitor",
+        type: "SERIAL_UPS",
+        vendor: "APC",
+        product_id: "0x0002",
+        vendor_id: "0x051d",
+        status: "CONNECTED",
+        port: "COM1",
+        power_draw_watts: 0.0,
+      },
+    },
   },
   heartbeat: { update_interval_msec: null, last_sent: null },
   log: { escalation_levels: "INFO", state: "UNKNOWN", entries: {} },
@@ -266,6 +436,32 @@ function generateMockServerData() {
     Object.values(data.sensors.gpus).forEach((gpu: any) => {
       gpu.utilization_percent = Number(rand(0.3, 0.9).toFixed(2));
       gpu.temperature_c = Number(rand(30, 80).toFixed(1));
+    });
+  }
+
+  if (data.sensors?.fans) {
+    Object.values(data.sensors.fans).forEach((fan: any) => {
+      fan.speed_percent = Number(rand(20, 80).toFixed(1));
+      // Randomly assign status with higher probability for NORMAL
+      const statusRandom = Math.random();
+      if (statusRandom < 0.8) {
+        fan.status = "NORMAL";
+      } else if (statusRandom < 0.95) {
+        fan.status = "WARNING";
+      } else {
+        fan.status = "CRITICAL";
+      }
+    });
+  }
+
+  if (data.sensors?.processes) {
+    Object.values(data.sensors.processes).forEach((process: any) => {
+      process.cpu_percent = Number(rand(0.1, 25).toFixed(1));
+      process.memory_bytes = Math.floor(rand(10, 512) * 1024 * 1024);
+      process.status = Math.random() < 0.9 ? "RUNNING" : "STOPPED";
+      process.start_time = new Date(
+        Date.now() - Math.floor(rand(0, 3600) * 1000)
+      ).toISOString();
     });
   }
 
