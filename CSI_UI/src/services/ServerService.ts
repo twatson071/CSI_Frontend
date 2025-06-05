@@ -31,7 +31,7 @@ export interface ServerData {
         temperature_c?: number;
       }
     >;
-    drives?: Record<string, { utilization_percent?: number }>;
+    drives?: Record<string, { utilization_percent?: number; max_storage_bytes?: number }>;
     ram?: {
       utilization_percent?: string;
       total_bytes?: string;
@@ -49,6 +49,16 @@ export interface ServerData {
         current_speed_bps?: number;
       }
     >;
+    fans?: Record<
+      string,
+      {
+        id?: string;
+        current_speed_rpm?: number;
+        max_speed_rpm?: number;
+      }
+    >;
+    processes?: Record<string, unknown>;
+    peripherials?: Record<string, unknown>;
   };
   parameters?: Record<string, unknown>;
 }
