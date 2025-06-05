@@ -239,7 +239,6 @@ const ServerDetails: React.FC<Props> = ({ server, deviceId }) => {
     totalNetworkBytes,
     ram?.utilization_percent,
   ]);
-  console.log(loadData);
   return (
     <RuxAccordion className="server-details-container">
       <RuxAccordionItem>
