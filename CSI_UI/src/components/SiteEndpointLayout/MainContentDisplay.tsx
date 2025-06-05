@@ -162,8 +162,13 @@ const MainContentDisplay: React.FC<MainContentDisplayProps> = ({
           );
         }
       case "Server":
-        if (serverData) {
-          return <ServerDetails server={serverData} />;
+        if (serverData && selectedDevice) {
+          return (
+            <ServerDetails
+              server={serverData}
+              deviceId={selectedDevice.deviceId}
+            />
+          );
         }
       // fall through to default if no serverData
       default:

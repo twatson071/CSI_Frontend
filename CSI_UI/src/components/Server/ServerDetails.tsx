@@ -13,6 +13,7 @@ import {
   RuxAccordionItem,
 } from "@astrouxds/react";
 import { ServerData } from "../../services/ServerService";
+import { fetchDeviceMetrics } from "../../services/DeviceService";
 import CPULineChart from "./Charts/CPULineChart";
 import GPULineChart from "./Charts/GPULineChart";
 import GPURamLineChart from "./Charts/GPURamLineChart";
@@ -28,9 +29,10 @@ import "./ServerDetails.css";
 
 interface Props {
   server: ServerData;
+  deviceId: number;
 }
 
-const ServerDetails: React.FC<Props> = ({ server }) => {
+const ServerDetails: React.FC<Props> = ({ server, deviceId }) => {
   const [view, setView] = useState<"table" | "chart">("table");
 
   // Memoize calculations to ensure they update when server data changes
@@ -106,6 +108,64 @@ const ServerDetails: React.FC<Props> = ({ server }) => {
     () => nics.reduce((sum, nic) => sum + (nic.current_speed_bps || 0), 0),
     [nics]
   );
+
+  // Load historical metrics for this server
+  useEffect(() => {
+    fetchDeviceMetrics(deviceId)
+      .then((metrics) => {
+        const load: number[] = [];
+        const memory: number[] = [];
+        const network: number[] = [];
+        const storage: number[] = [];
+        const cpuTemp: number[] = [];
+        const gpuTemp: number[] = [];
+
+        metrics
+          .sort(
+            (a, b) =>
+              new Date(a.createdAt).getTime() -
+              new Date(b.createdAt).getTime()
+          )
+          .forEach((m) => {
+            switch (m.metricType) {
+              case "load":
+              case "cpu_load":
+                load.push(m.value);
+                break;
+              case "memory":
+              case "memory_utilization":
+                memory.push(m.value);
+                break;
+              case "network":
+              case "network_speed":
+                network.push(m.value);
+                break;
+              case "storage":
+              case "storage_utilization":
+                storage.push(m.value);
+                break;
+              case "cpu_temperature":
+                cpuTemp.push(m.value);
+                break;
+              case "gpu_temperature":
+                gpuTemp.push(m.value);
+                break;
+              default:
+                break;
+            }
+          });
+
+        if (load.length) setLoadData(load);
+        if (memory.length) setMemoryData(memory);
+        if (network.length) setNetworkData(network);
+        if (storage.length) setStorageData(storage);
+        if (cpuTemp.length) setCpuTempData(cpuTemp);
+        if (gpuTemp.length) setGpuTempData(gpuTemp);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch server metrics", err);
+      });
+  }, [deviceId]);
 
   useEffect(() => {
     setLoadData((prev) => [...prev.slice(-19), avgCpuUtilization]);
