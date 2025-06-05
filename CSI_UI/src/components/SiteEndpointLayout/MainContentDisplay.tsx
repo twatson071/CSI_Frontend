@@ -68,16 +68,26 @@ const MainContentDisplay: React.FC<MainContentDisplayProps> = ({
   }, [selectedDevice]);
 
   useEffect(() => {
-    if (selectedDevice && selectedDevice.type === "Server") {
+    let intervalId: number | undefined;
+
+    const fetchAndSet = () =>
       fetchServerData()
         .then((data) => setServerData(data))
         .catch((err) => {
           console.error("Failed to fetch server data", err);
           setServerData(null);
         });
+
+    if (selectedDevice && selectedDevice.type === "Server") {
+      fetchAndSet();
+      intervalId = window.setInterval(fetchAndSet, 30000);
     } else {
       setServerData(null);
     }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [selectedDevice]);
 
   if (isLoadingDevices) {

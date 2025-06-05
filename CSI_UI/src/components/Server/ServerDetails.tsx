@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   RuxTable,
   RuxTableHeader,
@@ -39,8 +39,13 @@ const ServerDetails: React.FC<Props> = ({ server }) => {
   const drives = server.sensors?.drives
     ? Object.values(server.sensors.drives)
     : [];
-  const generateSampleData = () =>
-    Array.from({ length: 20 }, () => Math.random() * 100);
+
+  const [loadData, setLoadData] = useState<number[]>([]);
+  const [memoryData, setMemoryData] = useState<number[]>([]);
+  const [networkData, setNetworkData] = useState<number[]>([]);
+  const [storageData, setStorageData] = useState<number[]>([]);
+  const [cpuTempData, setCpuTempData] = useState<number[]>([]);
+  const [gpuTempData, setGpuTempData] = useState<number[]>([]);
 
   const avgCpuUtilization =
     cpus.length > 0
@@ -48,10 +53,46 @@ const ServerDetails: React.FC<Props> = ({ server }) => {
         cpus.length
       : 0;
 
+  const avgDriveUtilization =
+    drives.length > 0
+      ? drives.reduce((sum, drive) => sum + (drive.utilization_percent || 0), 0) /
+        drives.length
+      : 0;
+
+  const avgCpuTemp =
+    cpus.length > 0
+      ? cpus.reduce((sum, cpu) => sum + (cpu.temperature_c || 0), 0) / cpus.length
+      : 0;
+
+  const avgGpuTemp =
+    gpus.length > 0
+      ? gpus.reduce((sum, gpu) => sum + (gpu.temperature_c || 0), 0) / gpus.length
+      : 0;
+
   const totalNetworkBytes = nics.reduce(
     (sum, nic) => sum + (nic.current_speed_bps || 0),
     0
   );
+
+  useEffect(() => {
+    setLoadData((prev) => [...prev.slice(-19), avgCpuUtilization]);
+    setMemoryData((prev) => [
+      ...prev.slice(-19),
+      ram ? Number(ram.utilization_percent || 0) : 0,
+    ]);
+    setNetworkData((prev) => [...prev.slice(-19), totalNetworkBytes]);
+    setStorageData((prev) => [...prev.slice(-19), avgDriveUtilization]);
+    setCpuTempData((prev) => [...prev.slice(-19), avgCpuTemp]);
+    setGpuTempData((prev) => [...prev.slice(-19), avgGpuTemp]);
+  }, [
+    server,
+    avgCpuUtilization,
+    avgDriveUtilization,
+    avgCpuTemp,
+    avgGpuTemp,
+    totalNetworkBytes,
+    ram,
+  ]);
 
   return (
     <RuxAccordion className="server-details-container">
@@ -68,7 +109,7 @@ const ServerDetails: React.FC<Props> = ({ server }) => {
             value={`${avgCpuUtilization.toFixed(1)}`}
             unit="%"
             color="#f4a261"
-            data={generateSampleData()}
+            data={loadData}
             icon="processor"
           />
           <MetricCard
@@ -76,7 +117,7 @@ const ServerDetails: React.FC<Props> = ({ server }) => {
             value={ram ? Number(ram.utilization_percent || 0).toFixed(1) : "0"}
             unit="GB"
             color="#e76f51"
-            data={generateSampleData()}
+            data={memoryData}
             icon="memory"
           />
           <MetricCard
@@ -84,58 +125,31 @@ const ServerDetails: React.FC<Props> = ({ server }) => {
             value={formatBandwidth(totalNetworkBytes).split(" ")[0]}
             unit={formatBandwidth(totalNetworkBytes).split(" ")[1]}
             color="#264653"
-            data={generateSampleData()}
+            data={networkData}
             icon="settings-ethernet"
           />
           <MetricCard
             title="Storage"
-            value={
-              drives.length > 0
-                ? `${(
-                    drives.reduce(
-                      (sum, drive) => sum + (drive.utilization_percent || 0),
-                      0
-                    ) / drives.length
-                  ).toFixed(1)}`
-                : "0%"
-            }
+            value={drives.length > 0 ? avgDriveUtilization.toFixed(1) : "0"}
             unit="%"
             color="#2a9d8f"
-            data={generateSampleData()}
+            data={storageData}
             icon="storage"
           />
           <MetricCard
             title="CPU Temperature"
-            value={
-              cpus.length > 0
-                ? `${
-                    cpus.reduce(
-                      (sum, cpu) => sum + (cpu.temperature_c || 0),
-                      0
-                    ) / cpus.length
-                  }`
-                : "N/A"
-            }
+            value={cpus.length > 0 ? avgCpuTemp.toFixed(1) : "N/A"}
             unit="°C"
             color="#e9c46a"
-            data={generateSampleData()}
+            data={cpuTempData}
             icon="thermal"
           />
           <MetricCard
             title="GPU Temperature"
-            value={
-              gpus.length > 0
-                ? `${
-                    gpus.reduce(
-                      (sum, gpu) => sum + (gpu.temperature_c || 0),
-                      0
-                    ) / gpus.length
-                  }`
-                : "N/A"
-            }
+            value={gpus.length > 0 ? avgGpuTemp.toFixed(1) : "N/A"}
             unit="°C"
             color="#f4a261"
-            data={generateSampleData()}
+            data={gpuTempData}
             icon="thermal"
           />
         </div>

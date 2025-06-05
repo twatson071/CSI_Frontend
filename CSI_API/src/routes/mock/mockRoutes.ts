@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 
-// Mock server data mimicking the PDU implementation
-const mockServerData = {
+// Base server data used for generating realistic mock values
+const baseServerData = {
   "device": {
     "label": "",
     "comms": {
@@ -224,9 +224,52 @@ const mockServerData = {
   }
 };
 
+function rand(min: number, max: number) {
+  return Math.random() * (max - min) + min;
+}
+
+function generateMockServerData() {
+  const data = JSON.parse(JSON.stringify(baseServerData));
+
+  if (data.sensors?.cpus) {
+    Object.values(data.sensors.cpus).forEach((cpu: any) => {
+      cpu.utilization_percent = Number(rand(0.3, 0.95).toFixed(2));
+      cpu.current_rate_hz = rand(1e7, 2e7);
+      cpu.temperature_c = Number(rand(30, 70).toFixed(1));
+    });
+  }
+
+  if (data.sensors?.drives) {
+    Object.values(data.sensors.drives).forEach((drive: any) => {
+      drive.utilization_percent = Number(rand(0, 80).toFixed(2));
+    });
+  }
+
+  if (data.sensors?.nics) {
+    Object.values(data.sensors.nics).forEach((nic: any) => {
+      if (nic.max_speed_bps) {
+        nic.current_speed_bps = Math.floor(rand(0, nic.max_speed_bps));
+      }
+    });
+  }
+
+  if (data.sensors?.ram) {
+    data.sensors.ram.utilization_percent = rand(40, 99).toFixed(2);
+  }
+
+  if (data.sensors?.gpus) {
+    Object.values(data.sensors.gpus).forEach((gpu: any) => {
+      gpu.utilization_percent = Number(rand(0.3, 0.9).toFixed(2));
+      gpu.temperature_c = Number(rand(30, 80).toFixed(1));
+    });
+  }
+
+  return data;
+}
+
 const app = new Hono();
 
-// Simple endpoint to return the mock server data
-app.get("/server", (c) => c.json(mockServerData));
+// Simple endpoint to return randomized mock server data
+app.get("/server", (c) => c.json(generateMockServerData()));
 
 export default app;
