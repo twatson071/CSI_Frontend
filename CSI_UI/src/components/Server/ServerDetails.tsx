@@ -48,7 +48,7 @@ const ServerDetails: React.FC<Props> = ({ server }) => {
               className="view-toggle-button"
               aria-label="List View"
             ></RuxButton>
-            <RuxButton size="small" icon="view-module"></RuxButton>
+            <RuxButton size="small" icon="show-chart"></RuxButton>
           </div>
           {cpus.length > 0 && (
             <RuxTable>
