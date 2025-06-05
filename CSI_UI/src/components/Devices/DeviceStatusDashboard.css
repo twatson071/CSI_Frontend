@@ -39,6 +39,7 @@
 .metric-card {
   background-color: var(--color-background-surface-default);
   padding: 1rem;
+  opacity: 0.9;
   border-radius: 3px;
   flex: 1;
 }

@@ -2,6 +2,10 @@
   margin-top: 1rem;
 }
 
+.server-details-container .metric-cards-container {
+  padding: 16px 0;
+}
+
 .view-toggle {
   display: flex;
   gap: 0.5rem;

@@ -7,16 +7,14 @@ interface CPULineChartProps {
 }
 
 const CPULineChart: React.FC<CPULineChartProps> = ({ server }) => {
-  const cpus = server.sensors?.cpus
-    ? Object.values(server.sensors.cpus)
-    : [];
+  const cpus = server.sensors?.cpus ? Object.values(server.sensors.cpus) : [];
 
   const cpuData = [
     {
       id: "CPU Usage",
       data: cpus.map((cpu, idx) => ({
         x: cpu.id || idx,
-        y: (cpu.utilization_percent ?? 0) * 100,
+        y: cpu.utilization_percent ?? 0,
       })),
     },
   ];
@@ -39,4 +37,3 @@ const CPULineChart: React.FC<CPULineChartProps> = ({ server }) => {
 };
 
 export default CPULineChart;
-
