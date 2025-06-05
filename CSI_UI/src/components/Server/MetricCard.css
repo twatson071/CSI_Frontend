@@ -1,6 +1,6 @@
 .metric-card {
   border-radius: 8px;
-  padding: 16px;
+  padding: 16px 16px 0 16px; /* Remove bottom padding */
   opacity: 0.7;
   min-width: 200px;
   position: relative;
@@ -44,11 +44,17 @@
 .metric-card-chart {
   height: 40px;
   margin-top: auto;
+  margin-left: -16px; /* Extend to card edges */
+  margin-right: -16px; /* Extend to card edges */
+  margin-bottom: 0; /* No bottom margin */
+  border-radius: 0 0 8px 8px; /* Match card's bottom border radius */
+  overflow: hidden; /* Ensure content doesn't overflow rounded corners */
 }
 
 .metric-card-chart svg {
   width: 100%;
   height: 100%;
+  display: block; /* Remove any default inline spacing */
 }
 
 .metric-cards-container {

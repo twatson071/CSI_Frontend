@@ -48,28 +48,117 @@ async function pollDevicesAndStore() {
       }
       if (device.type === "Server") {
         if (externalData && externalData.sensors) {
-          const cpuSensors = externalData.sensors.cpus;
-          if (cpuSensors) {
-            for (const cpuId in cpuSensors) {
-              const cpu = cpuSensors[cpuId];
+          const { cpus, ram, nics, drives, gpus } = externalData.sensors;
+
+          // CPU metrics
+          if (cpus) {
+            let totalCpuUtilization = 0;
+            let totalCpuTemp = 0;
+            let cpuCount = 0;
+
+            for (const cpuId in cpus) {
+              const cpu = cpus[cpuId];
               if (cpu.utilization_percent !== undefined) {
-                await db.insert(metrics).values({
-                  deviceId: device.id,
-                  metricType: "cpu_utilization",
-                  value: Number(cpu.utilization_percent) || 0,
-                  createdAt: new Date().toISOString(),
-                });
-              } else {
-                console.log(
-                  `CPU utilization data missing for Server ${device.id} CPU ${cpuId}`
-                );
+                totalCpuUtilization += Number(cpu.utilization_percent) || 0;
+                cpuCount++;
+              }
+              if (cpu.temperature_c !== undefined) {
+                totalCpuTemp += Number(cpu.temperature_c) || 0;
               }
             }
-          } else {
-            console.log(
-              `CPU sensors data missing for Server ${device.id}. External data:`,
-              externalData
-            );
+
+            if (cpuCount > 0) {
+              // Store average CPU utilization
+              await db.insert(metrics).values({
+                deviceId: device.id,
+                metricType: "cpu_utilization",
+                value: totalCpuUtilization / cpuCount,
+                createdAt: new Date().toISOString(),
+              });
+
+              // Store average CPU temperature
+              await db.insert(metrics).values({
+                deviceId: device.id,
+                metricType: "cpu_temperature",
+                value: totalCpuTemp / cpuCount,
+                createdAt: new Date().toISOString(),
+              });
+            }
+          }
+
+          // RAM metrics
+          if (ram && ram.utilization_percent !== undefined) {
+            await db.insert(metrics).values({
+              deviceId: device.id,
+              metricType: "memory_utilization",
+              value: Number(ram.utilization_percent) || 0,
+              createdAt: new Date().toISOString(),
+            });
+          }
+
+          // Network metrics
+          if (nics) {
+            let totalNetworkSpeed = 0;
+            for (const nicId in nics) {
+              const nic = nics[nicId];
+              if (nic.current_speed_bps !== undefined) {
+                totalNetworkSpeed += Number(nic.current_speed_bps) || 0;
+              }
+            }
+
+            await db.insert(metrics).values({
+              deviceId: device.id,
+              metricType: "network_speed",
+              value: totalNetworkSpeed,
+              createdAt: new Date().toISOString(),
+            });
+          }
+
+          // Storage metrics
+          if (drives) {
+            let totalStorageUtilization = 0;
+            let driveCount = 0;
+
+            for (const driveId in drives) {
+              const drive = drives[driveId];
+              if (drive.utilization_percent !== undefined) {
+                totalStorageUtilization +=
+                  Number(drive.utilization_percent) || 0;
+                driveCount++;
+              }
+            }
+
+            if (driveCount > 0) {
+              await db.insert(metrics).values({
+                deviceId: device.id,
+                metricType: "storage_utilization",
+                value: totalStorageUtilization / driveCount,
+                createdAt: new Date().toISOString(),
+              });
+            }
+          }
+
+          // GPU metrics
+          if (gpus) {
+            let totalGpuTemp = 0;
+            let gpuCount = 0;
+
+            for (const gpuId in gpus) {
+              const gpu = gpus[gpuId];
+              if (gpu.temperature_c !== undefined) {
+                totalGpuTemp += Number(gpu.temperature_c) || 0;
+                gpuCount++;
+              }
+            }
+
+            if (gpuCount > 0) {
+              await db.insert(metrics).values({
+                deviceId: device.id,
+                metricType: "gpu_temperature",
+                value: totalGpuTemp / gpuCount,
+                createdAt: new Date().toISOString(),
+              });
+            }
           }
         } else {
           console.log(

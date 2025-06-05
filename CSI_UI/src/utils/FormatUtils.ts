@@ -15,7 +15,7 @@ export function formatBandwidth(bps: number | null | undefined): string {
 export function formatSpeed(speed: number | null | undefined): string {
   if (speed === null || speed === undefined || speed === 0) return "N/A";
 
-  const units = ["bps", "Kbps", "Mbps", "Gbps", "Tbps"];
+  const units = ["Hz", "Khz", "Mhz", "Ghz", "Thz"];
   let value = speed;
   let unitIndex = 0;
 

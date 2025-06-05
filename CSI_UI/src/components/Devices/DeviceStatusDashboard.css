@@ -36,7 +36,7 @@
   margin-bottom: 1.5rem;
 }
 
-.metric-card {
+.dashboard-metric-card {
   background-color: var(--color-background-surface-default);
   padding: 1rem;
   opacity: 0.9;
@@ -44,7 +44,7 @@
   flex: 1;
 }
 
-.metric-card h3 {
+.dashboard-metric-card h3 {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   margin: 0;

@@ -132,16 +132,16 @@ const DeviceStatusDashboard: React.FC = () => {
 
       <div className="dashboard-content">
         <div className="dashboard-metrics">
-          <div className="metric-card">
+          <div className="dashboard-metric-card">
             <h3>Total Devices</h3>
             <div className="metric-value">{statusData.devices.length}</div>
           </div>
-          <div className="metric-card">
+          <div className="dashboard-metric-card">
             <h3>System Health</h3>
             <div className="metric-value">{healthPercentage}%</div>
             <RuxProgress value={healthPercentage} max={100} />
           </div>
-          <div className="metric-card">
+          <div className="dashboard-metric-card">
             <h3>Critical Issues</h3>
             <div className="metric-value">
               {statusData.statusCounts["critical"] || 0}

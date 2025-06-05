@@ -109,7 +109,6 @@ const ServerDetails: React.FC<Props> = ({ server, deviceId }) => {
     [nics]
   );
 
-  // Load historical metrics for this server
   useEffect(() => {
     fetchDeviceMetrics(deviceId)
       .then((metrics) => {
@@ -123,13 +122,13 @@ const ServerDetails: React.FC<Props> = ({ server, deviceId }) => {
         metrics
           .sort(
             (a, b) =>
-              new Date(a.createdAt).getTime() -
-              new Date(b.createdAt).getTime()
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
           )
           .forEach((m) => {
             switch (m.metricType) {
               case "load":
               case "cpu_load":
+              case "cpu_utilization":
                 load.push(m.value);
                 break;
               case "memory":
@@ -155,38 +154,92 @@ const ServerDetails: React.FC<Props> = ({ server, deviceId }) => {
             }
           });
 
-        if (load.length) setLoadData(load);
-        if (memory.length) setMemoryData(memory);
-        if (network.length) setNetworkData(network);
-        if (storage.length) setStorageData(storage);
-        if (cpuTemp.length) setCpuTempData(cpuTemp);
-        if (gpuTemp.length) setGpuTempData(gpuTemp);
+        setLoadData(load);
+        setMemoryData(memory);
+        setNetworkData(network);
+        setStorageData(storage);
+        setCpuTempData(cpuTemp);
+        setGpuTempData(gpuTemp);
       })
       .catch((err) => {
         console.error("Failed to fetch server metrics", err);
+        setLoadData([]);
+        setMemoryData([]);
+        setNetworkData([]);
+        setStorageData([]);
+        setCpuTempData([]);
+        setGpuTempData([]);
       });
   }, [deviceId]);
 
   useEffect(() => {
-    setLoadData((prev) => [...prev.slice(-19), avgCpuUtilization]);
-    setMemoryData((prev) => [
-      ...prev.slice(-19),
-      ram ? Number(ram.utilization_percent || 0) : 0,
-    ]);
-    setNetworkData((prev) => [...prev.slice(-19), totalNetworkBytes]);
-    setStorageData((prev) => [...prev.slice(-19), avgDriveUtilization]);
-    setCpuTempData((prev) => [...prev.slice(-19), avgCpuTemp]);
-    setGpuTempData((prev) => [...prev.slice(-19), avgGpuTemp]);
+    // Only update if we have valid server data and the values have actually changed
+    if (server.sensors) {
+      setLoadData((prev) => {
+        const newValue = avgCpuUtilization;
+        const lastValue = prev[prev.length - 1];
+        // Only add if the value has changed or this is the first value
+        if (prev.length === 0 || newValue !== lastValue) {
+          return [...prev.slice(-19), newValue];
+        }
+        return prev;
+      });
+
+      setMemoryData((prev) => {
+        const newValue = ram ? Number(ram.utilization_percent || 0) : 0;
+        const lastValue = prev[prev.length - 1];
+        if (prev.length === 0 || newValue !== lastValue) {
+          return [...prev.slice(-19), newValue];
+        }
+        return prev;
+      });
+
+      setNetworkData((prev) => {
+        const newValue = totalNetworkBytes;
+        const lastValue = prev[prev.length - 1];
+        if (prev.length === 0 || newValue !== lastValue) {
+          return [...prev.slice(-19), newValue];
+        }
+        return prev;
+      });
+
+      setStorageData((prev) => {
+        const newValue = avgDriveUtilization;
+        const lastValue = prev[prev.length - 1];
+        if (prev.length === 0 || newValue !== lastValue) {
+          return [...prev.slice(-19), newValue];
+        }
+        return prev;
+      });
+
+      setCpuTempData((prev) => {
+        const newValue = avgCpuTemp;
+        const lastValue = prev[prev.length - 1];
+        if (prev.length === 0 || newValue !== lastValue) {
+          return [...prev.slice(-19), newValue];
+        }
+        return prev;
+      });
+
+      setGpuTempData((prev) => {
+        const newValue = avgGpuTemp;
+        const lastValue = prev[prev.length - 1];
+        if (prev.length === 0 || newValue !== lastValue) {
+          return [...prev.slice(-19), newValue];
+        }
+        return prev;
+      });
+    }
   }, [
-    server,
+    server.sensors,
     avgCpuUtilization,
     avgDriveUtilization,
     avgCpuTemp,
     avgGpuTemp,
     totalNetworkBytes,
-    ram,
+    ram?.utilization_percent,
   ]);
-
+  console.log(loadData);
   return (
     <RuxAccordion className="server-details-container">
       <RuxAccordionItem>
@@ -195,54 +248,78 @@ const ServerDetails: React.FC<Props> = ({ server, deviceId }) => {
         </div>
         <div slot="label">Server Details</div>
 
-        {/* Metric Cards */}
         <div className="metric-cards-container">
           <MetricCard
             title="Load"
             value={`${avgCpuUtilization.toFixed(1)}`}
             unit="%"
-            color="#f4a261"
             data={loadData}
+            thresholds={{
+              normal: 0,
+              caution: 70,
+              serious: 85,
+              critical: 95,
+            }}
             icon="processor"
           />
           <MetricCard
             title="Memory"
             value={ram ? Number(ram.utilization_percent || 0).toFixed(1) : "0"}
             unit="%"
-            color="#e76f51"
             data={memoryData}
+            thresholds={{
+              normal: 70,
+              caution: 85,
+              serious: 95,
+              critical: 100,
+            }}
             icon="memory"
           />
           <MetricCard
             title="Network"
             value={formatBandwidth(totalNetworkBytes).split(" ")[0]}
             unit={formatBandwidth(totalNetworkBytes).split(" ")[1]}
-            color="#264653"
             data={networkData}
+            color="#2a9d8f"
             icon="settings-ethernet"
           />
           <MetricCard
             title="Storage"
             value={drives.length > 0 ? avgDriveUtilization.toFixed(1) : "0"}
             unit="%"
-            color="#2a9d8f"
             data={storageData}
+            thresholds={{
+              normal: 70,
+              caution: 85,
+              serious: 95,
+              critical: 100,
+            }}
             icon="storage"
           />
           <MetricCard
             title="CPU Temperature"
             value={cpus.length > 0 ? avgCpuTemp.toFixed(1) : "N/A"}
             unit="°C"
-            color="#e9c46a"
             data={cpuTempData}
+            thresholds={{
+              normal: 70,
+              caution: 80,
+              serious: 85,
+              critical: 90,
+            }}
             icon="thermal"
           />
           <MetricCard
             title="GPU Temperature"
             value={gpus.length > 0 ? avgGpuTemp.toFixed(1) : "N/A"}
             unit="°C"
-            color="#f4a261"
             data={gpuTempData}
+            thresholds={{
+              normal: 70,
+              caution: 80,
+              serious: 85,
+              critical: 90,
+            }}
             icon="thermal"
           />
         </div>
@@ -274,8 +351,8 @@ const ServerDetails: React.FC<Props> = ({ server, deviceId }) => {
                 <RuxTableHeaderRow>
                   <RuxTableHeaderCell>CPU</RuxTableHeaderCell>
                   <RuxTableHeaderCell>Utilization %</RuxTableHeaderCell>
-                  <RuxTableHeaderCell>Current Rate</RuxTableHeaderCell>
-                  <RuxTableHeaderCell>Max Rate</RuxTableHeaderCell>
+                  <RuxTableHeaderCell>Current Usage</RuxTableHeaderCell>
+                  <RuxTableHeaderCell>Max Speed</RuxTableHeaderCell>
                   <RuxTableHeaderCell>Temperature (°C)</RuxTableHeaderCell>
                 </RuxTableHeaderRow>
               </RuxTableHeader>

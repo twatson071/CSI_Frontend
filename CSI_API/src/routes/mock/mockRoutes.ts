@@ -232,9 +232,15 @@ function generateMockServerData() {
 
   if (data.sensors?.cpus) {
     Object.values(data.sensors.cpus).forEach((cpu: any) => {
-      cpu.utilization_percent = Number(rand(0.3, 0.95).toFixed(2));
-      cpu.current_rate_hz = rand(1e7, 2e7);
-      cpu.temperature_c = Number(rand(30, 70).toFixed(1));
+      cpu.utilization_percent = Number(rand(5, 95).toFixed(1));
+      const utilizationDecimal = cpu.utilization_percent / 100;
+      cpu.current_rate_hz = Math.floor(cpu.max_rate_Hz * utilizationDecimal);
+
+      const baseTemp = 25;
+      const maxTempIncrease = 45;
+      cpu.temperature_c = Number(
+        (baseTemp + utilizationDecimal * maxTempIncrease).toFixed(1)
+      );
     });
   }
 
