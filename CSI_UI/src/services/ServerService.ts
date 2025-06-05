@@ -21,6 +21,16 @@ export interface ServerData {
         temperature_c?: number;
       }
     >;
+    gpus?: Record<
+      string,
+      {
+        id?: string;
+        utilization_percent?: number;
+        memory_total_bytes?: number;
+        memory_used_bytes?: number;
+        temperature_c?: number;
+      }
+    >;
     drives?: Record<string, { utilization_percent?: number }>;
     ram?: {
       utilization_percent?: string;
