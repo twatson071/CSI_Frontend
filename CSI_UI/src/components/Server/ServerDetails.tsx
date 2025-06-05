@@ -20,6 +20,10 @@ import GPURamLineChart from "./Charts/GPURamLineChart";
 import RamLineChart from "./Charts/RamLineChart";
 import TemperatureLineChart from "./Charts/TempratureLineChart";
 import MetricCard from "./MetricCard";
+import TemperatureFanSection from "./Sections/TemperatureFanSection";
+import StorageSection from "./Sections/StorageSection";
+import PeripheralsSection from "./Sections/PeripheralsSection";
+import ProcessesSection from "./Sections/ProcessesSection";
 import {
   formatBandwidth,
   formatSpeed,
@@ -421,42 +425,10 @@ const ServerDetails: React.FC<Props> = ({ server, deviceId }) => {
             </RuxTableBody>
           </RuxTable>
         </RuxAccordionItem>
-        <RuxAccordionItem>
-          <div slot="prefix">
-            <RuxIcon icon="thermal" size="small"></RuxIcon>
-          </div>
-          <div slot="label">Temprature and Fan Speed</div>
-          <RuxTable>
-            <RuxTableHeader>
-              <RuxTableHeaderRow>
-                <RuxTableHeaderCell>CPU Tempratures</RuxTableHeaderCell>
-                <RuxTableHeaderCell>GPU Temperatures</RuxTableHeaderCell>
-                <RuxTableHeaderCell>Oper Status</RuxTableHeaderCell>
-                <RuxTableHeaderCell>Max Speed</RuxTableHeaderCell>
-                <RuxTableHeaderCell>Current Speed</RuxTableHeaderCell>
-                <RuxTableHeaderCell>MTU</RuxTableHeaderCell>
-                <RuxTableHeaderCell>MAC Address</RuxTableHeaderCell>
-              </RuxTableHeaderRow>
-            </RuxTableHeader>
-            <RuxTableBody>
-              {nics.map((nic, idx) => (
-                <RuxTableRow key={idx}>
-                  <RuxTableCell>{nic.index}</RuxTableCell>
-                  <RuxTableCell>{nic.administrative_status}</RuxTableCell>
-                  <RuxTableCell>{nic.operational_status}</RuxTableCell>
-                  <RuxTableCell>
-                    {formatBandwidth(nic.max_speed_bps)}
-                  </RuxTableCell>
-                  <RuxTableCell>
-                    {formatBandwidth(nic.current_speed_bps)}
-                  </RuxTableCell>
-                  <RuxTableCell>{nic.mtu}</RuxTableCell>
-                  <RuxTableCell>{nic.mac}</RuxTableCell>
-                </RuxTableRow>
-              ))}
-            </RuxTableBody>
-          </RuxTable>
-        </RuxAccordionItem>
+        <TemperatureFanSection server={server} />
+        <StorageSection server={server} />
+        <PeripheralsSection server={server} />
+        <ProcessesSection server={server} />
       </RuxAccordionItem>
     </RuxAccordion>
   );
