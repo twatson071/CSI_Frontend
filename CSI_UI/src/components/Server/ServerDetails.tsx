@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   RuxTable,
   RuxTableHeader,
@@ -13,6 +13,11 @@ import {
   RuxAccordionItem,
 } from "@astrouxds/react";
 import { ServerData } from "../../services/ServerService";
+import CPULineChart from "./Charts/CPULineChart";
+import GPULineChart from "./Charts/GPULineChart";
+import GPURamLineChart from "./Charts/GPURamLineChart";
+import RamLineChart from "./Charts/RamLineChart";
+import TemperatureLineChart from "./Charts/TempratureLineChart";
 import {
   formatBandwidth,
   formatSpeed,
@@ -25,6 +30,7 @@ interface Props {
 }
 
 const ServerDetails: React.FC<Props> = ({ server }) => {
+  const [view, setView] = useState<'table' | 'chart'>('table');
   const cpus = server.sensors?.cpus ? Object.values(server.sensors.cpus) : [];
   const nics = server.sensors?.nics ? Object.values(server.sensors.nics) : [];
   const ram = server.sensors?.ram;
@@ -47,10 +53,17 @@ const ServerDetails: React.FC<Props> = ({ server }) => {
               icon="list"
               className="view-toggle-button"
               aria-label="List View"
+              secondary={view !== 'table'}
+              onClick={() => setView('table')}
             ></RuxButton>
-            <RuxButton size="small" icon="show-chart"></RuxButton>
+            <RuxButton
+              size="small"
+              icon="show-chart"
+              secondary={view !== 'chart'}
+              onClick={() => setView('chart')}
+            ></RuxButton>
           </div>
-          {cpus.length > 0 && (
+          {view === 'table' && cpus.length > 0 && (
             <RuxTable>
               <RuxTableHeader>
                 <RuxTableHeaderRow>
@@ -78,7 +91,18 @@ const ServerDetails: React.FC<Props> = ({ server }) => {
               </RuxTableBody>
             </RuxTable>
           )}
-          {ram && <p>RAM Utilization: {ram.utilization_percent}%</p>}
+          {view === 'chart' && (
+            <>
+              <CPULineChart server={server} />
+              <GPULineChart server={server} />
+              <GPURamLineChart server={server} />
+              <RamLineChart server={server} />
+              <TemperatureLineChart server={server} />
+            </>
+          )}
+          {view === 'table' && ram && (
+            <p>RAM Utilization: {ram.utilization_percent}%</p>
+          )}
         </RuxAccordionItem>
         <RuxAccordionItem>
           <div slot="prefix">
