@@ -10,6 +10,8 @@ import {
 
 const app = new Hono();
 
+const FAKE_SERVER_URL = "mock/server";
+
 async function getDevice(c: Context) {
   const allDevices = await db.query.devices.findMany();
   return c.json(allDevices);
@@ -59,7 +61,9 @@ async function getServiceList(c: Context, method: "GET") {
       (serviceName: any) =>
         typeof serviceName === "string" && !usedUrlsSet.has(serviceName)
     );
-
+    if (!usedUrlsSet.has(FAKE_SERVER_URL)) {
+      availableServices.push(FAKE_SERVER_URL);
+    }
     return c.json(availableServices);
   } catch (error) {
     console.error("Error fetching or processing services:", error);
@@ -123,32 +127,51 @@ async function updateDevice(c: Context) {
 }
 
 export async function fetchExternalDeviceDetails(serviceUrl: string) {
-  const EXTERNAL_BASE_URL = process.env.EXTERNAL_BASE_URL;
-  const SYSTEM_OPERATOR_KEY = process.env.SYSTEM_OPERATOR_KEY;
-  const HUB_KEY = process.env.HUB_KEY;
+  let fullExternalUrl: string;
+  let fetchOptions: RequestInit = { method: "GET" };
 
-  if (!EXTERNAL_BASE_URL || !SYSTEM_OPERATOR_KEY || !HUB_KEY) {
-    console.error("External service URL or API key is not configured.");
-    throw new Error("External service configuration error.");
-  }
+  const APP_BASE_URL = `http://localhost:${process.env.PORT || 3000}`;
 
-  const fullExternalUrl = `${EXTERNAL_BASE_URL}/service/${serviceUrl}`;
+  if (serviceUrl === FAKE_SERVER_URL) {
+    fullExternalUrl = `${APP_BASE_URL}/${serviceUrl}`;
+    fetchOptions.headers = {
+      Accept: "application/json",
+    };
+  } else {
+    const EXTERNAL_BASE_URL = process.env.EXTERNAL_BASE_URL;
+    const SYSTEM_OPERATOR_KEY = process.env.SYSTEM_OPERATOR_KEY;
+    const HUB_KEY = process.env.HUB_KEY;
 
-  const response = await fetch(fullExternalUrl, {
-    method: "GET",
-    headers: {
+    if (!EXTERNAL_BASE_URL || !SYSTEM_OPERATOR_KEY || !HUB_KEY) {
+      console.error(
+        "External service URL or API key is not configured for non-mock service."
+      );
+      throw new Error(
+        "External service configuration error for non-mock service."
+      );
+    }
+    // The original logic prepends "/service/" to the serviceUrl for Maestro
+    fullExternalUrl = `${EXTERNAL_BASE_URL}/service/${serviceUrl}`;
+    fetchOptions.headers = {
       "X-API-Key-CSI-Maestro-SystemOperator": SYSTEM_OPERATOR_KEY,
       "X-API-Key-CSI-Maestro-Hub": HUB_KEY,
-    },
-  });
+      Accept: "application/json",
+    };
+  }
+
+  console.log(`Fetching details from: ${fullExternalUrl}`);
+
+  const response = await fetch(fullExternalUrl, fetchOptions);
 
   if (!response.ok) {
     const errorBody = await response.text();
     console.error(
-      `Failed to fetch details from external service ${fullExternalUrl}: ${response.status} ${response.statusText}`,
+      `Failed to fetch details from ${fullExternalUrl}: ${response.status} ${response.statusText}`,
       errorBody
     );
-    throw new Error(`External service request failed: ${response.statusText}`);
+    throw new Error(
+      `External service request failed: ${response.statusText} (url: ${fullExternalUrl})`
+    );
   }
 
   const externalData = await response.json(); // Fetch and parse JSON

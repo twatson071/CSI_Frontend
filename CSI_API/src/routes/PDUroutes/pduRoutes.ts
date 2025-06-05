@@ -1,8 +1,10 @@
 import { Hono, Context } from "hono";
 import "dotenv/config";
 import { db } from "../../db";
+import { metrics } from "../../db/schema";
 import { PduResponseSchema, CreatePduSchema } from "./pduValidationSchemas";
 import { z } from "zod";
+import { eq, and, desc } from "drizzle-orm";
 
 const app = new Hono();
 
@@ -93,5 +95,45 @@ async function fetchAllPdus(c: Context, method: "GET" | "POST") {
 }
 app.get("/:serviceUrl", (c) => fetchAllPdus(c, "GET"));
 app.post("/:serviceUrl", (c) => fetchAllPdus(c, "POST"));
+
+// New route to fetch metrics for a device
+app.get("/metrics/:deviceId", async (c) => {
+  const deviceId = parseInt(c.req.param("deviceId"), 10);
+  const metricType = c.req.query("metricType");
+  const limit = parseInt(c.req.query("limit") || "100", 10);
+
+  if (isNaN(deviceId)) {
+    return c.json({ error: "Invalid deviceId" }, 400);
+  }
+  if (!metricType) {
+    return c.json({ error: "Missing metricType query parameter" }, 400);
+  }
+
+  try {
+    const fetchedMetrics = await db
+      .select()
+      .from(metrics)
+      .where(
+        and(eq(metrics.deviceId, deviceId), eq(metrics.metricType, metricType))
+      )
+      .orderBy(desc(metrics.createdAt)) // Assuming 'createdAt' column for timestamp
+      .limit(limit);
+
+    // Format data for the chart
+    const chartData = fetchedMetrics
+      .map((metric) => ({
+        x: metric.createdAt
+          ? new Date(metric.createdAt).toISOString()
+          : new Date().toISOString(), // Ensure createdAt is present
+        y: metric.value,
+      }))
+      .reverse(); // Reverse to have time ascending for charts
+
+    return c.json(chartData);
+  } catch (error) {
+    console.error("Error fetching metrics:", error);
+    return c.json({ error: "Failed to fetch metrics" }, 500);
+  }
+});
 
 export default app;

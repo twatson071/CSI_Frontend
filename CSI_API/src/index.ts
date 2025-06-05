@@ -5,6 +5,7 @@ import pdu from "./routes/PDUroutes/pduRoutes";
 import sites from "./routes/sites/sitesRoutes";
 import devices from "./routes/devices/deviceRoutes";
 import mock from "./routes/mock/mockRoutes";
+import "./poller/pollDevices";
 
 const app = new Hono();
 app.use("*", cors({ origin: "*" })); // Enable CORS for all routes

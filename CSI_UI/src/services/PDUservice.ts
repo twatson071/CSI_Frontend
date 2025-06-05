@@ -70,3 +70,33 @@ export const toggleOutletPower = async (
     throw err;
   }
 };
+
+export interface DeviceMetricPoint {
+  x: string;
+  y: number;
+}
+
+export const fetchDeviceMetrics = async (
+  deviceId: number,
+  metricType: string,
+  limit: number = 100
+): Promise<DeviceMetricPoint[]> => {
+  try {
+    const response = await axios.get<DeviceMetricPoint[]>(
+      `${BASE_API_URL}/pdu/metrics/${deviceId}`,
+      {
+        params: {
+          metricType,
+          limit,
+        },
+      }
+    );
+    return response.data;
+  } catch (err) {
+    console.error(
+      `Error fetching metrics for device ${deviceId} (type: ${metricType}):`,
+      err
+    );
+    throw err;
+  }
+};

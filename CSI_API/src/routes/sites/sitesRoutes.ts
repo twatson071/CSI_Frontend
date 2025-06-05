@@ -85,11 +85,10 @@ async function fetchSitesWithDevices(c: Context) {
                     `Failed to parse JSON for device ${dev.id} from ${url}: ${textResponse}`,
                     parseError
                   );
-                  // externalData remains null
                 }
               }
 
-              let finalStatus = "unavailable";
+              let finalStatus = dev.status || "offline"; // Default to offline if no status
               let dataToStore = externalData;
               let parametersToStore = null;
               let ipAddressToStore = null;
@@ -325,8 +324,8 @@ async function fetchDevicesForSite(c: Context) {
             serviceUrl: dev.serviceUrl ?? "",
             status:
               res.ok && externalData !== null
-                ? dev.status ?? "normal"
-                : "unavailable",
+                ? externalData.status || dev.status || "online"
+                : "critical", // Default to critical if fetch fails
             data: externalData,
           };
         } catch (fetchError) {

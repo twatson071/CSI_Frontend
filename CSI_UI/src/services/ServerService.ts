@@ -11,13 +11,34 @@ export interface ServerData {
     make?: string;
   };
   sensors?: {
-    cpus?: Record<string, { utilization_percent?: number }>;
+    cpus?: Record<
+      string,
+      {
+        id?: string;
+        utilization_percent?: number;
+        current_rate_hz?: number;
+        max_rate_Hz?: number;
+        temperature_c?: number;
+      }
+    >;
     drives?: Record<string, { utilization_percent?: number }>;
     ram?: {
       utilization_percent?: string;
       total_bytes?: string;
       cached_bytes?: string;
     };
+    nics?: Record<
+      string,
+      {
+        mtu?: number;
+        mac?: string;
+        index?: number;
+        administrative_status?: string;
+        operational_status?: string;
+        max_speed_bps?: number;
+        current_speed_bps?: number;
+      }
+    >;
   };
   parameters?: Record<string, unknown>;
 }
