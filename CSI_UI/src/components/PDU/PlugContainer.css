@@ -20,6 +20,12 @@
     align-items: center;
     gap: 5px;
     cursor: pointer; /* Indicate clickable element */
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.plug-item:hover {
+    outline: 1px dashed var(--color-background-surface-hover, #888);
 }
 
 .plug-label {

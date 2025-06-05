@@ -1,5 +1,11 @@
 import React from "react";
-import { RuxMonitoringIcon } from "@astrouxds/react";
+import {
+  RuxMonitoringIcon,
+  RuxPopUp,
+  RuxMenu,
+  RuxMenuItem,
+} from "@astrouxds/react";
+import { OutletAction } from "../../services/PDUservice";
 import "./PlugContainer.css";
 
 export interface Outlet {
@@ -10,12 +16,12 @@ export interface Outlet {
 
 interface PlugContainerProps {
   outlets: Record<string, Outlet>;
-  onToggleOutlet: (outletId: string, currentState: string | undefined) => void;
+  onOutletAction: (outletId: string, action: OutletAction) => void;
 }
 
 const PlugContainer: React.FC<PlugContainerProps> = ({
   outlets = {},
-  onToggleOutlet,
+  onOutletAction,
 }) => {
   const getIconStatus = (
     outletState: string | undefined
@@ -71,13 +77,41 @@ const PlugContainer: React.FC<PlugContainerProps> = ({
       <div className="plug-row">
         {Object.entries(outlets).map(([outletId, outletData]) => (
           <div key={outletId} className="plug-item">
-            <RuxMonitoringIcon
-              status={getIconStatus(outletData.state)}
-              icon="power"
-              label={outletData.name || `Outlet ${outletId}`}
-              onClick={() => onToggleOutlet(outletId, outletData.state)}
-              title={`Toggle ${outletData.name || `Outlet ${outletId}`}`}
-            />
+            <RuxPopUp placement="bottom" closeOnSelect>
+              <RuxMonitoringIcon
+                status={getIconStatus(outletData.state)}
+                icon="power"
+                label={outletData.name || `Outlet ${outletId}`}
+                slot="trigger"
+                title={`Control ${outletData.name || `Outlet ${outletId}`}`}
+              />
+              <RuxMenu
+                onRuxmenuselected={(e) => {
+                  const val = e.detail.value as string;
+                  let action: OutletAction | null = null;
+                  if (val === "on") action = "POWER_ON";
+                  else if (val === "off") action = "POWER_OFF";
+                  else if (val === "reboot") action = "REBOOT";
+                  if (action) {
+                    if (
+                      action === "POWER_OFF" &&
+                      !window.confirm(
+                        `Are you sure you want to power off ${
+                          outletData.name || `Outlet ${outletId}`
+                        }?`
+                      )
+                    ) {
+                      return;
+                    }
+                    onOutletAction(outletId, action);
+                  }
+                }}
+              >
+                <RuxMenuItem value="on">Power On</RuxMenuItem>
+                <RuxMenuItem value="off">Power Off</RuxMenuItem>
+                <RuxMenuItem value="reboot">Reboot</RuxMenuItem>
+              </RuxMenu>
+            </RuxPopUp>
             <span className="plug-label">
               {getStatusLabel(outletData.state)}
             </span>
