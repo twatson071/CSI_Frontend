@@ -32,13 +32,29 @@ interface Props {
 
 const ServerDetails: React.FC<Props> = ({ server }) => {
   const [view, setView] = useState<"table" | "chart">("table");
-  const cpus = server.sensors?.cpus ? Object.values(server.sensors.cpus) : [];
-  const nics = server.sensors?.nics ? Object.values(server.sensors.nics) : [];
-  const ram = server.sensors?.ram;
-  const gpus = server.sensors?.gpus ? Object.values(server.sensors.gpus) : [];
-  const drives = server.sensors?.drives
-    ? Object.values(server.sensors.drives)
-    : [];
+
+  // Memoize calculations to ensure they update when server data changes
+  const cpus = React.useMemo(
+    () => (server.sensors?.cpus ? Object.values(server.sensors.cpus) : []),
+    [server.sensors?.cpus]
+  );
+
+  const nics = React.useMemo(
+    () => (server.sensors?.nics ? Object.values(server.sensors.nics) : []),
+    [server.sensors?.nics]
+  );
+
+  const ram = React.useMemo(() => server.sensors?.ram, [server.sensors?.ram]);
+
+  const gpus = React.useMemo(
+    () => (server.sensors?.gpus ? Object.values(server.sensors.gpus) : []),
+    [server.sensors?.gpus]
+  );
+
+  const drives = React.useMemo(
+    () => (server.sensors?.drives ? Object.values(server.sensors.drives) : []),
+    [server.sensors?.drives]
+  );
 
   const [loadData, setLoadData] = useState<number[]>([]);
   const [memoryData, setMemoryData] = useState<number[]>([]);
@@ -47,31 +63,48 @@ const ServerDetails: React.FC<Props> = ({ server }) => {
   const [cpuTempData, setCpuTempData] = useState<number[]>([]);
   const [gpuTempData, setGpuTempData] = useState<number[]>([]);
 
-  const avgCpuUtilization =
-    cpus.length > 0
-      ? cpus.reduce((sum, cpu) => sum + (cpu.utilization_percent || 0), 0) /
-        cpus.length
-      : 0;
+  // Memoize calculated values to ensure they update
+  const avgCpuUtilization = React.useMemo(
+    () =>
+      cpus.length > 0
+        ? cpus.reduce((sum, cpu) => sum + (cpu.utilization_percent || 0), 0) /
+          cpus.length
+        : 0,
+    [cpus]
+  );
 
-  const avgDriveUtilization =
-    drives.length > 0
-      ? drives.reduce((sum, drive) => sum + (drive.utilization_percent || 0), 0) /
-        drives.length
-      : 0;
+  const avgDriveUtilization = React.useMemo(
+    () =>
+      drives.length > 0
+        ? drives.reduce(
+            (sum, drive) => sum + (drive.utilization_percent || 0),
+            0
+          ) / drives.length
+        : 0,
+    [drives]
+  );
 
-  const avgCpuTemp =
-    cpus.length > 0
-      ? cpus.reduce((sum, cpu) => sum + (cpu.temperature_c || 0), 0) / cpus.length
-      : 0;
+  const avgCpuTemp = React.useMemo(
+    () =>
+      cpus.length > 0
+        ? cpus.reduce((sum, cpu) => sum + (cpu.temperature_c || 0), 0) /
+          cpus.length
+        : 0,
+    [cpus]
+  );
 
-  const avgGpuTemp =
-    gpus.length > 0
-      ? gpus.reduce((sum, gpu) => sum + (gpu.temperature_c || 0), 0) / gpus.length
-      : 0;
+  const avgGpuTemp = React.useMemo(
+    () =>
+      gpus.length > 0
+        ? gpus.reduce((sum, gpu) => sum + (gpu.temperature_c || 0), 0) /
+          gpus.length
+        : 0,
+    [gpus]
+  );
 
-  const totalNetworkBytes = nics.reduce(
-    (sum, nic) => sum + (nic.current_speed_bps || 0),
-    0
+  const totalNetworkBytes = React.useMemo(
+    () => nics.reduce((sum, nic) => sum + (nic.current_speed_bps || 0), 0),
+    [nics]
   );
 
   useEffect(() => {
@@ -115,7 +148,7 @@ const ServerDetails: React.FC<Props> = ({ server }) => {
           <MetricCard
             title="Memory"
             value={ram ? Number(ram.utilization_percent || 0).toFixed(1) : "0"}
-            unit="GB"
+            unit="%"
             color="#e76f51"
             data={memoryData}
             icon="memory"

@@ -10,25 +10,10 @@ async function pollDevicesAndStore() {
     try {
       const externalData = await fetchExternalDeviceDetails(device.serviceUrl);
 
-      console.log(
-        `Polling device ID ${device.id} (${device.name}), type: ${device.type}`
-      );
-
-      // Store metrics (example for PDU)
       if (device.type === "PDU") {
-        console.log(`Device ${device.id} is PDU. Checking for sensor data.`);
         if (externalData && externalData.sensors) {
-          console.log(
-            `Sensor data for PDU ${device.id}:`,
-            externalData.sensors
-          );
           const wattsValue = externalData.sensors.total_draw_w;
           const ampsValue = externalData.sensors.total_draw_a;
-
-          console.log(
-            `Raw PDU metrics - Watts: ${wattsValue}, Amps: ${ampsValue}`
-          );
-
           if (wattsValue !== undefined) {
             await db.insert(metrics).values({
               deviceId: device.id,
@@ -36,11 +21,6 @@ async function pollDevicesAndStore() {
               value: Number(wattsValue) || 0,
               createdAt: new Date().toISOString(),
             });
-            console.log(
-              `Stored watts metric for PDU ${device.id}: ${
-                Number(wattsValue) || 0
-              }`
-            );
           } else {
             console.log(
               `Watts data (total_draw_w) missing for PDU ${device.id}`
@@ -54,11 +34,6 @@ async function pollDevicesAndStore() {
               value: Number(ampsValue) || 0,
               createdAt: new Date().toISOString(),
             });
-            console.log(
-              `Stored amps metric for PDU ${device.id}: ${
-                Number(ampsValue) || 0
-              }`
-            );
           } else {
             console.log(
               `Amps data (total_draw_a) missing for PDU ${device.id}`
@@ -71,23 +46,50 @@ async function pollDevicesAndStore() {
           );
         }
       }
-
-      // Generate alerts if status changed or error detected
+      if (device.type === "Server") {
+        if (externalData && externalData.sensors) {
+          const cpuSensors = externalData.sensors.cpus;
+          if (cpuSensors) {
+            for (const cpuId in cpuSensors) {
+              const cpu = cpuSensors[cpuId];
+              if (cpu.utilization_percent !== undefined) {
+                await db.insert(metrics).values({
+                  deviceId: device.id,
+                  metricType: "cpu_utilization",
+                  value: Number(cpu.utilization_percent) || 0,
+                  createdAt: new Date().toISOString(),
+                });
+              } else {
+                console.log(
+                  `CPU utilization data missing for Server ${device.id} CPU ${cpuId}`
+                );
+              }
+            }
+          } else {
+            console.log(
+              `CPU sensors data missing for Server ${device.id}. External data:`,
+              externalData
+            );
+          }
+        } else {
+          console.log(
+            `Sensor data missing in externalData for Server ${device.id}. External data:`,
+            externalData
+          );
+        }
+      }
       if (
         externalData &&
         externalData.status &&
         device.status !== externalData.status
       ) {
-        console.log(
-          `Status change for device ${device.id}: ${device.status} -> ${externalData.status}`
-        );
         await db.insert(alerts).values({
           type: "status_change",
           message: `Device ${device.name} status changed from ${device.status} to ${externalData.status}`,
           severity: "caution",
           deviceId: device.id,
           siteId: device.siteId,
-          createdAt: new Date(), // Explicitly set createdAt
+          createdAt: new Date(),
         });
       } else if (externalData && !externalData.status) {
         console.log(
@@ -101,9 +103,6 @@ async function pollDevicesAndStore() {
           .update(devices)
           .set({ status: externalData.status, updatedAt: new Date() }) // Also update timestamp
           .where(eq(devices.id, device.id));
-        console.log(
-          `Updated status for device ${device.id} to ${externalData.status}`
-        );
       }
     } catch (err) {
       console.error(`Error polling device ${device.id} (${device.name}):`, err);

@@ -105,14 +105,14 @@ async function fetchSitesWithDevices(c: Context) {
                   } else if (externalData.parameters?.ready === "READY") {
                     finalStatus = "normal";
                   } else {
-                    finalStatus = "online";
+                    finalStatus = "READY";
                   }
                 } else {
                   // For other device types
                   parametersToStore = externalData.parameters || {};
                   dataToStore = externalData.data || externalData;
                   ipAddressToStore = externalData.ipAddress || null;
-                  finalStatus = externalData.status || dev.status || "online";
+                  finalStatus = externalData.status || dev.status || "READY";
                 }
 
                 // Update the database
@@ -324,7 +324,7 @@ async function fetchDevicesForSite(c: Context) {
             serviceUrl: dev.serviceUrl ?? "",
             status:
               res.ok && externalData !== null
-                ? externalData.status || dev.status || "online"
+                ? externalData.status || dev.status || "READY"
                 : "critical", // Default to critical if fetch fails
             data: externalData,
           };

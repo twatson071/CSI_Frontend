@@ -187,7 +187,7 @@ export async function fetchExternalDeviceDetails(serviceUrl: string) {
         let dbParameters: any = {};
         let dbDataField: any = {};
         let dbIpAddress: string | null = existingDevice.ipAddress; // Default to existing
-        let dbStatus: string = existingDevice.status || "online"; // Default to existing
+        let dbStatus: string = existingDevice.status || "READY"; // Default to existing
 
         const deviceType = existingDevice.type; // Use the type of the existing device
 
@@ -203,14 +203,14 @@ export async function fetchExternalDeviceDetails(serviceUrl: string) {
             dbStatus = "normal";
           } else {
             // Keep existing status if no new status info from external data
-            dbStatus = existingDevice.status || "online";
+            dbStatus = existingDevice.status || "READY";
           }
         } else {
           // Generic handling for other device types
           dbParameters = externalData.parameters || {};
           dbDataField = externalData.data || externalData;
           dbIpAddress = externalData.ipAddress || existingDevice.ipAddress;
-          dbStatus = externalData.status || existingDevice.status || "online";
+          dbStatus = externalData.status || existingDevice.status || "READY";
         }
 
         const dataToUpdate: Partial<typeof devices.$inferInsert> = {
@@ -266,7 +266,7 @@ async function createDevice(c: Context) {
     let dbParameters: any = {};
     let dbData: any = {};
     let dbIpAddress: string | null = null;
-    let dbStatus: string = "online";
+    let dbStatus: string = "READY";
 
     if (type === "PDU") {
       dbParameters = externalDetails.parameters || {};
@@ -279,14 +279,14 @@ async function createDevice(c: Context) {
       } else if (externalDetails.parameters?.ready === "READY") {
         dbStatus = "normal";
       } else {
-        dbStatus = "online"; // Fallback
+        dbStatus = "READY"; // Fallback
       }
     } else {
       dbParameters = externalDetails.parameters || {};
 
       dbData = externalDetails.data || externalDetails;
       dbIpAddress = externalDetails.ipAddress || null;
-      dbStatus = externalDetails.status || "online";
+      dbStatus = externalDetails.status || "READY";
     }
 
     const deviceToInsert = {

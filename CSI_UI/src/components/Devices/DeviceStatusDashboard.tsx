@@ -83,10 +83,15 @@ const DeviceStatusDashboard: React.FC = () => {
     ? statusData.devices.filter((device) => device.type === selectedType)
     : statusData.devices;
 
+  const mapStatus = (status: string | undefined): string => {
+    if (!status) return "unknown";
+    return status.toLowerCase() === "online" ? "normal" : status;
+  };
+
   const calculateHealthPercentage = () => {
     if (statusData.devices.length === 0) return 100;
 
-    const healthyStatuses = ["normal", "online", "standby"];
+    const healthyStatuses = ["normal", "ready", "online", "standby"];
     const healthyDevices = statusData.devices.filter((device) =>
       healthyStatuses.includes(device.status?.toLowerCase() || "")
     ).length;
@@ -190,7 +195,7 @@ const DeviceStatusDashboard: React.FC = () => {
                   {filteredDevices.map((device, index) => (
                     <RuxTableRow key={device.id || index}>
                       <RuxTableCell>
-                        <RuxStatus status={device.status} />
+                        <RuxStatus status={mapStatus(device.status)} />
                       </RuxTableCell>
                       <RuxTableCell>{device.name}</RuxTableCell>
                       <RuxTableCell>{device.type}</RuxTableCell>
@@ -224,7 +229,7 @@ const DeviceStatusDashboard: React.FC = () => {
             {filteredDevices.map((device) => (
               <RuxContainer key={device.id} className="device-card">
                 <div slot="header">
-                  <RuxStatus status={device.status} /> {device.name}
+                  <RuxStatus status={mapStatus(device.status)} /> {device.name}
                 </div>
                 <div className="device-card-content">
                   <div className="device-type">{device.type}</div>

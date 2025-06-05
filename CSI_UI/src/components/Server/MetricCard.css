@@ -4,7 +4,7 @@
   opacity: 0.7;
   min-width: 200px;
   position: relative;
-  box-shadow: #232020 0px 0px 30px 0px;
+  box-shadow: #232020 0px 0px 15px 0px;
 }
 
 .metric-card-header {
