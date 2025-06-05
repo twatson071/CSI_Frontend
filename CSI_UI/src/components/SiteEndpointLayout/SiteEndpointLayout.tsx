@@ -12,7 +12,11 @@ import {
   SiteWithOptionalDevices,
   SiteCreateData,
 } from "../../services/SiteService";
-import { PDUData, toggleOutletPower } from "../../services/PDUservice";
+import {
+  PDUData,
+  toggleOutletPower,
+  OutletAction,
+} from "../../services/PDUservice";
 import { Device } from "../../services/DeviceService";
 import "./SiteEndpointLayout.css";
 import { RuxContainer, RuxButton } from "@astrouxds/react";
@@ -319,7 +323,10 @@ const SiteEndpointLayout: React.FC = () => {
   const selectedDeviceObject =
     selectedSiteObject?.devices?.[selectedDevIdx] || null;
 
-  const handleTogglePower = async (outletIndex: number) => {
+  const handleOutletAction = async (
+    outletIndex: number,
+    action: OutletAction
+  ) => {
     if (
       !selectedSiteObject ||
       !selectedDeviceObject ||
@@ -341,9 +348,6 @@ const SiteEndpointLayout: React.FC = () => {
       return;
     }
 
-    const currentStatus = currentOutlet.state;
-    const newStatus = currentStatus === "POWER_ON" ? "POWER_OFF" : "POWER_ON";
-
     const deviceArg: Device = {
       id: selectedDeviceObject.deviceId,
       name: selectedDeviceObject.name,
@@ -357,9 +361,9 @@ const SiteEndpointLayout: React.FC = () => {
     };
 
     try {
-      await toggleOutletPower(deviceArg, outletKey, newStatus);
+      await toggleOutletPower(deviceArg, outletKey, action);
 
-      await refreshSelectedDeviceData(500);
+      await refreshSelectedDeviceData(action === "REBOOT" ? 1000 : 500);
     } catch (error) {
       console.error("Failed to toggle power:", error);
       await refreshSelectedDeviceData();
@@ -461,7 +465,7 @@ const SiteEndpointLayout: React.FC = () => {
           selectedDevice={selectedDeviceObject}
           pduData={pduData}
           statuses={statuses}
-          handleTogglePower={handleTogglePower}
+          handleOutletAction={handleOutletAction}
           setShowAddDeviceForm={toggleAddDeviceForm}
           isDeviceFormVisible={showAddDeviceForm}
           isLoadingDevices={isLoadingDevices}

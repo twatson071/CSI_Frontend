@@ -32,10 +32,12 @@ export const fetchPDUData = async (): Promise<PDUData[]> => {
   return response.data;
 };
 
+export type OutletAction = "POWER_ON" | "POWER_OFF" | "REBOOT";
+
 export const toggleOutletPower = async (
   device: Device,
   outletId: number | string,
-  powerState: "POWER_ON" | "POWER_OFF"
+  powerState: OutletAction
 ): Promise<PduCommandResponseItem[]> => {
   if (device.type !== PDU_DEVICE_TYPE_IDENTIFIER) {
     const errorMessage = `Device '${device.name}' (type: ${device.type}) is not a recognized PDU device. Cannot toggle outlet power. Expected type '${PDU_DEVICE_TYPE_IDENTIFIER}'.`;

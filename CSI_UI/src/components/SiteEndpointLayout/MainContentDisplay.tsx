@@ -4,7 +4,7 @@ import {
   RuxButton,
   RuxIndeterminateProgress,
 } from "@astrouxds/react";
-import { PDUData } from "../../services/PDUservice";
+import { PDUData, OutletAction } from "../../services/PDUservice";
 import {
   SiteWithOptionalDevices,
   DeviceResponse as IDeviceResponse,
@@ -22,7 +22,7 @@ interface MainContentDisplayProps {
   selectedDevice?: IDeviceResponse | null;
   pduData: PDUData | null;
   statuses: string[];
-  handleTogglePower: (outletIndex: number) => void;
+  handleOutletAction: (outletIndex: number, action: OutletAction) => void;
   setShowAddDeviceForm: (show: boolean) => void;
   isDeviceFormVisible: boolean;
   isLoadingDevices?: boolean;
@@ -36,7 +36,7 @@ const MainContentDisplay: React.FC<MainContentDisplayProps> = ({
   selectedDevice,
   pduData,
   statuses,
-  handleTogglePower,
+  handleOutletAction,
   setShowAddDeviceForm,
   isDeviceFormVisible,
   isLoadingDevices,
@@ -124,15 +124,15 @@ const MainContentDisplay: React.FC<MainContentDisplayProps> = ({
     {}
   );
 
-  const handleOutletToggleWrapper = (
+  const handleOutletActionWrapper = (
     outletId: string,
-    currentState: string | undefined
+    action: OutletAction
   ) => {
     const outletIndex = parseInt(outletId, 10) - 1;
     if (!isNaN(outletIndex) && outletIndex >= 0) {
-      handleTogglePower(outletIndex);
+      handleOutletAction(outletIndex, action);
     } else {
-      console.error("Invalid outletId passed to toggle handler:", outletId);
+      console.error("Invalid outletId passed to action handler:", outletId);
     }
   };
 
@@ -146,7 +146,7 @@ const MainContentDisplay: React.FC<MainContentDisplayProps> = ({
             <div className="pdu-container">
               <PlugContainer
                 outlets={outletsForPlugContainer}
-                onToggleOutlet={handleOutletToggleWrapper}
+                onOutletAction={handleOutletActionWrapper}
               />
               <LoadHistoryChart
                 wattsData={wattsData}
