@@ -14,7 +14,7 @@ import {
 } from "@astrouxds/react";
 import { ServerData } from "../../services/ServerService";
 import { fetchDeviceMetrics } from "../../services/DeviceService";
-import CPULineChart from "./Charts/CPULineChart";
+import CPUPerCoreGrid from "./Charts/CPUPerCoreGrid";
 import GPULineChart from "./Charts/GPULineChart";
 import GPURamLineChart from "./Charts/GPURamLineChart";
 import RamLineChart from "./Charts/RamLineChart";
@@ -374,7 +374,7 @@ const ServerDetails: React.FC<Props> = ({ server, deviceId }) => {
           )}
           {view === "chart" && (
             <>
-              <CPULineChart server={server} />
+              <CPUPerCoreGrid server={server} />
               <GPULineChart server={server} />
               <GPURamLineChart server={server} />
               <RamLineChart server={server} />
