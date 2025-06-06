@@ -5,6 +5,7 @@ import {
   RuxMenu,
   RuxMenuItem,
   RuxDialog,
+  RuxIcon,
 } from "@astrouxds/react";
 import { RuxDialogCustomEvent } from "@astrouxds/astro-web-components";
 import { OutletAction } from "../../services/PDUservice";
@@ -108,52 +109,96 @@ const PlugContainer: React.FC<PlugContainerProps> = ({
     });
   };
 
-  return (
-    <div className="plug-container">
-      <div className="plug-row">
-        {Object.entries(outlets).map(([outletId, outletData]) => (
-          <div key={outletId} className="plug-item">
-            <RuxPopUp placement="bottom" closeOnSelect={false}>
-              <RuxMonitoringIcon
-                status={getIconStatus(outletData.state)}
-                icon="power"
-                label={outletData.name || `Outlet ${outletId}`}
-                slot="trigger"
-                title={`Control ${outletData.name || `Outlet ${outletId}`}`}
-              />
-              <RuxMenu
-                onRuxmenuselected={(e) => {
-                  const val = e.detail.value as string;
-                  let action: OutletAction | null = null;
-                  if (val === "on") action = "POWER_ON";
-                  else if (val === "off") action = "POWER_OFF";
-                  else if (val === "reboot") action = "REBOOT";
+  const handlePowerAction = (
+    outletId: string,
+    action: OutletAction,
+    outletName: string
+  ) => {
+    setDialogState({
+      isOpen: true,
+      outletId,
+      action,
+      outletName,
+    });
+    if (dialogRef.current) {
+      dialogRef.current.open = true;
+    }
+  };
 
-                  if (action) {
-                    if (action === "POWER_OFF" || action === "REBOOT") {
-                      setDialogState({
-                        isOpen: true,
-                        outletId,
-                        action,
-                        outletName: outletData.name || `Outlet ${outletId}`,
-                      });
-                      if (dialogRef.current) {
-                        dialogRef.current.open = true;
-                      }
-                    } else {
-                      onOutletAction(outletId, action);
-                    }
+  return (
+    <div className="plug-container-enhanced">
+      <div className="outlets-grid">
+        {Object.entries(outlets).map(([outletId, outletData]) => (
+          <div
+            key={outletId}
+            className={`outlet-card ${getIconStatus(outletData.state)}`}
+          >
+            {/* Status indicator with color coding */}
+            <div className="outlet-header">
+              <div className="status-indicator">
+                <RuxMonitoringIcon
+                  status={getIconStatus(outletData.state)}
+                  icon="power"
+                  size="large"
+                />
+                <span className="status-badge">
+                  {getStatusLabel(outletData.state)}
+                </span>
+              </div>
+              <span className="outlet-name">
+                {outletData.name || `Outlet ${outletId}`}
+              </span>
+            </div>
+
+            {/* Improved controls */}
+            <div className="outlet-controls">
+              {/* Primary power toggle */}
+              <div className="power-control">
+                <button
+                  className={`power-toggle ${
+                    outletData.state === "on" ? "on" : "off"
+                  }`}
+                  onClick={() =>
+                    outletData.state === "on"
+                      ? handlePowerAction(
+                          outletId,
+                          "POWER_OFF",
+                          outletData.name
+                        )
+                      : onOutletAction(outletId, "POWER_ON")
                   }
-                }}
-              >
-                <RuxMenuItem value="on">Power On</RuxMenuItem>
-                <RuxMenuItem value="off">Power Off</RuxMenuItem>
-                <RuxMenuItem value="reboot">Reboot</RuxMenuItem>
-              </RuxMenu>
-            </RuxPopUp>
-            <span className="plug-label">
-              {getStatusLabel(outletData.state)}
-            </span>
+                  aria-label={`Toggle power for ${
+                    outletData.name || `Outlet ${outletId}`
+                  }`}
+                >
+                  <RuxIcon
+                    icon={outletData.state === "on" ? "power" : "power-off"}
+                    size="medium"
+                  />
+                  <span>{outletData.state === "on" ? "ON" : "OFF"}</span>
+                </button>
+              </div>
+
+              {/* Secondary actions - only show when outlet is on */}
+              {outletData.state === "on" && (
+                <div className="secondary-actions">
+                  <button
+                    className="action-btn reboot"
+                    onClick={() =>
+                      handlePowerAction(outletId, "REBOOT", outletData.name)
+                    }
+                    title="Reboot outlet"
+                  >
+                    <RuxIcon icon="refresh" size="small" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Power consumption or additional info */}
+            <div className="outlet-info">
+              <small>Load: {outletData.load || "N/A"}</small>
+            </div>
           </div>
         ))}
       </div>
