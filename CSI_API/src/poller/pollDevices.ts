@@ -58,17 +58,35 @@ async function pollDevicesAndStore() {
 
             for (const cpuId in cpus) {
               const cpu = cpus[cpuId];
+
+              // Store per-core CPU utilization
               if (cpu.utilization_percent !== undefined) {
+                await db.insert(metrics).values({
+                  deviceId: device.id,
+                  metricType: `cpu_utilization_core_${cpuId}`,
+                  value: Number(cpu.utilization_percent) || 0,
+                  createdAt: new Date().toISOString(),
+                });
+
                 totalCpuUtilization += Number(cpu.utilization_percent) || 0;
                 cpuCount++;
               }
+
+              // Store per-core CPU temperature
               if (cpu.temperature_c !== undefined) {
+                await db.insert(metrics).values({
+                  deviceId: device.id,
+                  metricType: `cpu_temperature_core_${cpuId}`,
+                  value: Number(cpu.temperature_c) || 0,
+                  createdAt: new Date().toISOString(),
+                });
+
                 totalCpuTemp += Number(cpu.temperature_c) || 0;
               }
             }
 
             if (cpuCount > 0) {
-              // Store average CPU utilization
+              // Store average CPU utilization (keep for backward compatibility)
               await db.insert(metrics).values({
                 deviceId: device.id,
                 metricType: "cpu_utilization",
@@ -76,7 +94,7 @@ async function pollDevicesAndStore() {
                 createdAt: new Date().toISOString(),
               });
 
-              // Store average CPU temperature
+              // Store average CPU temperature (keep for backward compatibility)
               await db.insert(metrics).values({
                 deviceId: device.id,
                 metricType: "cpu_temperature",

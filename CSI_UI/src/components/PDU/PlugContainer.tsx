@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   RuxMonitoringIcon,
   RuxPopUp,
   RuxMenu,
   RuxMenuItem,
+  RuxDialog,
 } from "@astrouxds/react";
 import { OutletAction } from "../../services/PDUservice";
 import "./PlugContainer.css";
@@ -23,6 +24,18 @@ const PlugContainer: React.FC<PlugContainerProps> = ({
   outlets = {},
   onOutletAction,
 }) => {
+  const [dialogState, setDialogState] = useState<{
+    isOpen: boolean;
+    outletId: string;
+    action: OutletAction | null;
+    outletName: string;
+  }>({
+    isOpen: false,
+    outletId: "",
+    action: null,
+    outletName: "",
+  });
+
   const getIconStatus = (
     outletState: string | undefined
   ): "normal" | "off" | "standby" | "critical" | undefined => {
@@ -72,12 +85,33 @@ const PlugContainer: React.FC<PlugContainerProps> = ({
     return outletState.toUpperCase(); // Show other states as is
   };
 
+  const handleConfirmAction = () => {
+    if (dialogState.action && dialogState.outletId) {
+      onOutletAction(dialogState.outletId, dialogState.action);
+    }
+    setDialogState({
+      isOpen: false,
+      outletId: "",
+      action: null,
+      outletName: "",
+    });
+  };
+
+  const handleCancelAction = () => {
+    setDialogState({
+      isOpen: false,
+      outletId: "",
+      action: null,
+      outletName: "",
+    });
+  };
+
   return (
     <div className="plug-container">
       <div className="plug-row">
         {Object.entries(outlets).map(([outletId, outletData]) => (
           <div key={outletId} className="plug-item">
-            <RuxPopUp placement="bottom" closeOnSelect>
+            <RuxPopUp placement="bottom" closeOnSelect={false}>
               <RuxMonitoringIcon
                 status={getIconStatus(outletData.state)}
                 icon="power"
@@ -92,18 +126,18 @@ const PlugContainer: React.FC<PlugContainerProps> = ({
                   if (val === "on") action = "POWER_ON";
                   else if (val === "off") action = "POWER_OFF";
                   else if (val === "reboot") action = "REBOOT";
+
                   if (action) {
-                    if (
-                      action === "POWER_OFF" &&
-                      !window.confirm(
-                        `Are you sure you want to power off ${
-                          outletData.name || `Outlet ${outletId}`
-                        }?`
-                      )
-                    ) {
-                      return;
+                    if (action === "POWER_OFF" || action === "REBOOT") {
+                      setDialogState({
+                        isOpen: true,
+                        outletId,
+                        action,
+                        outletName: outletData.name || `Outlet ${outletId}`,
+                      });
+                    } else {
+                      onOutletAction(outletId, action);
                     }
-                    onOutletAction(outletId, action);
                   }
                 }}
               >
@@ -118,6 +152,25 @@ const PlugContainer: React.FC<PlugContainerProps> = ({
           </div>
         ))}
       </div>
+
+      {dialogState.isOpen && (
+        <RuxDialog
+          confirmText={`Yes, ${
+            dialogState.action === "POWER_OFF" ? "Power Off" : "Reboot"
+          }`}
+          denyText="Cancel"
+          message={`Are you sure you want to ${
+            dialogState.action === "POWER_OFF" ? "power off" : "reboot"
+          } "${dialogState.outletName}"?`}
+          onRuxdialogclosed={(e) => {
+            if (e.detail) {
+              handleConfirmAction();
+            } else {
+              handleCancelAction();
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

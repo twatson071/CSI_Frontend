@@ -378,7 +378,7 @@ const ServerDetails: React.FC<Props> = ({ server, deviceId }) => {
           )}
           {view === "chart" && (
             <>
-              <CPUPerCoreGrid server={server} />
+              <CPUPerCoreGrid server={server} deviceId={deviceId} />
               <GPULineChart server={server} />
               <GPURamLineChart server={server} />
               <RamLineChart server={server} />
