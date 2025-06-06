@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   RuxMonitoringIcon,
   RuxPopUp,
@@ -6,6 +6,7 @@ import {
   RuxMenuItem,
   RuxDialog,
 } from "@astrouxds/react";
+import { RuxDialogCustomEvent } from "@astrouxds/astro-web-components";
 import { OutletAction } from "../../services/PDUservice";
 import "./PlugContainer.css";
 
@@ -35,6 +36,7 @@ const PlugContainer: React.FC<PlugContainerProps> = ({
     action: null,
     outletName: "",
   });
+  const dialogRef = useRef<HTMLRuxDialogElement>(null);
 
   const getIconStatus = (
     outletState: string | undefined
@@ -135,6 +137,9 @@ const PlugContainer: React.FC<PlugContainerProps> = ({
                         action,
                         outletName: outletData.name || `Outlet ${outletId}`,
                       });
+                      if (dialogRef.current) {
+                        dialogRef.current.open = true;
+                      }
                     } else {
                       onOutletAction(outletId, action);
                     }
@@ -153,24 +158,24 @@ const PlugContainer: React.FC<PlugContainerProps> = ({
         ))}
       </div>
 
-      {dialogState.isOpen && (
-        <RuxDialog
-          confirmText={`Yes, ${
-            dialogState.action === "POWER_OFF" ? "Power Off" : "Reboot"
-          }`}
-          denyText="Cancel"
-          message={`Are you sure you want to ${
-            dialogState.action === "POWER_OFF" ? "power off" : "reboot"
-          } "${dialogState.outletName}"?`}
-          onRuxdialogclosed={(e) => {
-            if (e.detail) {
-              handleConfirmAction();
-            } else {
-              handleCancelAction();
-            }
-          }}
-        />
-      )}
+      <RuxDialog
+        ref={dialogRef}
+        open={dialogState.isOpen}
+        confirmText={`Yes, ${
+          dialogState.action === "POWER_OFF" ? "Power Off" : "Reboot"
+        }`}
+        denyText="Cancel"
+        message={`Are you sure you want to ${
+          dialogState.action === "POWER_OFF" ? "power off" : "reboot"
+        } "${dialogState.outletName}"?`}
+        onRuxdialogclosed={(e: RuxDialogCustomEvent<boolean | null>) => {
+          if (e.detail) {
+            handleConfirmAction();
+          } else {
+            handleCancelAction();
+          }
+        }}
+      />
     </div>
   );
 };
