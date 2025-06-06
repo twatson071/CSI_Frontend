@@ -1,11 +1,8 @@
 import React, { useState, useRef } from "react";
 import {
   RuxMonitoringIcon,
-  RuxPopUp,
-  RuxMenu,
-  RuxMenuItem,
   RuxDialog,
-  RuxIcon,
+  RuxButton,
 } from "@astrouxds/react";
 import { RuxDialogCustomEvent } from "@astrouxds/astro-web-components";
 import { OutletAction } from "../../services/PDUservice";
@@ -154,10 +151,10 @@ const PlugContainer: React.FC<PlugContainerProps> = ({
             <div className="outlet-controls">
               {/* Primary power toggle */}
               <div className="power-control">
-                <button
-                  className={`power-toggle ${
-                    outletData.state === "on" ? "on" : "off"
-                  }`}
+                <RuxButton
+                  className="power-toggle"
+                  size="small"
+                  icon={outletData.state === "on" ? "power" : "power-off"}
                   onClick={() =>
                     outletData.state === "on"
                       ? handlePowerAction(
@@ -170,27 +167,26 @@ const PlugContainer: React.FC<PlugContainerProps> = ({
                   aria-label={`Toggle power for ${
                     outletData.name || `Outlet ${outletId}`
                   }`}
+                  secondary={outletData.state !== "on"}
                 >
-                  <RuxIcon
-                    icon={outletData.state === "on" ? "power" : "power-off"}
-                    size="medium"
-                  />
-                  <span>{outletData.state === "on" ? "ON" : "OFF"}</span>
-                </button>
+                  {outletData.state === "on" ? "ON" : "OFF"}
+                </RuxButton>
               </div>
 
               {/* Secondary actions - only show when outlet is on */}
               {outletData.state === "on" && (
                 <div className="secondary-actions">
-                  <button
+                  <RuxButton
                     className="action-btn reboot"
+                    size="small"
+                    icon="refresh"
+                    iconOnly
+                    borderless
                     onClick={() =>
                       handlePowerAction(outletId, "REBOOT", outletData.name)
                     }
                     title="Reboot outlet"
-                  >
-                    <RuxIcon icon="refresh" size="small" />
-                  </button>
+                  />
                 </div>
               )}
             </div>
