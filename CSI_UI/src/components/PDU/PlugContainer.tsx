@@ -1,9 +1,5 @@
-import React, { useState, useRef } from "react";
-import {
-  RuxMonitoringIcon,
-  RuxDialog,
-  RuxButton,
-} from "@astrouxds/react";
+import React, { useState, useRef, useMemo } from "react";
+import { RuxMonitoringIcon, RuxDialog, RuxButton } from "@astrouxds/react";
 import { RuxDialogCustomEvent } from "@astrouxds/astro-web-components";
 import { OutletAction } from "../../services/PDUservice";
 import "./PlugContainer.css";
@@ -35,6 +31,37 @@ const PlugContainer: React.FC<PlugContainerProps> = ({
     outletName: "",
   });
   const dialogRef = useRef<HTMLRuxDialogElement>(null);
+
+  // Calculate optimal grid dimensions with preference for wider layouts
+  const gridDimensions = useMemo(() => {
+    const outletCount = Object.keys(outlets).length;
+
+    if (outletCount === 0) return { columns: 1, rows: 1 };
+    if (outletCount === 1) return { columns: 1, rows: 1 };
+
+    // For specific cases, force desired layouts
+    if (outletCount === 8) return { columns: 4, rows: 2 };
+    if (outletCount === 10) return { columns: 5, rows: 2 };
+    if (outletCount === 20) return { columns: 5, rows: 4 };
+
+    // General algorithm for other counts
+    const sqrt = Math.sqrt(outletCount);
+    let bestColumns = Math.ceil(sqrt);
+    let bestRows = Math.ceil(outletCount / bestColumns);
+
+    // Prefer wider layouts (more columns, fewer rows)
+    for (let cols = Math.ceil(sqrt); cols <= outletCount; cols++) {
+      const rows = Math.ceil(outletCount / cols);
+      if (rows <= bestRows) {
+        bestColumns = cols;
+        bestRows = rows;
+      }
+      // Stop when we get to very wide layouts
+      if (cols > outletCount / 2) break;
+    }
+
+    return { columns: bestColumns, rows: bestRows };
+  }, [outlets]);
 
   const getIconStatus = (
     outletState: string | undefined
@@ -111,6 +138,9 @@ const PlugContainer: React.FC<PlugContainerProps> = ({
     action: OutletAction,
     outletName: string
   ) => {
+    console.log(
+      `Requesting action "${action}" for outlet "${outletName}" (ID: ${outletId})`
+    );
     setDialogState({
       isOpen: true,
       outletId,
@@ -124,7 +154,13 @@ const PlugContainer: React.FC<PlugContainerProps> = ({
 
   return (
     <div className="plug-container-enhanced">
-      <div className="outlets-grid">
+      <div
+        className="outlets-grid"
+        style={{
+          gridTemplateColumns: `repeat(${gridDimensions.columns}, 1fr)`,
+          gridTemplateRows: `repeat(${gridDimensions.rows}, 1fr)`,
+        }}
+      >
         {Object.entries(outlets).map(([outletId, outletData]) => (
           <div
             key={outletId}
@@ -134,63 +170,65 @@ const PlugContainer: React.FC<PlugContainerProps> = ({
             <div className="outlet-header">
               <div className="status-indicator">
                 <RuxMonitoringIcon
+                  label={getStatusLabel(outletData.state)}
                   status={getIconStatus(outletData.state)}
                   icon="power"
                   size="large"
                 />
-                <span className="status-badge">
-                  {getStatusLabel(outletData.state)}
-                </span>
               </div>
               <span className="outlet-name">
                 {outletData.name || `Outlet ${outletId}`}
               </span>
             </div>
-
-            {/* Improved controls */}
             <div className="outlet-controls">
-              {/* Primary power toggle */}
               <div className="power-control">
                 <RuxButton
                   className="power-toggle"
                   size="small"
-                  icon={outletData.state === "on" ? "power" : "power-off"}
+                  icon={outletData.state === "normal" ? "power-off" : "power"}
                   onClick={() =>
-                    outletData.state === "on"
+                    outletData.state === "normal"
                       ? handlePowerAction(
                           outletId,
                           "POWER_OFF",
-                          outletData.name
+                          outletData.name || `Outlet ${outletId}`
                         )
                       : onOutletAction(outletId, "POWER_ON")
                   }
                   aria-label={`Toggle power for ${
                     outletData.name || `Outlet ${outletId}`
                   }`}
-                  secondary={outletData.state !== "on"}
+                  secondary={outletData.state !== "normal"}
                 >
-                  {outletData.state === "on" ? "ON" : "OFF"}
+                  {outletData.state === "normal" ? "TURN OFF" : "TURN ON"}
                 </RuxButton>
               </div>
 
-              {/* Secondary actions - only show when outlet is on */}
-              {outletData.state === "on" && (
+              {outletData.state === "normal" && (
                 <div className="secondary-actions">
                   <RuxButton
                     className="action-btn reboot"
                     size="small"
                     icon="refresh"
                     iconOnly
-                    borderless
+                    secondary
                     onClick={() =>
-                      handlePowerAction(outletId, "REBOOT", outletData.name)
+                      handlePowerAction(
+                        outletId,
+                        "REBOOT",
+                        outletData.name || `Outlet ${outletId}`
+                      )
                     }
                     title="Reboot outlet"
-                  />
+                    aria-label={`Reboot ${
+                      outletData.name || `Outlet ${outletId}`
+                    }`}
+                  >
+                    Reboot
+                  </RuxButton>
                 </div>
               )}
             </div>
-
             {/* Power consumption or additional info */}
             <div className="outlet-info">
               <small>Load: {outletData.load || "N/A"}</small>
@@ -206,6 +244,10 @@ const PlugContainer: React.FC<PlugContainerProps> = ({
           dialogState.action === "POWER_OFF" ? "Power Off" : "Reboot"
         }`}
         denyText="Cancel"
+        header={`${
+          dialogState.action === "POWER_OFF" ? "Power Off" : "Reboot"
+        } ?`}
+        className="outlet-dialog"
         message={`Are you sure you want to ${
           dialogState.action === "POWER_OFF" ? "power off" : "reboot"
         } "${dialogState.outletName}"?`}
