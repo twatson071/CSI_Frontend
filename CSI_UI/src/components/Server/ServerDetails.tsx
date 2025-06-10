@@ -19,6 +19,7 @@ import GPULineChart from "./Charts/GPULineChart";
 import GPURamLineChart from "./Charts/GPURamLineChart";
 import RamLineChart from "./Charts/RamLineChart";
 import TemperatureLineChart from "./Charts/TempratureLineChart";
+import CPUCoreTempHeatmap from "./Charts/CPUCoreTempHeatmap";
 import MetricCard from "./MetricCard";
 import TemperatureFanSection from "./Sections/TemperatureFanSection";
 import StorageSection from "./Sections/StorageSection";
@@ -379,6 +380,7 @@ const ServerDetails: React.FC<Props> = ({ server, deviceId }) => {
           {view === "chart" && (
             <>
               <CPUPerCoreGrid server={server} deviceId={deviceId} />
+              <CPUCoreTempHeatmap deviceId={deviceId} />
               <GPULineChart server={server} />
               <GPURamLineChart server={server} />
               <RamLineChart server={server} />
