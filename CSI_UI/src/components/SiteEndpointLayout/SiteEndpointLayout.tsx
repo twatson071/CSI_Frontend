@@ -11,6 +11,7 @@ import {
   fetchDevicesForSite,
   SiteWithOptionalDevices,
   SiteCreateData,
+  createSite,
 } from "../../services/SiteService";
 import {
   PDUData,
@@ -300,9 +301,16 @@ const SiteEndpointLayout: React.FC = () => {
   }, [selectedSiteIdx, selectedDevIdx, sites, updatePduDisplayCallback]);
 
   const handleSaveSite = async (newSiteData: SiteCreateData) => {
-    setShowAddSiteModal(false);
+    try {
+      // Call the service to actually create the site
+      await createSite(newSiteData);
+      setShowAddSiteModal(false);
+    } catch (error) {
+      console.error("Error creating site:", error);
+      return;
+    }
 
-    const summaries = await fetchSiteSummaries().interval(5000);
+    const summaries = await fetchSiteSummaries();
     const sitesWithEmptyDevices: SiteWithOptionalDevices[] = summaries.map(
       (summary) => ({ ...summary, devices: [], devicesLoaded: false })
     );
