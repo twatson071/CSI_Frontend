@@ -122,12 +122,14 @@ export const alerts = sqliteTable("alerts", {
   id: int().primaryKey({ autoIncrement: true }),
   type: text().notNull(),
   message: text().notNull(),
-  severity: text({ enum: ["INFO", "WARNING", "CRITICAL"] }).notNull(), // Fixed enum syntax
-  deviceId: int().references(() => devices.id), // Foreign key to devices table
-  siteId: int().references(() => sites.id), // Foreign key to sites table
+  severity: text({ enum: ["INFO", "WARNING", "CRITICAL"] }).notNull(),
+  deviceId: int().references(() => devices.id),
+  siteId: int().references(() => sites.id),
+  metricId: int().references(() => metrics.id), // Add reference to the metric that triggered this alert
+  thresholdId: int().references(() => metricThresholds.id), // Add reference to the threshold rule
   createdAt: text().default(sql`(current_timestamp)`),
   acknowledged: int().default(0),
-  acknowledgedBy: int().references(() => users.id), // Foreign key to users table
+  acknowledgedBy: int().references(() => users.id),
   acknowledgedAt: text(),
 });
 
@@ -144,6 +146,14 @@ export const alertsRelations = relations(alerts, ({ one }) => ({
     fields: [alerts.acknowledgedBy],
     references: [users.id],
     relationName: "acknowledgedBy",
+  }),
+  metric: one(metrics, {
+    fields: [alerts.metricId],
+    references: [metrics.id],
+  }),
+  threshold: one(metricThresholds, {
+    fields: [alerts.thresholdId],
+    references: [metricThresholds.id],
   }),
 }));
 
@@ -175,6 +185,7 @@ export const devicesRelations = relations(devices, ({ one, many }) => ({
   }),
   metrics: many(metrics),
   alerts: many(alerts),
+  thresholds: many(metricThresholds),
 }));
 
 // Metrics Table
@@ -186,17 +197,43 @@ export const metrics = sqliteTable("metrics", {
   createdAt: text().default(sql`(current_timestamp)`),
 });
 
-export const metricsRelations = relations(metrics, ({ one }) => ({
+export const metricsRelations = relations(metrics, ({ one, many }) => ({
   device: one(devices, {
     fields: [metrics.deviceId],
     references: [devices.id],
   }),
+  alerts: many(alerts),
 }));
+
+// Metric Thresholds Table
+export const metricThresholds = sqliteTable("metric_thresholds", {
+  id: int().primaryKey({ autoIncrement: true }),
+  deviceId: int().references(() => devices.id),
+  metricType: text().notNull(),
+  warningThreshold: real(),
+  criticalThreshold: real(),
+  operator: text({ enum: ["greater_than", "less_than", "equals"] })
+    .notNull()
+    .default("greater_than"),
+  isActive: int().default(1),
+  createdAt: text().default(sql`(current_timestamp)`),
+  updatedAt: text().default(sql`(current_timestamp)`),
+});
+
+export const metricThresholdsRelations = relations(
+  metricThresholds,
+  ({ one }) => ({
+    device: one(devices, {
+      fields: [metricThresholds.deviceId],
+      references: [devices.id],
+    }),
+  })
+);
 
 // User-Sites Join Table
 export const userSites = sqliteTable("user_sites", {
-  userId: int().references(() => users.id), // Foreign key to users table
-  siteId: int().references(() => sites.id), // Foreign key to sites table
+  userId: int().references(() => users.id),
+  siteId: int().references(() => sites.id),
 });
 
 export const userSitesRelations = relations(userSites, ({ one }) => ({

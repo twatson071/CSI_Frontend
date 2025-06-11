@@ -417,7 +417,7 @@ function generateMockServerData() {
       cpu.current_rate_hz = Math.floor(cpu.max_rate_Hz * utilizationDecimal);
 
       const baseTemp = 25;
-      const maxTempIncrease = 45;
+      const maxTempIncrease = 100;
       cpu.temperature_c = Number(
         (baseTemp + utilizationDecimal * maxTempIncrease).toFixed(1)
       );

@@ -17,9 +17,15 @@ interface Threshold {
   normal: number;
 }
 
+interface HeatmapDataPoint {
+  x: string | number;
+  y: number;
+  load?: number; // Add optional load property
+}
+
 interface HeatmapSeries {
   id: string | number;
-  data: Array<{ x: string | number; y: number }>;
+  data: HeatmapDataPoint[];
 }
 
 interface GenericHeatmapProps {
@@ -28,6 +34,11 @@ interface GenericHeatmapProps {
   higherIsBetter?: boolean;
   height?: string;
   width?: string;
+  margin?: { top: number; right: number; bottom: number; left: number };
+  labelTextColor?: string;
+  enableLabels?: boolean;
+  labelSkipWidth?: number;
+  labelSkipHeight?: number;
 }
 
 const STATUS_COLORS: Record<Status, string> = {
@@ -43,8 +54,13 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
   data,
   thresholds,
   higherIsBetter = false,
-  height = "300px",
-  width = "450px",
+  height = "400px",
+  width = "600px",
+  margin = { top: 40, right: 80, bottom: 80, left: 100 }, // Increased margins to prevent overlap
+  labelTextColor = "#000000",
+  enableLabels = false,
+  labelSkipWidth = 0,
+  labelSkipHeight = 0,
 }) => {
   const colorScale = useMemo(() => {
     if (!thresholds) {
@@ -82,6 +98,35 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
     return (value: number) => scale(value);
   }, [thresholds, higherIsBetter]);
 
+  // Create gradient definitions for SVG
+  const gradientId = useMemo(
+    () => `heatmap-gradient-${Math.random().toString(36).substr(2, 9)}`,
+    []
+  );
+
+  // Validate data before rendering
+  if (!data || data.length === 0) {
+    return (
+      <div
+        style={{
+          height,
+          width,
+          margin: "1rem 0",
+          padding: "1rem",
+          backgroundColor: "var(--color-background-surface-default)",
+          border: "1px solid var(--color-border-divider)",
+          borderRadius: "8px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#888",
+        }}
+      >
+        No data available
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
@@ -92,19 +137,231 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
         backgroundColor: "var(--color-background-surface-default)",
         border: "1px solid var(--color-border-divider)",
         borderRadius: "8px",
+        position: "relative",
       }}
     >
       <ResponsiveHeatMap
         data={data}
-        margin={{ top: 20, right: 20, bottom: 40, left: 60 }}
-        colors={(cell) => colorScale(cell.value as number)}
+        margin={margin}
+        colors={(cell) => {
+          return colorScale(cell.value as number);
+        }}
         axisTop={null}
         axisRight={null}
-        axisBottom={{ tickRotation: -45 }}
-        axisLeft={{ tickSize: 0 }}
+        axisBottom={{
+          tickSize: 5,
+          tickPadding: 5,
+          tickRotation: -45,
+          legend: "CPU Cores",
+          legendPosition: "middle",
+          legendOffset: 60, // Increased offset to prevent overlap
+        }}
+        axisLeft={{
+          tickSize: 5,
+          tickPadding: 5,
+          tickRotation: 0,
+          legend: "CPUs",
+          legendPosition: "middle",
+          legendOffset: -70, // Increased offset to prevent overlap
+        }}
         emptyColor="#555"
-        forceSquare={true}
-        enableLabels={false}
+        forceSquare={true} // Force square cells for better proportions
+        enableLabels={enableLabels}
+        labelTextColor={labelTextColor}
+        labelSkipWidth={labelSkipWidth}
+        labelSkipHeight={labelSkipHeight}
+        cellOpacity={1}
+        cellBorderWidth={1}
+        cellBorderColor="#ffffff"
+        theme={{
+          axis: {
+            ticks: {
+              text: {
+                fill: "#ffffff",
+                fontSize: 11, // Slightly smaller font to reduce overlap
+                fontWeight: 500,
+              },
+            },
+            legend: {
+              text: {
+                fill: "#ffffff",
+                fontSize: 13, // Slightly smaller legend text
+                fontWeight: 600,
+              },
+            },
+          },
+          labels: {
+            text: {
+              fill: "#000000",
+              fontSize: 10, // Smaller labels for better fit
+              fontWeight: 600,
+            },
+          },
+        }}
+        defs={[
+          // Define gradients for each status
+          {
+            id: `${gradientId}-critical`,
+            type: "linearGradient",
+            colors: [
+              { offset: 0, color: "#ff3838" },
+              { offset: 100, color: "#cc1c1c" },
+            ],
+          },
+          {
+            id: `${gradientId}-serious`,
+            type: "linearGradient",
+            colors: [
+              { offset: 0, color: "#ffb302" },
+              { offset: 100, color: "#e09900" },
+            ],
+          },
+          {
+            id: `${gradientId}-caution`,
+            type: "linearGradient",
+            colors: [
+              { offset: 0, color: "#fce83a" },
+              { offset: 100, color: "#f0d000" },
+            ],
+          },
+          {
+            id: `${gradientId}-normal`,
+            type: "linearGradient",
+            colors: [
+              { offset: 0, color: "#56f000" },
+              { offset: 100, color: "#3eb300" },
+            ],
+          },
+          {
+            id: `${gradientId}-standby`,
+            type: "linearGradient",
+            colors: [
+              { offset: 0, color: "#2dccff" },
+              { offset: 100, color: "#1a9ce6" },
+            ],
+          },
+          {
+            id: `${gradientId}-off`,
+            type: "linearGradient",
+            colors: [
+              { offset: 0, color: "#a4abb6" },
+              { offset: 100, color: "#8a939e" },
+            ],
+          },
+        ]}
+        fill={[
+          // Apply gradients based on value ranges
+          {
+            match: (cell) => {
+              if (!thresholds) return false;
+              const value = cell.value as number;
+              return higherIsBetter
+                ? value >= thresholds.critical
+                : value <= thresholds.critical;
+            },
+            id: `${gradientId}-critical`,
+          },
+          {
+            match: (cell) => {
+              if (!thresholds) return false;
+              const value = cell.value as number;
+              return higherIsBetter
+                ? value >= thresholds.serious && value < thresholds.critical
+                : value > thresholds.critical && value <= thresholds.serious;
+            },
+            id: `${gradientId}-serious`,
+          },
+          {
+            match: (cell) => {
+              if (!thresholds) return false;
+              const value = cell.value as number;
+              return higherIsBetter
+                ? value >= thresholds.caution && value < thresholds.serious
+                : value > thresholds.serious && value <= thresholds.caution;
+            },
+            id: `${gradientId}-caution`,
+          },
+          {
+            match: (cell) => {
+              if (!thresholds) return true;
+              const value = cell.value as number;
+              return higherIsBetter
+                ? value >= thresholds.normal && value < thresholds.caution
+                : value > thresholds.caution && value <= thresholds.normal;
+            },
+            id: `${gradientId}-normal`,
+          },
+        ]}
+        tooltip={({ cell }) => {
+          const cellData = cell.data as HeatmapDataPoint;
+
+          // Determine status color based on temperature value and thresholds
+          const getStatusColor = (value: number) => {
+            if (!thresholds) return STATUS_COLORS.normal;
+
+            if (!higherIsBetter) {
+              if (value >= thresholds.critical) return STATUS_COLORS.critical;
+              if (value >= thresholds.serious) return STATUS_COLORS.serious;
+              if (value >= thresholds.caution) return STATUS_COLORS.caution;
+              return STATUS_COLORS.normal;
+            } else {
+              if (value <= thresholds.critical) return STATUS_COLORS.critical;
+              if (value <= thresholds.serious) return STATUS_COLORS.serious;
+              if (value <= thresholds.caution) return STATUS_COLORS.caution;
+              return STATUS_COLORS.normal;
+            }
+          };
+
+          const tempColor = getStatusColor(cell.value as number);
+
+          return (
+            <div
+              style={{
+                background: "#1a1a1a",
+                color: "#ffffff",
+                padding: "12px 16px",
+                border: "1px solid #444444",
+                borderRadius: "8px",
+                boxShadow: "0 6px 20px rgba(0, 0, 0, 0.4)",
+                fontSize: "14px",
+                fontFamily: "system-ui, -apple-system, sans-serif",
+                backdropFilter: "blur(8px)",
+                minWidth: "180px",
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: "bold",
+                  marginBottom: "8px",
+                  color: "#ffffff",
+                  borderBottom: "1px solid #444444",
+                  paddingBottom: "6px",
+                }}
+              >
+                {cell.serieId} - {cellData.x}
+              </div>
+              <div style={{ color: "#e0e0e0", marginBottom: "4px" }}>
+                Temperature:{" "}
+                <span style={{ color: tempColor, fontWeight: "600" }}>
+                  {cell.value}°C
+                </span>
+              </div>
+              {cellData.load !== undefined && (
+                <div style={{ color: "#e0e0e0" }}>
+                  CPU Load:{" "}
+                  <span style={{ color: "#51cf66", fontWeight: "600" }}>
+                    {cellData.load}%
+                  </span>
+                </div>
+              )}
+              {cellData.load === undefined && (
+                <div style={{ color: "#888", fontSize: "12px" }}>
+                  Load data not available
+                </div>
+              )}
+            </div>
+          );
+        }}
       />
     </div>
   );

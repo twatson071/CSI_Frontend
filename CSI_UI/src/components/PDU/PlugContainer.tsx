@@ -166,7 +166,6 @@ const PlugContainer: React.FC<PlugContainerProps> = ({
             key={outletId}
             className={`outlet-card ${getIconStatus(outletData.state)}`}
           >
-            {/* Status indicator with color coding */}
             <div className="outlet-header">
               <div className="status-indicator">
                 <RuxMonitoringIcon

@@ -84,7 +84,7 @@ const CPUPerCoreGrid: React.FC<CPUPerCoreGridProps> = ({
         return updated;
       });
     }
-  }, [cpus]);
+  }, [server.sensors?.cpus]);
 
   if (cpus.length === 0) {
     return <p>No CPU data available</p>;
