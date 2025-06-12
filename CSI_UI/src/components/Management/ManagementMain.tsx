@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { RuxContainer, RuxButton } from "@astrouxds/react";
 
 export interface ManagementFormProps<T> {
@@ -32,6 +33,7 @@ const ManagementMain = <T,>({
   renderList,
   getId,
 }: ManagementMainProps<T>) => {
+  const navigate = useNavigate();
   const [items, setItems] = useState<T[]>([]);
   const [currentItem, setCurrentItem] = useState<T | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -79,7 +81,18 @@ const ManagementMain = <T,>({
 
   return (
     <RuxContainer className="management-main">
-      <div slot="header">{entityName} Management</div>
+      <div slot="header">
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <RuxButton
+            icon="arrow-back"
+            iconOnly
+            size="small"
+            onClick={() => navigate("/")}
+            title="Back to Dashboard"
+          />
+          {entityName} Management
+        </div>
+      </div>
       {showForm ? (
         <FormComponent
           item={currentItem}
@@ -90,11 +103,22 @@ const ManagementMain = <T,>({
           }}
         />
       ) : (
-        <>{renderList(items, (it) => {setCurrentItem(it);setShowForm(true);}, handleDelete)}</>
+        <>
+          {renderList(
+            items,
+            (it) => {
+              setCurrentItem(it);
+              setShowForm(true);
+            },
+            handleDelete
+          )}
+        </>
       )}
       <div slot="footer">
         {!showForm && (
-          <RuxButton onClick={() => setShowForm(true)}>Add {entityName}</RuxButton>
+          <RuxButton onClick={() => setShowForm(true)}>
+            Add {entityName}
+          </RuxButton>
         )}
       </div>
     </RuxContainer>

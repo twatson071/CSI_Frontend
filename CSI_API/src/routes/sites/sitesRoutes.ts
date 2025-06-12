@@ -12,7 +12,38 @@ import {
 import { z } from "zod";
 
 const app = new Hono();
-
+async function getSiteById(c: Context) {
+  const siteIdParam = c.req.param("siteId");
+  const siteId = parseInt(siteIdParam);
+  if (isNaN(siteId)) {
+    return c.json({ error: "Invalid Site ID format" }, 400);
+  }
+  try {
+    const site = await db.query.sites.findFirst({
+      where: (s, { eq }) => eq(s.id, siteId),
+      with: {
+        userSites: {
+          where: (us, { eq }) => eq(us.siteId, siteId),
+          with: {
+            user: true,
+          },
+        },
+      },
+    });
+    if (!site) {
+      return c.json({ error: "Site not found" }, 404);
+    }
+    const siteData = {
+      siteId: site.id,
+      siteName: site.name ?? "Unnamed Site",
+      location: site.location ?? "No location provided",
+    };
+    return c.json(siteData);
+  } catch (error) {
+    console.error(`Error fetching site with ID ${siteId}:`, error);
+    return c.json({ error: "Failed to fetch site" }, 500);
+  }
+}
 async function fetchSitesWithDevices(c: Context) {
   const EXTERNAL_BASE_URL = process.env.EXTERNAL_BASE_URL!;
   const SYSTEM_OPERATOR_KEY = process.env.SYSTEM_OPERATOR_KEY!;
@@ -164,6 +195,7 @@ async function fetchSitesWithDevices(c: Context) {
         return {
           siteId: site.id,
           siteName: site.name ?? "Unnamed Site",
+          location: site.location ?? "No location provided",
           devices: devicesData,
         };
       })
@@ -371,6 +403,7 @@ async function fetchDevicesForSite(c: Context) {
 
 app.get("/", fetchSitesWithDevices); // Changed to pass function reference
 app.post("/", createSite); // Changed to pass function reference
+app.get("/:siteId", getSiteById); // New route to get site by ID
 app.get("/:siteId/devices", fetchDevicesForSite); // New route
 
 export default app;

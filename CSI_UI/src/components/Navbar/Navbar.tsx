@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   RuxGlobalStatusBar,
   RuxClock,
@@ -15,6 +16,7 @@ import { addToast } from "../../utils/toast";
 import "./Navbar.css";
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [status1, setStatus1] = useState<Status>("normal");
   const [status2, setStatus2] = useState<Status>("off");
   const [status3, setStatus3] = useState<Status>("normal");
@@ -24,7 +26,6 @@ const Navbar = () => {
   const [lightTheme, setLightTheme] = useState(false);
 
   const statusValuesArr = ["caution", "normal", "serious", "off"];
-
   const notificationsArr = [12, 14, 23, 42, 6, 37, 25, 38, 9];
 
   useEffect(() => {
@@ -48,13 +49,26 @@ const Navbar = () => {
 
   function menuSelect(e: CustomEvent) {
     const { detail } = e;
-    if (detail.href) return;
-    if (detail.value === "themeToggle") {
-      setLightTheme(!lightTheme);
-      document.body.classList.toggle("light-theme");
-      return;
+
+    // Handle navigation for management routes
+    switch (detail.textContent?.trim()) {
+      case "Manage Users":
+        navigate("/manage-users");
+        break;
+      case "Manage Sites":
+        navigate("/manage-sites");
+        break;
+      case "Manage Devices":
+        navigate("/manage-devices");
+        break;
+      default:
+        if (detail.value === "themeToggle") {
+          setLightTheme(!lightTheme);
+          document.body.classList.toggle("light-theme");
+          return;
+        }
+        addToast("This feature has not been implemented", false, 3000);
     }
-    addToast("This feature has not been implemented", false, 3000);
   }
 
   return (
@@ -80,9 +94,9 @@ const Navbar = () => {
             icon="apps"
           />
           <RuxMenu onRuxmenuselected={(e) => menuSelect(e)}>
-            <RuxMenuItem href="#">Manage Users</RuxMenuItem>
-            <RuxMenuItem href="#">Manage Sites</RuxMenuItem>
-            <RuxMenuItem href="#">Manage Devices</RuxMenuItem>
+            <RuxMenuItem>Manage Users</RuxMenuItem>
+            <RuxMenuItem>Manage Sites</RuxMenuItem>
+            <RuxMenuItem>Manage Devices</RuxMenuItem>
             <RuxMenuItemDivider />
             <RuxMenuItem value="themeToggle">
               {lightTheme ? "Dark" : "Light"} Theme

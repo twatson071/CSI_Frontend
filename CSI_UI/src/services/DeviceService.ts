@@ -27,7 +27,14 @@ export async function getServiceList(): Promise<string[]> {
   const resp = await axios.get<string[]>(`${API_URL}/devices/services`);
   return resp.data;
 }
-
+export async function getRelatedSites(
+  deviceId: number
+): Promise<{ id: number; name: string }[]> {
+  const resp = await axios.get<{ id: number; name: string }[]>(
+    `${API_URL}/devices/${deviceId}/sites`
+  );
+  return resp.data;
+}
 export async function createDevice(
   deviceData: CreateDevicePayload
 ): Promise<Device> {

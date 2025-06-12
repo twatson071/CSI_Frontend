@@ -351,7 +351,29 @@ app.get("/:id/metrics", async (c: Context) => {
   });
   return c.json(metrics);
 });
-
+app.get("/:id/sites", async (c: Context) => {
+  const deviceId = parseInt(c.req.param("id"));
+  if (isNaN(deviceId)) {
+    return c.json({ error: "Invalid device ID" }, 400);
+  }
+  const deviceSiteId = await db.query.devices.findFirst({
+    where: eq(devices.id, deviceId),
+    columns: {
+      siteId: true,
+    },
+  });
+  if (!deviceSiteId) {
+    return c.json({ error: "Device not found" }, 404);
+  }
+  const relatedSites = await db.query.sites.findMany({
+    where: (s, { eq }) => eq(s.id, deviceSiteId.siteId),
+    columns: {
+      id: true,
+      name: true,
+    },
+  });
+  return c.json(relatedSites);
+});
 app.get("/", getDevice);
 app.get("/services", (c) => getServiceList(c, "GET"));
 app.get("/:id", getDeviceById);
