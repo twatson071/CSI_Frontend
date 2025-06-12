@@ -60,3 +60,7 @@ export async function fetchDeviceMetrics(deviceId: number) {
   >(`${API_URL}/devices/${deviceId}/metrics`);
   return resp.data;
 }
+
+export async function deleteDevice(deviceId: number): Promise<void> {
+  await axios.delete(`${API_URL}/devices/${deviceId}`);
+}

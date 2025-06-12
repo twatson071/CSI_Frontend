@@ -46,3 +46,12 @@ export async function fetchDevicesForSite(
   );
   return resp.data;
 }
+
+export async function updateSite(siteId: number, data: SiteCreateData): Promise<SiteSummary> {
+  const resp = await axios.put<SiteSummary>(`${BASE_URL}/sites/${siteId}`, data);
+  return resp.data;
+}
+
+export async function deleteSite(siteId: number): Promise<void> {
+  await axios.delete(`${BASE_URL}/sites/${siteId}`);
+}
