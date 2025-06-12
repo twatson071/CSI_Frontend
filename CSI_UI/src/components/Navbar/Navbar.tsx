@@ -80,10 +80,9 @@ const Navbar = () => {
             icon="apps"
           />
           <RuxMenu onRuxmenuselected={(e) => menuSelect(e)}>
-            <RuxMenuItem href="https://ttc-command-react.netlify.app/">
-              TTC Command & Investigate
-            </RuxMenuItem>
-            <RuxMenuItem href="#">TTC Monitor</RuxMenuItem>
+            <RuxMenuItem href="#">Manage Users</RuxMenuItem>
+            <RuxMenuItem href="#">Manage Sites</RuxMenuItem>
+            <RuxMenuItem href="#">Manage Devices</RuxMenuItem>
             <RuxMenuItemDivider />
             <RuxMenuItem value="themeToggle">
               {lightTheme ? "Dark" : "Light"} Theme

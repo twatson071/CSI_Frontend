@@ -460,10 +460,7 @@ const SiteEndpointLayout: React.FC = () => {
       )}
 
       {showDeviceStatusDashboard && !showAddDeviceForm && (
-        <DeviceStatusDashboard
-          className="device-dashboard"
-          onClose={() => toggleDeviceStatusDashboard(false)}
-        />
+        <DeviceStatusDashboard />
       )}
 
       {!showAddDeviceForm && !showDeviceStatusDashboard && (

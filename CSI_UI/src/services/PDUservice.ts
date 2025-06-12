@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Device, getDeviceById } from "./DeviceService";
+import { Device } from "./DeviceService";
 
 const BASE_API_URL = `${import.meta.env.VITE_BASE_URL}`;
 
@@ -78,7 +78,7 @@ export interface DeviceMetricPoint {
   y: number;
 }
 
-export const fetchDeviceMetrics = async (
+export const fetchPDUMetrics = async (
   deviceId: number,
   metricType: string,
   limit: number = 100
