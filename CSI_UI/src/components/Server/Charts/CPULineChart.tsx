@@ -1,6 +1,7 @@
 import React from "react";
 import GenericLineChart from "../../common/GenericLineChart/GenericLineChart";
 import { ServerData } from "../../../services/ServerService";
+import { STATUS_COLORS } from "../../../services";
 
 interface CPULineChartProps {
   server: ServerData;
@@ -31,7 +32,7 @@ const CPULineChart: React.FC<CPULineChartProps> = ({ server }) => {
       axisLeftLegend="Utilization %"
       height="250px"
       width="100%"
-      colors={["#00A3E0"]}
+      colors={[STATUS_COLORS.STANDBY.hex]}
     />
   );
 };

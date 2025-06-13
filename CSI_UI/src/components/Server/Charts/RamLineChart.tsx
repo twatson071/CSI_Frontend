@@ -1,6 +1,7 @@
 import React from "react";
 import GenericLineChart from "../../common/GenericLineChart/GenericLineChart";
 import { ServerData } from "../../../services/ServerService";
+import { STATUS_COLORS } from "../../../services";
 
 interface RamLineChartProps {
   server: ServerData;
@@ -28,10 +29,9 @@ const RamLineChart: React.FC<RamLineChartProps> = ({ server }) => {
       axisLeftLegend="Utilization %"
       height="250px"
       width="100%"
-      colors={["#938bdb"]}
+      colors={[STATUS_COLORS.CAUTION.hex]}
     />
   );
 };
 
 export default RamLineChart;
-

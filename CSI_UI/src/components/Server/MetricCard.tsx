@@ -1,14 +1,9 @@
 import React from "react";
 import { RuxIcon } from "@astrouxds/react";
+import { STATUS_COLORS, StatusType } from "../../services";
 import "./MetricCard.css";
 
-export type Status =
-  | "off"
-  | "standby"
-  | "normal"
-  | "caution"
-  | "serious"
-  | "critical";
+export type Status = StatusType;
 
 interface Threshold {
   critical: number;
@@ -28,15 +23,6 @@ interface MetricCardProps {
   higherIsBetter?: boolean; // Determines if higher values are better (default: false)
 }
 
-const STATUS_COLORS = {
-  critical: "#ff3838",
-  serious: "#ffb302",
-  caution: "#fce83a",
-  normal: "#56f000",
-  standby: "#2dccff",
-  off: "#a4abb6",
-};
-
 const MetricCard: React.FC<MetricCardProps> = ({
   title,
   value,
@@ -53,25 +39,25 @@ const MetricCard: React.FC<MetricCardProps> = ({
 
   // Determine current status based on latest data point and thresholds
   const getCurrentStatus = (): Status => {
-    if (!thresholds || data.length === 0) return "normal";
+    if (!thresholds || data.length === 0) return "NORMAL";
 
     const currentValue = data[data.length - 1];
 
     if (higherIsBetter) {
-      if (currentValue >= thresholds.normal) return "normal";
-      if (currentValue >= thresholds.caution) return "caution";
-      if (currentValue >= thresholds.serious) return "serious";
-      return "critical";
+      if (currentValue >= thresholds.normal) return "NORMAL";
+      if (currentValue >= thresholds.caution) return "CAUTION";
+      if (currentValue >= thresholds.serious) return "SERIOUS";
+      return "CRITICAL";
     } else {
-      if (currentValue >= thresholds.critical) return "critical";
-      if (currentValue >= thresholds.serious) return "serious";
-      if (currentValue >= thresholds.caution) return "caution";
-      return "normal";
+      if (currentValue >= thresholds.critical) return "CRITICAL";
+      if (currentValue >= thresholds.serious) return "SERIOUS";
+      if (currentValue >= thresholds.caution) return "CAUTION";
+      return "NORMAL";
     }
   };
 
   const currentStatus = getCurrentStatus();
-  const statusColor = color || STATUS_COLORS[currentStatus];
+  const statusColor = color || STATUS_COLORS[currentStatus].hex;
 
   const sanitizedTitle = title.replace(/\s+/g, "-").toLowerCase();
   const height = 40;

@@ -1,14 +1,9 @@
 import React, { useMemo } from "react";
 import { ResponsiveHeatMap } from "@nivo/heatmap";
 import { scaleLinear } from "d3-scale";
+import { STATUS_COLORS, StatusType } from "../../../services";
 
-export type Status =
-  | "off"
-  | "standby"
-  | "normal"
-  | "caution"
-  | "serious"
-  | "critical";
+export type Status = StatusType;
 
 interface Threshold {
   critical: number;
@@ -41,15 +36,6 @@ interface GenericHeatmapProps {
   labelSkipHeight?: number;
 }
 
-const STATUS_COLORS: Record<Status, string> = {
-  critical: "#ff3838",
-  serious: "#ffb302",
-  caution: "#fce83a",
-  normal: "#56f000",
-  standby: "#2dccff",
-  off: "#a4abb6",
-};
-
 const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
   data,
   thresholds,
@@ -64,7 +50,7 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
 }) => {
   const colorScale = useMemo(() => {
     if (!thresholds) {
-      return () => STATUS_COLORS.normal;
+      return () => STATUS_COLORS.NORMAL.hex;
     }
     const domain = higherIsBetter
       ? [
@@ -82,16 +68,16 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
 
     const range = higherIsBetter
       ? [
-          STATUS_COLORS.normal,
-          STATUS_COLORS.caution,
-          STATUS_COLORS.serious,
-          STATUS_COLORS.critical,
+          STATUS_COLORS.NORMAL.hex,
+          STATUS_COLORS.CAUTION.hex,
+          STATUS_COLORS.SERIOUS.hex,
+          STATUS_COLORS.CRITICAL.hex,
         ]
       : [
-          STATUS_COLORS.critical,
-          STATUS_COLORS.serious,
-          STATUS_COLORS.caution,
-          STATUS_COLORS.normal,
+          STATUS_COLORS.CRITICAL.hex,
+          STATUS_COLORS.SERIOUS.hex,
+          STATUS_COLORS.CAUTION.hex,
+          STATUS_COLORS.NORMAL.hex,
         ];
 
     const scale = scaleLinear<string>().domain(domain).range(range).clamp(true);
@@ -204,7 +190,7 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
             id: `${gradientId}-critical`,
             type: "linearGradient",
             colors: [
-              { offset: 0, color: "#ff3838" },
+              { offset: 0, color: STATUS_COLORS.CRITICAL.hex },
               { offset: 100, color: "#cc1c1c" },
             ],
           },
@@ -212,7 +198,7 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
             id: `${gradientId}-serious`,
             type: "linearGradient",
             colors: [
-              { offset: 0, color: "#ffb302" },
+              { offset: 0, color: STATUS_COLORS.SERIOUS.hex },
               { offset: 100, color: "#e09900" },
             ],
           },
@@ -220,7 +206,7 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
             id: `${gradientId}-caution`,
             type: "linearGradient",
             colors: [
-              { offset: 0, color: "#fce83a" },
+              { offset: 0, color: STATUS_COLORS.CAUTION.hex },
               { offset: 100, color: "#f0d000" },
             ],
           },
@@ -228,7 +214,7 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
             id: `${gradientId}-normal`,
             type: "linearGradient",
             colors: [
-              { offset: 0, color: "#56f000" },
+              { offset: 0, color: STATUS_COLORS.NORMAL.hex },
               { offset: 100, color: "#3eb300" },
             ],
           },
@@ -236,7 +222,7 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
             id: `${gradientId}-standby`,
             type: "linearGradient",
             colors: [
-              { offset: 0, color: "#2dccff" },
+              { offset: 0, color: STATUS_COLORS.STANDBY.hex },
               { offset: 100, color: "#1a9ce6" },
             ],
           },
@@ -244,7 +230,7 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
             id: `${gradientId}-off`,
             type: "linearGradient",
             colors: [
-              { offset: 0, color: "#a4abb6" },
+              { offset: 0, color: STATUS_COLORS.OFF.hex },
               { offset: 100, color: "#8a939e" },
             ],
           },
@@ -297,18 +283,20 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
 
           // Determine status color based on temperature value and thresholds
           const getStatusColor = (value: number) => {
-            if (!thresholds) return STATUS_COLORS.normal;
+            if (!thresholds) return STATUS_COLORS.NORMAL.hex;
 
             if (!higherIsBetter) {
-              if (value >= thresholds.critical) return STATUS_COLORS.critical;
-              if (value >= thresholds.serious) return STATUS_COLORS.serious;
-              if (value >= thresholds.caution) return STATUS_COLORS.caution;
-              return STATUS_COLORS.normal;
+              if (value >= thresholds.critical)
+                return STATUS_COLORS.CRITICAL.hex;
+              if (value >= thresholds.serious) return STATUS_COLORS.SERIOUS.hex;
+              if (value >= thresholds.caution) return STATUS_COLORS.CAUTION.hex;
+              return STATUS_COLORS.NORMAL.hex;
             } else {
-              if (value <= thresholds.critical) return STATUS_COLORS.critical;
-              if (value <= thresholds.serious) return STATUS_COLORS.serious;
-              if (value <= thresholds.caution) return STATUS_COLORS.caution;
-              return STATUS_COLORS.normal;
+              if (value <= thresholds.critical)
+                return STATUS_COLORS.CRITICAL.hex;
+              if (value <= thresholds.serious) return STATUS_COLORS.SERIOUS.hex;
+              if (value <= thresholds.caution) return STATUS_COLORS.CAUTION.hex;
+              return STATUS_COLORS.NORMAL.hex;
             }
           };
 
@@ -349,7 +337,12 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
               {cellData.load !== undefined && (
                 <div style={{ color: "#e0e0e0" }}>
                   CPU Load:{" "}
-                  <span style={{ color: "#51cf66", fontWeight: "600" }}>
+                  <span
+                    style={{
+                      color: STATUS_COLORS.NORMAL.hex,
+                      fontWeight: "600",
+                    }}
+                  >
                     {cellData.load}%
                   </span>
                 </div>

@@ -1,15 +1,14 @@
 import React from "react";
 import GenericLineChart from "../../common/GenericLineChart/GenericLineChart";
 import { ServerData } from "../../../services/ServerService";
+import { STATUS_COLORS } from "../../../services";
 
 interface GPURamLineChartProps {
   server: ServerData;
 }
 
 const GPURamLineChart: React.FC<GPURamLineChartProps> = ({ server }) => {
-  const gpus = server.sensors?.gpus
-    ? Object.values(server.sensors.gpus)
-    : [];
+  const gpus = server.sensors?.gpus ? Object.values(server.sensors.gpus) : [];
 
   const gpuRamData = [
     {
@@ -35,10 +34,9 @@ const GPURamLineChart: React.FC<GPURamLineChartProps> = ({ server }) => {
       axisLeftLegend="RAM Usage %"
       height="250px"
       width="100%"
-      colors={["#00c7cb"]}
+      colors={[STATUS_COLORS.STANDBY.hex]}
     />
   );
 };
 
 export default GPURamLineChart;
-

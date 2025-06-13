@@ -1,18 +1,17 @@
 import React from "react";
 import GenericLineChart from "../../common/GenericLineChart/GenericLineChart";
 import { ServerData } from "../../../services/ServerService";
+import { STATUS_COLORS } from "../../../services";
 
 interface TemperatureLineChartProps {
   server: ServerData;
 }
 
-const TemperatureLineChart: React.FC<TemperatureLineChartProps> = ({ server }) => {
-  const cpus = server.sensors?.cpus
-    ? Object.values(server.sensors.cpus)
-    : [];
-  const gpus = server.sensors?.gpus
-    ? Object.values(server.sensors.gpus)
-    : [];
+const TemperatureLineChart: React.FC<TemperatureLineChartProps> = ({
+  server,
+}) => {
+  const cpus = server.sensors?.cpus ? Object.values(server.sensors.cpus) : [];
+  const gpus = server.sensors?.gpus ? Object.values(server.sensors.gpus) : [];
 
   const cpuTempData = cpus.map((cpu, idx) => ({
     x: cpu.id || idx,
@@ -41,10 +40,9 @@ const TemperatureLineChart: React.FC<TemperatureLineChartProps> = ({ server }) =
       axisLeftLegend="Temp °C"
       height="250px"
       width="100%"
-      colors={["#00A3E0", "#FF6F20"]}
+      colors={[STATUS_COLORS.STANDBY.hex, STATUS_COLORS.SERIOUS.hex]}
     />
   );
 };
 
 export default TemperatureLineChart;
-

@@ -1,15 +1,14 @@
 import React from "react";
 import GenericLineChart from "../../common/GenericLineChart/GenericLineChart";
 import { ServerData } from "../../../services/ServerService";
+import { STATUS_COLORS } from "../../../services";
 
 interface GPULineChartProps {
   server: ServerData;
 }
 
 const GPULineChart: React.FC<GPULineChartProps> = ({ server }) => {
-  const gpus = server.sensors?.gpus
-    ? Object.values(server.sensors.gpus)
-    : [];
+  const gpus = server.sensors?.gpus ? Object.values(server.sensors.gpus) : [];
 
   const gpuData = [
     {
@@ -33,10 +32,9 @@ const GPULineChart: React.FC<GPULineChartProps> = ({ server }) => {
       axisLeftLegend="Utilization %"
       height="250px"
       width="100%"
-      colors={["#FF6F20"]}
+      colors={[STATUS_COLORS.SERIOUS.hex]}
     />
   );
 };
 
 export default GPULineChart;
-

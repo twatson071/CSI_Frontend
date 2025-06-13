@@ -14,6 +14,7 @@ import {
 } from "@astrouxds/react";
 import { ServerData } from "../../services/ServerService";
 import { fetchDeviceMetrics } from "../../services/DeviceService";
+import { STATUS_COLORS } from "../../services";
 import CPUPerCoreGrid from "./Charts/CPUPerCoreGrid";
 import GPULineChart from "./Charts/GPULineChart";
 import GPURamLineChart from "./Charts/GPURamLineChart";
@@ -284,7 +285,7 @@ const ServerDetails: React.FC<Props> = ({ server, deviceId }) => {
             value={formatBandwidth(totalNetworkBytes).split(" ")[0]}
             unit={formatBandwidth(totalNetworkBytes).split(" ")[1]}
             data={networkData}
-            color="#2a9d8f"
+            color={STATUS_COLORS.STANDBY.hex}
             icon="settings-ethernet"
           />
           <MetricCard

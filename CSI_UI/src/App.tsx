@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import GlobalStatusBar from "./components/Navbar/Navbar";
 import SiteEndpointLayout from "./components/SiteEndpointLayout/SiteEndpointLayout";
 import AlertsPanel from "./components/Alerts/AlertsPanel";
+import CriticalAlertNotifications from "./components/Alerts/CriticalAlertNotifications";
 import ManageUsers from "./components/Management/ManageUsers";
 import ManageDevices from "./components/Management/ManageDevices";
 import ManageSites from "./components/Management/ManageSites";
@@ -20,7 +21,15 @@ const App: React.FC = () => {
           <Route path="/manage-sites" element={<ManageSites />} />
           <Route path="/manage-devices" element={<ManageDevices />} />
         </Routes>
-        <AlertsPanel className="custom-alerts-area" />
+        <AlertsPanel />
+        {/* Critical Alert Notifications - floating overlay */}
+        <CriticalAlertNotifications
+          position="top-right"
+          maxAlerts={5}
+          serverUrl={
+            import.meta.env.VITE_ALERT_SERVICE_URL || "http://localhost:8081"
+          }
+        />
       </div>
     </Router>
   );

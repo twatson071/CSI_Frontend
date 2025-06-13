@@ -1,5 +1,6 @@
 import React from "react";
 import GenericLineChart from "../../components/common/GenericLineChart/GenericLineChart";
+import { STATUS_COLORS } from "../../services";
 
 interface LoadHistoryChartProps {
   wattsData: { x: string; y: number }[];
@@ -28,7 +29,7 @@ const LoadHistoryChart: React.FC<LoadHistoryChartProps> = ({
       axisLeftLegend="Power"
       height="300px"
       width="100%"
-      colors={["#00A3E0", "#FF6F20"]}
+      colors={[STATUS_COLORS.STANDBY.hex, STATUS_COLORS.SERIOUS.hex]}
     />
   );
 };

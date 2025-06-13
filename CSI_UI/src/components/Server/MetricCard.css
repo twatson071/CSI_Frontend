@@ -18,7 +18,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #888;
+  color: var(--color-text-secondary);
   font-size: 14px;
   font-weight: 500;
 }
@@ -31,13 +31,13 @@
 }
 
 .metric-card-value .value {
-  color: white;
+  color: var(--color-text-primary);
   font-size: 24px;
   font-weight: 600;
 }
 
 .metric-card-value .unit {
-  color: #888;
+  color: var(--color-text-secondary);
   font-size: 14px;
 }
 

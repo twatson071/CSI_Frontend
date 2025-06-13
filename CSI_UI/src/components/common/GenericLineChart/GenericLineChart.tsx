@@ -1,5 +1,6 @@
 import React from "react";
 import { ResponsiveLine } from "@nivo/line";
+import { STATUS_COLORS } from "../../../services";
 
 interface GenericLineChartProps {
   data: Array<{
@@ -26,7 +27,7 @@ const GenericLineChart: React.FC<GenericLineChartProps> = ({
   axisLeftLegend = "Value",
   height = "300px",
   width = "450px",
-  colors = [" #00c7cb, #938bdb"],
+  colors = [STATUS_COLORS.STANDBY.hex, STATUS_COLORS.CAUTION.hex],
 }) => {
   return (
     <div

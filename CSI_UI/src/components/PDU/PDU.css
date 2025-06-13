@@ -1,76 +1,76 @@
 .status-indicators {
-    display: flex;
-  }
-  
-  .status-indicators rux-monitoring-icon {
-    margin-inline: var(--spacing-3);
-  }
-  
-  .app-icon-pop-up {
-    height: calc(var(--spacing-14, 3.5rem) + var(--spacing-050, 0.125rem));
-  }
-  
-  rux-toast-stack {
-    top: 96px;
-  }
-  
-  rux-toast:nth-child(n + 5) {
-    display: none;
-  }
-  
-  rux-menu-item[value="themeToggle"] span {
-    display: flex;
-    gap: var(--spacing-2);
-    align-items: center;
-  }
-  
-  rux-global-status-bar {
-    padding-right: var(--spacing-3);
-    z-index: 100;
-  }
-  
-  .app-switcher-icon:focus {
-    outline-offset: -1px;
-  }
+  display: flex;
+}
 
-  .pdu-container {
-    background-color: var(--color-background-surface-default);
-    border-radius: 10px;
-    color: var(--color-text-primary);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-  
-  .pdu {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--color-background-surface-default);
-    padding: 20px;
-    border-radius: 10px;
-    color: var(--color-text-primary);
-  }
-  
-  .plug-row {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    width: 100%;
-    gap: 20px;
-  }
+.status-indicators rux-monitoring-icon {
+  margin-inline: var(--spacing-3);
+}
 
-  .plug-icon {
-    width: 50px;
-    height: 50px;
-    color: #ffffff; /* Default color for "off" state */
-  }
+.app-icon-pop-up {
+  height: calc(var(--spacing-14, 3.5rem) + var(--spacing-050, 0.125rem));
+}
 
-  .plug-icon.on {
-    color: #00ff00; /* Astro UXDS green for "on" state */
-  }
+rux-toast-stack {
+  top: 96px;
+}
 
-  .toggle-label {
-    font-size: 14px;
-    font-weight: bold;
-    color: white;
-  }
+rux-toast:nth-child(n + 5) {
+  display: none;
+}
+
+rux-menu-item[value="themeToggle"] span {
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: center;
+}
+
+rux-global-status-bar {
+  padding-right: var(--spacing-3);
+  z-index: 100;
+}
+
+.app-switcher-icon:focus {
+  outline-offset: -1px;
+}
+
+.pdu-container {
+  background-color: var(--color-background-surface-default);
+  border-radius: 10px;
+  color: var(--color-text-primary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.pdu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-background-surface-default);
+  padding: 20px;
+  border-radius: 10px;
+  color: var(--color-text-primary);
+}
+
+.plug-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  gap: 20px;
+}
+
+.plug-icon {
+  width: 50px;
+  height: 50px;
+  color: var(--color-status-off); /* Default color for "off" state */
+}
+
+.plug-icon.on {
+  color: var(--color-status-normal); /* Normal/on state */
+}
+
+.toggle-label {
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+}

@@ -70,7 +70,7 @@
     rgba(86, 240, 0, 0.2) 0%,
     rgba(86, 240, 0, 0.05) 100%
   );
-  border: 2px solid #56f000;
+  border: 2px solid var(--color-status-normal);
   color: #ffffff;
 }
 
@@ -85,7 +85,7 @@
     rgba(164, 171, 182, 0.2) 0%,
     rgba(164, 171, 182, 0.05) 100%
   );
-  border: 2px solid #a4abb6;
+  border: 2px solid var(--color-status-off);
   color: #ffffff;
 }
 
@@ -100,7 +100,7 @@
     rgba(255, 56, 56, 0.2) 0%,
     rgba(255, 56, 56, 0.05) 100%
   );
-  border: 2px solid #ff3838;
+  border: 2px solid var(--color-status-critical);
   color: #ffffff;
 }
 
@@ -115,7 +115,7 @@
     rgba(45, 204, 255, 0.2) 0%,
     rgba(45, 204, 255, 0.05) 100%
   );
-  border: 2px solid #2dccff;
+  border: 2px solid var(--color-status-standby);
   color: #ffffff;
 }
 
