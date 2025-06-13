@@ -2,7 +2,7 @@ import { Hono, Context } from "hono";
 import { eq } from "drizzle-orm";
 import "dotenv/config";
 import { db } from "../../db";
-import { devices } from "../../db/schema";
+import { devices, metrics } from "../../db/schema";
 import {
   CreateDeviceClientPayloadSchema,
   UpdateDeviceSchema,
@@ -350,6 +350,18 @@ app.get("/:id/metrics", async (c: Context) => {
     limit: 100,
   });
   return c.json(metrics);
+});
+
+app.get("/:id/metric-types", async (c: Context) => {
+  const deviceId = parseInt(c.req.param("id"));
+  if (isNaN(deviceId)) {
+    return c.json({ error: "Invalid device ID" }, 400);
+  }
+  const types = await db
+    .selectDistinct({ metricType: metrics.metricType })
+    .from(metrics)
+    .where(eq(metrics.deviceId, deviceId));
+  return c.json(types.map((t) => t.metricType));
 });
 app.get("/:id/sites", async (c: Context) => {
   const deviceId = parseInt(c.req.param("id"));

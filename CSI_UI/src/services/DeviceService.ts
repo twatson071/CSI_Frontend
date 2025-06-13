@@ -68,6 +68,11 @@ export async function fetchDeviceMetrics(deviceId: number) {
   return resp.data;
 }
 
+export async function fetchMetricTypes(deviceId: number): Promise<string[]> {
+  const resp = await axios.get<string[]>(`${API_URL}/devices/${deviceId}/metric-types`);
+  return resp.data;
+}
+
 export async function deleteDevice(deviceId: number): Promise<void> {
   await axios.delete(`${API_URL}/devices/${deviceId}`);
 }

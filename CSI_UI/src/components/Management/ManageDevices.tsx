@@ -16,6 +16,10 @@ import {
   updateDevice,
   deleteDevice,
   getRelatedSites,
+  fetchMetricTypes,
+  getThresholdsForDevice,
+  createMetricThreshold,
+  updateMetricThreshold,
   Device,
 } from "../../services";
 
@@ -28,10 +32,47 @@ const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
   const [type, setType] = useState(item?.type || "");
   const [serviceUrl, setServiceUrl] = useState(item?.serviceUrl || "");
   const [siteId, setSiteId] = useState(item?.siteId ? String(item.siteId) : "");
+  const [metricTypes, setMetricTypes] = useState<string[]>([]);
+  const [thresholdInputs, setThresholdInputs] = useState<{
+    [metric: string]: { warning?: string; critical?: string; id?: number };
+  }>({});
+
+  useEffect(() => {
+    if (item) {
+      fetchMetricTypes(item.id).then(setMetricTypes);
+      getThresholdsForDevice(item.id).then((thr) => {
+        const map: { [m: string]: { warning?: string; critical?: string; id?: number } } = {};
+        thr.forEach((t) => {
+          map[t.metricType] = {
+            warning: t.warningThreshold?.toString() || "",
+            critical: t.criticalThreshold?.toString() || "",
+            id: t.id,
+          };
+        });
+        setThresholdInputs(map);
+      });
+    }
+  }, [item]);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({ name, type, serviceUrl, siteId: parseInt(siteId, 10) });
+    if (item) {
+      metricTypes.forEach((m) => {
+        const vals = thresholdInputs[m] || {};
+        const payload = {
+          deviceId: item.id,
+          metricType: m,
+          warningThreshold: vals.warning ? parseFloat(vals.warning) : undefined,
+          criticalThreshold: vals.critical ? parseFloat(vals.critical) : undefined,
+        };
+        if (vals.id) {
+          updateMetricThreshold(vals.id, payload);
+        } else if (vals.warning || vals.critical) {
+          createMetricThreshold(payload);
+        }
+      });
+    }
   };
 
   return (
@@ -56,6 +97,31 @@ const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
         value={siteId}
         onRuxinput={(e: any) => setSiteId(e.target.value)}
       />
+      {metricTypes.map((m) => (
+        <div key={m} style={{ marginBottom: "0.5rem" }}>
+          <span>{m}</span>
+          <RuxInput
+            label="Warning"
+            value={thresholdInputs[m]?.warning || ""}
+            onRuxinput={(e: any) =>
+              setThresholdInputs((prev) => ({
+                ...prev,
+                [m]: { ...prev[m], warning: e.target.value },
+              }))
+            }
+          />
+          <RuxInput
+            label="Critical"
+            value={thresholdInputs[m]?.critical || ""}
+            onRuxinput={(e: any) =>
+              setThresholdInputs((prev) => ({
+                ...prev,
+                [m]: { ...prev[m], critical: e.target.value },
+              }))
+            }
+          />
+        </div>
+      ))}
       <div className="form-actions">
         <RuxButton type="button" secondary onClick={onCancel}>
           Cancel
