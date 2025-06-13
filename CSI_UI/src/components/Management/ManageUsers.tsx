@@ -33,7 +33,7 @@ const UserForm: React.FC<ManagementFormProps<User>> = ({ item, onSubmit, onCance
   };
 
   return (
-    <form onSubmit={handleSave} className="user-form">
+    <form onSubmit={handleSave} className="user-form management-form">
       <RuxInput label="Name" value={name} onRuxinput={(e: any) => setName(e.target.value)} />
       <RuxInput label="Email" value={email} onRuxinput={(e: any) => setEmail(e.target.value)} />
       <RuxInput label="Role ID" value={roleId} onRuxinput={(e: any) => setRoleId(e.target.value)} />
@@ -56,7 +56,8 @@ const ManageUsers = () => (
     getId={(u) => u.id}
     FormComponent={UserForm}
     renderList={(items, onEdit, onDelete) => (
-      <RuxTable>
+      <div className="table-wrapper">
+        <RuxTable>
         <RuxTableHeaderRow>
           <RuxTableHeaderCell>ID</RuxTableHeaderCell>
           <RuxTableHeaderCell>Name</RuxTableHeaderCell>
@@ -80,7 +81,8 @@ const ManageUsers = () => (
             </RuxTableRow>
           ))}
         </RuxTableBody>
-      </RuxTable>
+        </RuxTable>
+      </div>
     )}
   />
 );

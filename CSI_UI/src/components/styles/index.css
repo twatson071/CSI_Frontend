@@ -33,3 +33,22 @@ rux-container div[slot="footer"] {
   background-color: var(--color-background-surface-default);
   border-top: 1px solid var(--color-border-divider);
 }
+
+/* Management form layout improvements */
+.management-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-3, 0.75rem);
+  overflow-y: auto;
+}
+
+.management-main .table-wrapper {
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-2, 0.5rem);
+}
