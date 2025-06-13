@@ -35,7 +35,7 @@ const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
   };
 
   return (
-    <form onSubmit={handleSave} className="device-form">
+    <form onSubmit={handleSave} className="device-form management-form">
       <RuxInput
         label="Name"
         value={name}
@@ -113,6 +113,7 @@ const ManageDevices = () => {
         fetchSiteNames(items);
 
         return (
+          <div className="table-wrapper">
           <RuxTable>
             <RuxTableHeaderRow>
               <RuxTableHeaderCell>ID</RuxTableHeaderCell>
@@ -144,6 +145,7 @@ const ManageDevices = () => {
               ))}
             </RuxTableBody>
           </RuxTable>
+          </div>
         );
       }}
     />

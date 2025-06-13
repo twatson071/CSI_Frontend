@@ -29,7 +29,7 @@ const SiteForm: React.FC<ManagementFormProps<SiteSummary | SiteCreateData>> = ({
   };
 
   return (
-    <form onSubmit={handleSave} className="site-form">
+    <form onSubmit={handleSave} className="site-form management-form">
       <RuxInput label="Name" value={name} onRuxinput={(e: any) => setName(e.target.value)} />
       <RuxInput label="Location" value={location} onRuxinput={(e: any) => setLocation(e.target.value)} />
       <div className="form-actions">
@@ -50,7 +50,8 @@ const ManageSites = () => (
     getId={(s) => s.siteId}
     FormComponent={SiteForm as any}
     renderList={(items, onEdit, onDelete) => (
-      <RuxTable>
+      <div className="table-wrapper">
+        <RuxTable>
         <RuxTableHeaderRow>
           <RuxTableHeaderCell>ID</RuxTableHeaderCell>
           <RuxTableHeaderCell>Name</RuxTableHeaderCell>
@@ -72,7 +73,8 @@ const ManageSites = () => (
             </RuxTableRow>
           ))}
         </RuxTableBody>
-      </RuxTable>
+        </RuxTable>
+      </div>
     )}
   />
 );
