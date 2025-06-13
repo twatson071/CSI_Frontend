@@ -4,6 +4,7 @@ import "./db"; // ensure .env loads & db.ts runs
 import pdu from "./routes/PDUroutes/pduRoutes";
 import sites from "./routes/sites/sitesRoutes";
 import devices from "./routes/devices/deviceRoutes";
+import metricThresholds from "./routes/metricThresholds/metricThresholdRoutes";
 import mock from "./routes/mock/mockRoutes";
 import "./poller/pollDevices";
 
@@ -13,5 +14,6 @@ app.use("*", cors({ origin: "*" })); // Enable CORS for all routes
 app.route("/pdu", pdu);
 app.route("/sites", sites);
 app.route("/devices", devices);
+app.route("/metric-thresholds", metricThresholds);
 app.route("/mock", mock);
 export default app;
