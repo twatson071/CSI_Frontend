@@ -10,6 +10,7 @@ import {
   RuxTableCell,
 } from "@astrouxds/react";
 import ManagementMain, { ManagementFormProps } from "./ManagementMain";
+import StatusIndicator from "./StatusIndicator";
 import {
   getDevices,
   createDevice,
@@ -22,7 +23,6 @@ import {
   updateMetricThreshold,
   Device,
   CreateDevicePayload,
-  getThresholdStatusColor,
 } from "../../services";
 
 const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
@@ -39,16 +39,27 @@ const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
     [groupName: string]: {
       pattern: string;
       metrics: string[];
-      warning?: string;
+      caution?: string;
       critical?: string;
+      serious?: string; // Add this line
       thresholds?: {
-        [metric: string]: { warning?: string; critical?: string; id?: number };
+        [metric: string]: {
+          caution?: string;
+          critical?: string;
+          serious?: string;
+          id?: number;
+        };
       };
     };
   }>({});
   const [ungroupedMetrics, setUngroupedMetrics] = useState<string[]>([]);
   const [thresholdInputs, setThresholdInputs] = useState<{
-    [metric: string]: { warning?: string; critical?: string; id?: number };
+    [metric: string]: {
+      caution?: string;
+      critical?: string;
+      serious?: string;
+      id?: number;
+    };
   }>({});
 
   // Group metrics by patterns for servers
@@ -57,12 +68,14 @@ const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
       [groupName: string]: {
         pattern: string;
         metrics: string[];
-        warning?: string;
+        caution?: string;
         critical?: string;
+        serious?: string; // Add this line
         thresholds?: {
           [metric: string]: {
-            warning?: string;
+            caution?: string;
             critical?: string;
+            serious?: string;
             id?: number;
           };
         };
@@ -111,18 +124,25 @@ const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
 
       getThresholdsForDevice(item.id).then((thr) => {
         const map: {
-          [m: string]: { warning?: string; critical?: string; id?: number };
+          [m: string]: {
+            caution?: string;
+            serious?: string;
+            critical?: string;
+            id?: number;
+          }; // Add serious here
         } = {};
         const groupThresholds: {
           [groupName: string]: {
             pattern: string;
             metrics: string[];
-            warning?: string;
+            caution?: string;
+            serious?: string; // Add this line
             critical?: string;
             thresholds?: {
               [metric: string]: {
-                warning?: string;
+                caution?: string;
                 critical?: string;
+                serious?: string;
                 id?: number;
               };
             };
@@ -132,7 +152,8 @@ const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
         // Build threshold map
         thr.forEach((t) => {
           map[t.metricType] = {
-            warning: t.warningThreshold?.toString() || "",
+            caution: t.cautionThreshold?.toString() || "",
+            serious: t.seriousThreshold?.toString() || "",
             critical: t.criticalThreshold?.toString() || "",
             id: t.id,
           };
@@ -152,14 +173,16 @@ const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
             const firstThreshold = groupThresholdData[0];
             const allSame = groupThresholdData.every(
               (th) =>
-                th.warning === firstThreshold.warning &&
+                th.caution === firstThreshold.caution &&
+                th.serious === firstThreshold.serious && // Add this line
                 th.critical === firstThreshold.critical
             );
 
             if (allSame) {
               groupThresholds[groupName] = {
                 ...group,
-                warning: firstThreshold.warning,
+                caution: firstThreshold.caution,
+                serious: firstThreshold.serious, // Add this line
                 critical: firstThreshold.critical,
                 thresholds: {},
               };
@@ -184,14 +207,17 @@ const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
     if (item) {
       // Handle grouped metrics
       Object.entries(metricGroups).forEach(([, group]) => {
-        if (group.warning || group.critical) {
+        if (group.caution || group.serious || group.critical) {
           // Apply group thresholds to all metrics in the group
           group.metrics.forEach((metric) => {
             const payload = {
               deviceId: item.id,
               metricType: metric,
-              warningThreshold: group.warning
-                ? parseFloat(group.warning)
+              cautionThreshold: group.caution
+                ? parseFloat(group.caution)
+                : undefined,
+              seriousThreshold: group.serious
+                ? parseFloat(group.serious)
                 : undefined,
               criticalThreshold: group.critical
                 ? parseFloat(group.critical)
@@ -201,7 +227,7 @@ const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
             const existingThreshold = group.thresholds?.[metric];
             if (existingThreshold?.id) {
               updateMetricThreshold(existingThreshold.id, payload);
-            } else if (group.warning || group.critical) {
+            } else if (group.caution || group.serious || group.critical) {
               createMetricThreshold(payload);
             }
           });
@@ -214,14 +240,15 @@ const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
         const payload = {
           deviceId: item.id,
           metricType: m,
-          warningThreshold: vals.warning ? parseFloat(vals.warning) : undefined,
+          cautionThreshold: vals.caution ? parseFloat(vals.caution) : undefined,
+          seriousThreshold: vals.serious ? parseFloat(vals.serious) : undefined,
           criticalThreshold: vals.critical
             ? parseFloat(vals.critical)
             : undefined,
         };
         if (vals.id) {
           updateMetricThreshold(vals.id, payload);
-        } else if (vals.warning || vals.critical) {
+        } else if (vals.caution || vals.serious || vals.critical) {
           createMetricThreshold(payload);
         }
       });
@@ -230,7 +257,7 @@ const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
 
   const handleGroupThresholdChange = (
     groupName: string,
-    type: "warning" | "critical",
+    type: "caution" | "critical" | "serious",
     value: string
   ) => {
     setMetricGroups((prev) => ({
@@ -267,56 +294,53 @@ const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
 
       {/* Render grouped metrics with threshold inputs */}
       {Object.entries(metricGroups).map(([groupName, group]) => (
-        <div
-          key={groupName}
-          style={{
-            marginBottom: "1rem",
-            padding: "1rem",
-            border: "1px solid #444",
-            borderRadius: "4px",
-          }}
-        >
-          <h4
-            style={{
-              marginBottom: "0.5rem",
-              color: "#fff",
-              textTransform: "uppercase",
-            }}
-          >
-            {groupName}
-          </h4>
-          <p
-            style={{ fontSize: "0.8rem", color: "#888", marginBottom: "1rem" }}
-          >
-            Applies to: {group.metrics.join(", ")}
-          </p>
-          <div style={{ display: "flex", gap: "1rem" }}>
-            <div style={{ position: "relative" }}>
+        <div key={groupName} className="threshold-group">
+          <div className="threshold-group-header">
+            <h4 className="threshold-group-title">{groupName}</h4>
+            <StatusIndicator
+              status="STANDBY"
+              size="small"
+              variant="badge"
+              showLabel={false}
+            />
+          </div>
+          <div className="threshold-group-metrics">
+            <p className="threshold-group-description">
+              Applies to: {group.metrics.join(", ")}
+            </p>
+          </div>
+          <div className="threshold-inputs">
+            <div className="threshold-input-wrapper">
               <RuxInput
-                label="Warning Threshold"
-                value={group.warning || ""}
+                label="Caution Threshold"
+                value={group.caution || ""}
                 onRuxinput={(e: any) =>
                   handleGroupThresholdChange(
                     groupName,
-                    "warning",
+                    "caution",
                     e.target.value
                   )
                 }
                 placeholder="e.g., 70"
               />
-              <div
-                style={{
-                  position: "absolute",
-                  top: "0",
-                  right: "-8px",
-                  width: "4px",
-                  height: "100%",
-                  backgroundColor: getThresholdStatusColor("warning").hex,
-                  borderRadius: "2px",
-                }}
-              />
+              <div className="threshold-indicator caution" />
             </div>
-            <div style={{ position: "relative" }}>
+            <div className="threshold-input-wrapper">
+              <RuxInput
+                label="Serious Threshold"
+                value={group.serious || ""}
+                onRuxinput={(e: any) =>
+                  handleGroupThresholdChange(
+                    groupName,
+                    "serious",
+                    e.target.value
+                  )
+                }
+                placeholder="e.g., 90"
+              />
+              <div className="threshold-indicator serious" />
+            </div>
+            <div className="threshold-input-wrapper">
               <RuxInput
                 label="Critical Threshold"
                 value={group.critical || ""}
@@ -329,17 +353,7 @@ const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
                 }
                 placeholder="e.g., 90"
               />
-              <div
-                style={{
-                  position: "absolute",
-                  top: "0",
-                  right: "-8px",
-                  width: "4px",
-                  height: "100%",
-                  backgroundColor: getThresholdStatusColor("critical").hex,
-                  borderRadius: "2px",
-                }}
-              />
+              <div className="threshold-indicator critical" />
             </div>
           </div>
         </div>
@@ -347,42 +361,53 @@ const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
 
       {/* Render ungrouped metrics individually */}
       {ungroupedMetrics.map((m) => (
-        <div key={m} style={{ marginBottom: "1rem" }}>
-          <h5
+        <div key={m} className="individual-metric">
+          <div
             style={{
-              color: "#fff",
-              marginBottom: "0.5rem",
-              textTransform: "uppercase",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "var(--spacing-2)",
             }}
           >
-            {m}
-          </h5>
-          <div style={{ display: "flex", gap: "1rem" }}>
-            <div style={{ position: "relative" }}>
+            <h5 className="individual-metric-title">{m}</h5>
+            <StatusIndicator
+              status="NORMAL"
+              size="small"
+              variant="badge"
+              showLabel={false}
+            />
+          </div>
+          <div className="threshold-inputs">
+            <div className="threshold-input-wrapper">
               <RuxInput
-                label="Warning"
-                value={thresholdInputs[m]?.warning || ""}
+                label="caution"
+                value={thresholdInputs[m]?.caution || ""}
                 onRuxinput={(e: any) =>
                   setThresholdInputs((prev) => ({
                     ...prev,
-                    [m]: { ...prev[m], warning: e.target.value },
+                    [m]: { ...prev[m], caution: e.target.value },
                   }))
                 }
                 placeholder="e.g., 70"
               />
-              <div
-                style={{
-                  position: "absolute",
-                  top: "0",
-                  right: "-8px",
-                  width: "4px",
-                  height: "100%",
-                  backgroundColor: getThresholdStatusColor("warning").hex,
-                  borderRadius: "2px",
-                }}
-              />
+              <div className="threshold-indicator caution" />
             </div>
-            <div style={{ position: "relative" }}>
+            <div className="threshold-input-wrapper">
+              <RuxInput
+                label="Serious"
+                value={thresholdInputs[m]?.serious || ""}
+                onRuxinput={(e: any) =>
+                  setThresholdInputs((prev) => ({
+                    ...prev,
+                    [m]: { ...prev[m], serious: e.target.value },
+                  }))
+                }
+                placeholder="e.g., 90"
+              />
+              <div className="threshold-indicator serious" />
+            </div>
+            <div className="threshold-input-wrapper">
               <RuxInput
                 label="Critical"
                 value={thresholdInputs[m]?.critical || ""}
@@ -394,17 +419,7 @@ const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
                 }
                 placeholder="e.g., 90"
               />
-              <div
-                style={{
-                  position: "absolute",
-                  top: "0",
-                  right: "-8px",
-                  width: "4px",
-                  height: "100%",
-                  backgroundColor: getThresholdStatusColor("critical").hex,
-                  borderRadius: "2px",
-                }}
-              />
+              <div className="threshold-indicator critical" />
             </div>
           </div>
         </div>
@@ -487,6 +502,7 @@ const ManageDevices = () => {
                 <RuxTableHeaderCell>Site</RuxTableHeaderCell>
                 <RuxTableHeaderCell>Name</RuxTableHeaderCell>
                 <RuxTableHeaderCell>Type</RuxTableHeaderCell>
+                <RuxTableHeaderCell>Status</RuxTableHeaderCell>
                 <RuxTableHeaderCell>Actions</RuxTableHeaderCell>
               </RuxTableHeaderRow>
               <RuxTableBody>
@@ -494,19 +510,46 @@ const ManageDevices = () => {
                   <RuxTableRow key={dev.id}>
                     <RuxTableCell>{dev.id}</RuxTableCell>
                     <RuxTableCell>{sites[dev.id] || "Loading..."}</RuxTableCell>
-                    <RuxTableCell>{dev.name}</RuxTableCell>
-                    <RuxTableCell>{dev.type}</RuxTableCell>
                     <RuxTableCell>
-                      <RuxButton size="small" onClick={() => onEdit(dev)}>
-                        Edit
-                      </RuxButton>
-                      <RuxButton
-                        size="small"
-                        secondary
-                        onClick={() => onDelete(dev)}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "var(--spacing-2)",
+                        }}
                       >
-                        Delete
-                      </RuxButton>
+                        <StatusIndicator status="NORMAL" size="small" />
+                        {dev.name}
+                      </div>
+                    </RuxTableCell>
+                    <RuxTableCell>
+                      <div className={`entity-badge ${dev.type.toLowerCase()}`}>
+                        {dev.type}
+                      </div>
+                    </RuxTableCell>
+                    <RuxTableCell>
+                      <div className="status-cell">
+                        <StatusIndicator
+                          status="STANDBY"
+                          size="medium"
+                          variant="badge"
+                          showLabel
+                        />
+                      </div>
+                    </RuxTableCell>
+                    <RuxTableCell>
+                      <div className="table-actions">
+                        <RuxButton size="small" onClick={() => onEdit(dev)}>
+                          Edit
+                        </RuxButton>
+                        <RuxButton
+                          size="small"
+                          secondary
+                          onClick={() => onDelete(dev)}
+                        >
+                          Delete
+                        </RuxButton>
+                      </div>
                     </RuxTableCell>
                   </RuxTableRow>
                 ))}

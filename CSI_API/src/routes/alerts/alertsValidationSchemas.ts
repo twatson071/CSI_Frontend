@@ -1,6 +1,11 @@
 import { z } from "zod";
 
-export const AlertSeverityEnum = z.enum(["INFO", "WARNING", "CRITICAL"]);
+export const AlertSeverityEnum = z.enum([
+  "INFO",
+  "CAUTION",
+  "SERIOUS",
+  "CRITICAL",
+]);
 
 export const CreateAlertSchema = z.object({
   type: z.string(),
@@ -10,4 +15,8 @@ export const CreateAlertSchema = z.object({
   siteId: z.number().int().optional(),
 });
 
-export const UpdateAlertSchema = CreateAlertSchema.partial();
+export const UpdateAlertSchema = CreateAlertSchema.partial().extend({
+  acknowledged: z.number().int().optional(),
+  acknowledgedBy: z.number().int().optional(),
+  acknowledgedAt: z.string().optional(),
+});

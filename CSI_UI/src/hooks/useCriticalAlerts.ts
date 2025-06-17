@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
+import { acknowledgeAlert as acknowledgeAlertAPI } from "../services/AlertService";
 
 export interface CriticalAlert {
   id: number;
@@ -122,8 +123,17 @@ export function useCriticalAlerts(
     };
   }, [serverUrl]);
 
-  const acknowledgeAlert = (alertId: number) => {
-    setAlerts((prev) => prev.filter((alert) => alert.id !== alertId));
+  const acknowledgeAlert = async (alertId: number) => {
+    try {
+      // Call the API to acknowledge the alert in the database
+      await acknowledgeAlertAPI(alertId);
+      // Remove the acknowledged alert from the local state
+      setAlerts((prev) => prev.filter((alert) => alert.id !== alertId));
+    } catch (error) {
+      console.error("Failed to acknowledge critical alert:", error);
+      // Still remove from local state even if API call fails
+      setAlerts((prev) => prev.filter((alert) => alert.id !== alertId));
+    }
   };
 
   const clearAllAlerts = () => {

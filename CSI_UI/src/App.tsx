@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import GlobalStatusBar from "./components/Navbar/Navbar";
 import SiteEndpointLayout from "./components/SiteEndpointLayout/SiteEndpointLayout";
 import AlertsPanel from "./components/Alerts/AlertsPanel";
-import CriticalAlertNotifications from "./components/Alerts/CriticalAlertNotifications";
 import { useAlerts } from "./hooks/useAlerts";
 import ManageUsers from "./components/Management/ManageUsers";
 import ManageDevices from "./components/Management/ManageDevices";
@@ -27,8 +26,6 @@ const App: React.FC = () => {
           <Route path="/manage-devices" element={<ManageDevices />} />
         </Routes>
         <AlertsPanel alerts={alerts} />
-        {/* Critical Alert Notifications - floating overlay */}
-        <CriticalAlertNotifications alerts={alerts} position="top-right" maxAlerts={5} />
       </div>
     </Router>
   );

@@ -6,7 +6,7 @@ export interface AlertNotification {
   id: number;
   type: string;
   message: string;
-  severity: "INFO" | "WARNING" | "CRITICAL";
+  severity: "INFO" | "CAUTION" | "SERIOUS" | "CRITICAL";
   deviceId: number;
   deviceName?: string;
   siteId?: number;

@@ -397,8 +397,8 @@ const baseServerData = {
   heartbeat: { update_interval_msec: null, last_sent: null },
   log: { escalation_levels: "INFO", state: "UNKNOWN", entries: {} },
   parameters: {
-    ready: "INITIALIZING",
-    power_state: "SHUTDOWN",
+    ready: "READY",
+    power_state: "ONLINE",
     averaging_interval_ms: 10000,
   },
 };

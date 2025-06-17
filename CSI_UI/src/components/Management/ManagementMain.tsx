@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { RuxContainer, RuxButton } from "@astrouxds/react";
+import { RuxContainer, RuxButton, RuxIcon } from "@astrouxds/react";
+import StatusIndicator from "./StatusIndicator";
+import "./Management.css";
 
 export interface ManagementFormProps<T> {
   item: T | null;
@@ -82,15 +84,29 @@ const ManagementMain = <T,>({
   return (
     <RuxContainer className="management-main">
       <div slot="header">
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <RuxButton
-            icon="arrow-back"
-            iconOnly
-            size="small"
-            onClick={() => navigate("/")}
-            title="Back to Dashboard"
-          />
-          {entityName} Management
+        <div className="management-header">
+          <div className="management-title">
+            <RuxButton
+              icon="arrow-back"
+              iconOnly
+              size="small"
+              onClick={() => navigate("/")}
+              title="Back to Dashboard"
+            />
+            <h1 style={{ margin: 0 }}>{entityName} Management</h1>
+          </div>
+          <div className="management-stats">
+            <div className="stat-item">
+              <div className="stat-value">{items.length}</div>
+              <div className="stat-label">Total {entityName}s</div>
+            </div>
+            <StatusIndicator
+              status={items.length > 0 ? "NORMAL" : "OFF"}
+              size="medium"
+              variant="badge"
+              showLabel
+            />
+          </div>
         </div>
       </div>
       {showForm ? (
@@ -116,9 +132,36 @@ const ManagementMain = <T,>({
       )}
       <div slot="footer">
         {!showForm && (
-          <RuxButton onClick={() => setShowForm(true)}>
-            Add {entityName}
-          </RuxButton>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "var(--spacing-3)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "var(--spacing-2)",
+              }}
+            >
+              <StatusIndicator status="STANDBY" size="small" />
+              <span
+                style={{
+                  color: "var(--color-text-secondary)",
+                  fontSize: "var(--font-size-sm)",
+                }}
+              >
+                Ready to manage {entityName.toLowerCase()}s
+              </span>
+            </div>
+            <RuxButton onClick={() => setShowForm(true)}>
+              <RuxIcon icon="add" size="1rem" />
+              Add {entityName}
+            </RuxButton>
+          </div>
         )}
       </div>
     </RuxContainer>

@@ -37,8 +37,14 @@ app.post("/", async (c: Context) => {
   const body = await c.req.json();
   const validation = CreateMetricThresholdSchema.safeParse(body);
   if (!validation.success)
-    return c.json({ error: "Invalid input", details: validation.error.issues }, 400);
-  const inserted = await db.insert(metricThresholds).values(validation.data).returning();
+    return c.json(
+      { error: "Invalid input", details: validation.error.issues },
+      400
+    );
+  const inserted = await db
+    .insert(metricThresholds)
+    .values(validation.data)
+    .returning();
   return c.json(inserted[0], 201);
 });
 
@@ -48,7 +54,10 @@ app.put("/:id", async (c: Context) => {
   const body = await c.req.json();
   const validation = UpdateMetricThresholdSchema.safeParse(body);
   if (!validation.success)
-    return c.json({ error: "Invalid input", details: validation.error.issues }, 400);
+    return c.json(
+      { error: "Invalid input", details: validation.error.issues },
+      400
+    );
   if (Object.keys(validation.data).length === 0)
     return c.json({ error: "No fields to update" }, 400);
   const updated = await db

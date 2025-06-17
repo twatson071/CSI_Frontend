@@ -31,9 +31,10 @@ async function evaluateThresholds(
   });
 
   for (const threshold of thresholds) {
-    const { criticalThreshold, warningThreshold, operator } = threshold;
+    const { criticalThreshold, seriousThreshold, cautionThreshold, operator } =
+      threshold;
 
-    // Check critical threshold first
+    // Check critical threshold first (highest priority)
     if (criticalThreshold !== null && criticalThreshold !== undefined) {
       let exceedsCritical = false;
 
@@ -101,11 +102,11 @@ async function evaluateThresholds(
               severity: "CRITICAL",
               deviceId: deviceId,
               deviceName: device?.name,
-              siteId: device?.siteId,
+              siteId: device?.siteId || undefined,
               siteName: site?.name,
               metricType: metricType,
               metricValue: value,
-              threshold: criticalThreshold,
+              threshold: criticalThreshold as number,
               timestamp: alertResult[0].createdAt || new Date().toISOString(),
             };
 
@@ -113,42 +114,45 @@ async function evaluateThresholds(
             broadcastAlert(criticalAlert);
           }
 
+          // Update device status based on new alert
+          await updateDeviceStatusFromAlerts(deviceId);
+
           console.log(
             `CRITICAL ALERT: Device ${deviceId} ${metricType} exceeded critical threshold (${value} > ${criticalThreshold})`
           );
         }
 
-        // If critical threshold is exceeded, don't check warning threshold
+        // If critical threshold is exceeded, don't check lower severity thresholds
         continue;
       }
     }
 
-    // Check warning threshold if critical wasn't exceeded
-    if (warningThreshold !== null && warningThreshold !== undefined) {
-      let exceedsWarning = false;
+    // Check serious threshold if critical wasn't exceeded
+    if (seriousThreshold !== null && seriousThreshold !== undefined) {
+      let exceedsSerious = false;
 
       switch (operator) {
         case "greater_than":
-          exceedsWarning = value > warningThreshold;
+          exceedsSerious = value > seriousThreshold;
           break;
         case "less_than":
-          exceedsWarning = value < warningThreshold;
+          exceedsSerious = value < seriousThreshold;
           break;
         case "equals":
-          exceedsWarning = value === warningThreshold;
+          exceedsSerious = value === seriousThreshold;
           break;
         default:
-          exceedsWarning = value > warningThreshold;
+          exceedsSerious = value > seriousThreshold;
       }
 
-      if (exceedsWarning) {
-        // Check if we already have a recent warning alert for this metric
+      if (exceedsSerious) {
+        // Check if we already have a recent serious alert for this metric
         const recentAlert = await db.query.alerts.findFirst({
           where: and(
             eq(alerts.deviceId, deviceId),
             eq(alerts.metricId, metricId),
             eq(alerts.thresholdId, threshold.id),
-            eq(alerts.severity, "WARNING"),
+            eq(alerts.severity, "SERIOUS"),
             eq(alerts.acknowledged, 0)
           ),
         });
@@ -159,47 +163,144 @@ async function evaluateThresholds(
             where: eq(devices.id, deviceId),
           });
 
-          // Create warning alert
-          const warningResult = await db.insert(alerts).values({
-            type: "threshold_exceeded",
-            message: `Warning threshold exceeded: ${
-              device?.name || `Device ${deviceId}`
-            } ${metricType} is ${value} (threshold: ${warningThreshold})`,
-            severity: "WARNING",
-            deviceId: deviceId,
-            siteId: device?.siteId || undefined,
-            metricId: metricId,
-            thresholdId: threshold.id,
-            createdAt: new Date().toISOString(),
-          }).returning();
+          // Create serious alert
+          const seriousResult = await db
+            .insert(alerts)
+            .values({
+              type: "threshold_exceeded",
+              message: `Serious threshold exceeded: ${
+                device?.name || `Device ${deviceId}`
+              } ${metricType} is ${value} (threshold: ${seriousThreshold})`,
+              severity: "SERIOUS",
+              deviceId: deviceId,
+              siteId: device?.siteId || undefined,
+              metricId: metricId,
+              thresholdId: threshold.id,
+              createdAt: new Date().toISOString(),
+            })
+            .returning();
 
-          if (warningResult[0]) {
+          if (seriousResult[0]) {
             const site = device?.siteId
               ? await db.query.sites.findFirst({
                   where: eq(sites.id, device.siteId),
                 })
               : null;
 
-            const warningAlert: AlertNotification = {
-              id: warningResult[0].id,
+            const seriousAlert: AlertNotification = {
+              id: seriousResult[0].id,
               type: "threshold_exceeded",
-              message: warningResult[0].message,
-              severity: "WARNING",
+              message: seriousResult[0].message,
+              severity: "SERIOUS",
               deviceId: deviceId,
               deviceName: device?.name,
-              siteId: device?.siteId,
+              siteId: device?.siteId || undefined,
               siteName: site?.name,
               metricType,
               metricValue: value,
-              threshold: warningThreshold,
-              timestamp: warningResult[0].createdAt || new Date().toISOString(),
+              threshold: seriousThreshold as number,
+              timestamp: seriousResult[0].createdAt || new Date().toISOString(),
             };
 
-            broadcastAlert(warningAlert);
+            broadcastAlert(seriousAlert);
           }
 
+          // Update device status based on new alert
+          await updateDeviceStatusFromAlerts(deviceId);
+
           console.log(
-            `WARNING ALERT: Device ${deviceId} ${metricType} exceeded warning threshold (${value} > ${warningThreshold})`
+            `SERIOUS ALERT: Device ${deviceId} ${metricType} exceeded serious threshold (${value} > ${seriousThreshold})`
+          );
+        }
+
+        // If serious threshold is exceeded, don't check caution threshold
+        continue;
+      }
+    }
+
+    // Check caution threshold if neither critical nor serious were exceeded
+    if (cautionThreshold !== null && cautionThreshold !== undefined) {
+      let exceedsCaution = false;
+
+      switch (operator) {
+        case "greater_than":
+          exceedsCaution = value > cautionThreshold;
+          break;
+        case "less_than":
+          exceedsCaution = value < cautionThreshold;
+          break;
+        case "equals":
+          exceedsCaution = value === cautionThreshold;
+          break;
+        default:
+          exceedsCaution = value > cautionThreshold;
+      }
+
+      if (exceedsCaution) {
+        // Check if we already have a recent caution alert for this metric
+        const recentAlert = await db.query.alerts.findFirst({
+          where: and(
+            eq(alerts.deviceId, deviceId),
+            eq(alerts.metricId, metricId),
+            eq(alerts.thresholdId, threshold.id),
+            eq(alerts.severity, "CAUTION"),
+            eq(alerts.acknowledged, 0)
+          ),
+        });
+
+        if (!recentAlert) {
+          // Get device details for the alert message
+          const device = await db.query.devices.findFirst({
+            where: eq(devices.id, deviceId),
+          });
+
+          // Create caution alert
+          const cautionResult = await db
+            .insert(alerts)
+            .values({
+              type: "threshold_exceeded",
+              message: `Caution threshold exceeded: ${
+                device?.name || `Device ${deviceId}`
+              } ${metricType} is ${value} (threshold: ${cautionThreshold})`,
+              severity: "CAUTION",
+              deviceId: deviceId,
+              siteId: device?.siteId || undefined,
+              metricId: metricId,
+              thresholdId: threshold.id,
+              createdAt: new Date().toISOString(),
+            })
+            .returning();
+
+          if (cautionResult[0]) {
+            const site = device?.siteId
+              ? await db.query.sites.findFirst({
+                  where: eq(sites.id, device.siteId),
+                })
+              : null;
+
+            const cautionAlert: AlertNotification = {
+              id: cautionResult[0].id,
+              type: "threshold_exceeded",
+              message: cautionResult[0].message,
+              severity: "CAUTION",
+              deviceId: deviceId,
+              deviceName: device?.name,
+              siteId: device?.siteId || undefined,
+              siteName: site?.name,
+              metricType,
+              metricValue: value,
+              threshold: cautionThreshold as number,
+              timestamp: cautionResult[0].createdAt || new Date().toISOString(),
+            };
+
+            broadcastAlert(cautionAlert);
+          }
+
+          // Update device status based on new alert
+          await updateDeviceStatusFromAlerts(deviceId);
+
+          console.log(
+            `CAUTION ALERT: Device ${deviceId} ${metricType} exceeded caution threshold (${value} > ${cautionThreshold})`
           );
         }
       }
@@ -527,9 +628,9 @@ async function pollDevicesAndStore() {
         await db.insert(alerts).values({
           type: "status_change",
           message: `Device ${device.name} status changed from ${device.status} to ${externalData.status}`,
-          severity: "WARNING",
+          severity: "CAUTION",
           deviceId: device.id,
-          siteId: device.siteId,
+          siteId: device.siteId || undefined,
           createdAt: new Date().toISOString(),
         });
       } else if (externalData && !externalData.status) {
@@ -559,7 +660,7 @@ async function pollDevicesAndStore() {
           }`,
           severity: "CRITICAL",
           deviceId: device.id,
-          siteId: device.siteId,
+          siteId: device.siteId || undefined,
           createdAt: new Date().toISOString(),
         });
       } catch (alertErr) {
@@ -572,6 +673,75 @@ async function pollDevicesAndStore() {
   }
 
   console.log("Device polling cycle complete.");
+}
+
+// Function to determine device status based on highest alert severity
+async function updateDeviceStatusFromAlerts(deviceId: number) {
+  try {
+    // Get all unacknowledged alerts for this device, ordered by severity priority
+    const deviceAlerts = await db.query.alerts.findMany({
+      where: and(eq(alerts.deviceId, deviceId), eq(alerts.acknowledged, 0)),
+      orderBy: (a, { desc }) => desc(a.createdAt),
+    });
+
+    let newStatus:
+      | "off"
+      | "standby"
+      | "normal"
+      | "caution"
+      | "serious"
+      | "critical" = "normal"; // Default status when no alerts
+
+    if (deviceAlerts.length > 0) {
+      // Determine highest severity alert
+      const severityPriority = {
+        CRITICAL: 4,
+        SERIOUS: 3,
+        CAUTION: 2,
+        INFO: 1,
+      };
+
+      let highestSeverity = "INFO";
+      let highestPriority = 0;
+
+      for (const alert of deviceAlerts) {
+        const priority =
+          severityPriority[alert.severity as keyof typeof severityPriority] ||
+          0;
+        if (priority > highestPriority) {
+          highestPriority = priority;
+          highestSeverity = alert.severity;
+        }
+      }
+
+      // Map alert severity to device status
+      const severityToStatus = {
+        CRITICAL: "critical" as const,
+        SERIOUS: "serious" as const,
+        CAUTION: "caution" as const,
+        INFO: "normal" as const,
+      };
+
+      newStatus =
+        severityToStatus[highestSeverity as keyof typeof severityToStatus] ||
+        "normal";
+    }
+
+    // Update device status in database
+    await db
+      .update(devices)
+      .set({
+        status: newStatus,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(devices.id, deviceId));
+
+    console.log(`Device ${deviceId} status updated to: ${newStatus}`);
+    return newStatus;
+  } catch (error) {
+    console.error(`Error updating device ${deviceId} status:`, error);
+    return null;
+  }
 }
 
 console.log("Initial device poll starting...");
@@ -594,3 +764,6 @@ setInterval(() => {
 console.log(
   `Device polling scheduled to run every ${POLLING_INTERVAL_MS / 1000} seconds.`
 );
+
+// Export functions for use in other modules
+export { updateDeviceStatusFromAlerts };

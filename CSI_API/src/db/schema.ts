@@ -122,7 +122,9 @@ export const alerts = sqliteTable("alerts", {
   id: int().primaryKey({ autoIncrement: true }),
   type: text().notNull(),
   message: text().notNull(),
-  severity: text({ enum: ["INFO", "WARNING", "CRITICAL"] }).notNull(),
+  severity: text({
+    enum: ["INFO", "CAUTION", "SERIOUS", "CRITICAL"],
+  }).notNull(),
   deviceId: int().references(() => devices.id),
   siteId: int().references(() => sites.id),
   metricId: int().references(() => metrics.id), // Add reference to the metric that triggered this alert
@@ -210,7 +212,8 @@ export const metricThresholds = sqliteTable("metric_thresholds", {
   id: int().primaryKey({ autoIncrement: true }),
   deviceId: int().references(() => devices.id),
   metricType: text().notNull(),
-  warningThreshold: real(),
+  cautionThreshold: real(),
+  seriousThreshold: real(),
   criticalThreshold: real(),
   operator: text({ enum: ["greater_than", "less_than", "equals"] })
     .notNull()

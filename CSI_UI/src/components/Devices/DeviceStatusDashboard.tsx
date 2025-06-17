@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   RuxContainer,
   RuxStatus,
   RuxTable,
-  RuxTableHeader,
   RuxTableHeaderRow,
   RuxTableHeaderCell,
   RuxTableBody,
@@ -15,91 +14,61 @@ import {
   RuxTabs,
   RuxTab,
 } from "@astrouxds/react";
-import { Device } from "../../services/DeviceService";
-import { getDevices } from "../../services";
+import { useDeviceStatus } from "../../hooks/useDeviceStatus";
 import "./DeviceStatusDashboard.css";
 
-interface DeviceStatusData {
-  devices: Device[];
-  statusCounts: Record<string, number>;
-  loading: boolean;
-  error: string | null;
-  lastRefreshTime: Date | null;
-}
-
 const DeviceStatusDashboard: React.FC = () => {
-  const [statusData, setStatusData] = useState<DeviceStatusData>({
-    devices: [],
-    statusCounts: {},
-    loading: true,
-    error: null,
-    lastRefreshTime: null,
-  });
   const [activeView, setActiveView] = useState<"list" | "grid">("list");
   const [selectedType, setSelectedType] = useState<string | null>(null);
 
-  const fetchDeviceStatus = async () => {
-    setStatusData((prev) => ({ ...prev, loading: true, error: null }));
+  // Use the new device status hook
+  const {
+    devices,
+    loading,
+    error,
+    lastRefresh,
+    refreshDevices,
+    getSystemHealth,
+    updateDeviceStatus,
+    getDeviceStatusFromAlerts,
+  } = useDeviceStatus();
+  const systemHealth = getSystemHealth();
 
-    try {
-      const fetchedDevices = await getDevices();
-
-      const statusCounts = fetchedDevices.reduce((counts, device) => {
-        const status = device.status || "unknown";
-        counts[status] = (counts[status] || 0) + 1;
-        return counts;
-      }, {} as Record<string, number>);
-
-      setStatusData({
-        devices: fetchedDevices,
-        statusCounts,
-        loading: false,
-        error: null,
-        lastRefreshTime: new Date(),
-      });
-    } catch (error) {
-      console.error("Failed to fetch device status:", error);
-      setStatusData((prev) => ({
-        ...prev,
-        loading: false,
-        error: "Failed to load device statuses",
-      }));
-    }
-  };
-
-  useEffect(() => {
-    fetchDeviceStatus();
-    // Set up an interval to refresh device status every minute
-    const intervalId = setInterval(fetchDeviceStatus, 60000);
-
-    return () => clearInterval(intervalId);
-  }, []);
-
-  const deviceTypes = Array.from(
-    new Set(statusData.devices.map((device) => device.type))
-  );
+  const deviceTypes = Array.from(new Set(devices.map((device) => device.type)));
 
   const filteredDevices = selectedType
-    ? statusData.devices.filter((device) => device.type === selectedType)
-    : statusData.devices;
+    ? devices.filter((device) => device.type === selectedType)
+    : devices;
 
-  const mapStatus = (status: string | undefined): string => {
-    if (!status) return "unknown";
-    return status.toLowerCase() === "online" ? "normal" : status;
+  // Handle refresh functionality
+  const handleRefresh = async () => {
+    await refreshDevices();
   };
 
-  const calculateHealthPercentage = () => {
-    if (statusData.devices.length === 0) return 100;
-
-    const healthyStatuses = ["normal", "ready", "online", "standby"];
-    const healthyDevices = statusData.devices.filter((device) =>
-      healthyStatuses.includes(device.status?.toLowerCase() || "")
-    ).length;
-
-    return Math.round((healthyDevices / statusData.devices.length) * 100);
+  const mapStatus = (
+    status: string | undefined
+  ): "normal" | "critical" | "caution" | "serious" | "off" | "standby" => {
+    if (!status) return "off";
+    const lowerStatus = status.toLowerCase();
+    switch (lowerStatus) {
+      case "normal":
+      case "online":
+        return "normal";
+      case "critical":
+        return "critical";
+      case "caution":
+        return "caution";
+      case "serious":
+        return "serious";
+      case "standby":
+        return "standby";
+      case "off":
+      case "offline":
+        return "off";
+      default:
+        return "normal";
+    }
   };
-
-  const healthPercentage = calculateHealthPercentage();
 
   return (
     <RuxContainer className="device-status">
@@ -107,7 +76,7 @@ const DeviceStatusDashboard: React.FC = () => {
         <div className="container-header">
           Device Status Dashboard
           <div className="dashboard-controls">
-            <RuxButton size="small" icon="refresh" onClick={fetchDeviceStatus}>
+            <RuxButton size="small" icon="refresh" onClick={handleRefresh}>
               Refresh
             </RuxButton>
             <div className="view-toggle">
@@ -134,17 +103,17 @@ const DeviceStatusDashboard: React.FC = () => {
         <div className="dashboard-metrics">
           <div className="dashboard-metric-card">
             <h3>Total Devices</h3>
-            <div className="metric-value">{statusData.devices.length}</div>
+            <div className="metric-value">{devices.length}</div>
           </div>
           <div className="dashboard-metric-card">
             <h3>System Health</h3>
-            <div className="metric-value">{healthPercentage}%</div>
-            <RuxProgress value={healthPercentage} max={100} />
+            <div className="metric-value">{systemHealth.percentage}%</div>
+            <RuxProgress value={systemHealth.percentage} max={100} />
           </div>
           <div className="dashboard-metric-card">
             <h3>Critical Issues</h3>
             <div className="metric-value">
-              {statusData.statusCounts["critical"] || 0}
+              {systemHealth.statusCounts?.["critical"] || 0}
             </div>
           </div>
         </div>
@@ -162,16 +131,16 @@ const DeviceStatusDashboard: React.FC = () => {
           </RuxTabs>
         </div>
 
-        {statusData.loading ? (
+        {loading ? (
           <div className="loading-state">
             <RuxProgress value={-1} />
             <p>Loading device statuses...</p>
           </div>
-        ) : statusData.error ? (
+        ) : error ? (
           <div className="error-state">
             <RuxIcon icon="error" />
-            <p>{statusData.error}</p>
-            <RuxButton onClick={fetchDeviceStatus}>Retry</RuxButton>
+            <p>{error}</p>
+            <RuxButton onClick={handleRefresh}>Retry</RuxButton>
           </div>
         ) : activeView === "list" ? (
           <>
@@ -202,6 +171,8 @@ const DeviceStatusDashboard: React.FC = () => {
                       <RuxTableCell>
                         {device.lastSeen
                           ? new Date(device.lastSeen).toLocaleString()
+                          : device.updatedAt
+                          ? new Date(device.updatedAt).toLocaleString()
                           : "Unknown"}
                       </RuxTableCell>
                       <RuxTableCell>{device.ipAddress || "No IP"}</RuxTableCell>
@@ -261,8 +232,7 @@ const DeviceStatusDashboard: React.FC = () => {
       </div>
 
       <div slot="footer" className="dashboard-footer">
-        Last refreshed:{" "}
-        {statusData.lastRefreshTime?.toLocaleString() || "Never"}
+        Last refreshed: {lastRefresh?.toLocaleString() || "Never"}
       </div>
     </RuxContainer>
   );

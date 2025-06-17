@@ -6,7 +6,7 @@ export interface Alert {
   id: number;
   type: string;
   message: string;
-  severity: "INFO" | "WARNING" | "CRITICAL";
+  severity: "INFO" | "CAUTION" | "SERIOUS" | "CRITICAL";
   deviceId: number | null;
   siteId?: number | null;
   metricId?: number | null;

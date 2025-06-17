@@ -4,10 +4,12 @@ import type { Alert } from "../../services/AlertService";
 import "./Alerts.css";
 
 interface AlertsPanelProps {
-  alerts: Alert[];
+  alerts?: Alert[]; // Make alerts optional
+  onAcknowledge?: (id: number) => void; // Add acknowledge callback
 }
 
-const AlertsPanel = ({ alerts }: AlertsPanelProps) => {
+const AlertsPanel = ({ alerts = [], onAcknowledge }: AlertsPanelProps) => {
+  // Provide default empty array
   return (
     <RuxContainer className="alerts">
       <div slot="header">
@@ -15,7 +17,7 @@ const AlertsPanel = ({ alerts }: AlertsPanelProps) => {
           <span>{alerts.length}</span> Active Alerts
         </div>
       </div>
-      <AlertsList alerts={alerts} />
+      <AlertsList alerts={alerts} onAcknowledge={onAcknowledge} />
     </RuxContainer>
   );
 };

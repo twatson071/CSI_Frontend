@@ -2,16 +2,18 @@ import { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { addToast } from "../utils/toast";
 import type { Alert } from "../services/AlertService";
-import { getAlerts } from "../services/AlertService";
+import { getAlerts, acknowledgeAlert } from "../services/AlertService";
 
 export function useAlerts(serverUrl: string = "http://localhost:8081") {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    getAlerts().then(setAlerts).catch((err) => {
-      console.error("Failed to fetch alerts", err);
-    });
+    getAlerts()
+      .then(setAlerts)
+      .catch((err) => {
+        console.error("Failed to fetch alerts", err);
+      });
 
     const socket = io(serverUrl, {
       transports: ["websocket", "polling"],
@@ -43,8 +45,17 @@ export function useAlerts(serverUrl: string = "http://localhost:8081") {
     };
   }, [serverUrl]);
 
-  const acknowledge = (id: number) => {
-    setAlerts((prev) => prev.filter((a) => a.id !== id));
+  const acknowledge = async (id: number) => {
+    try {
+      // Call the API to acknowledge the alert in the database
+      await acknowledgeAlert(id);
+      // Remove the acknowledged alert from the local state
+      setAlerts((prev) => prev.filter((a) => a.id !== id));
+      addToast("Alert acknowledged", true, 3000);
+    } catch (error) {
+      console.error("Failed to acknowledge alert:", error);
+      addToast("Failed to acknowledge alert", false, 5000);
+    }
   };
 
   return { alerts, acknowledge };

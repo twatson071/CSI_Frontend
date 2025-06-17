@@ -187,7 +187,13 @@ export async function fetchExternalDeviceDetails(serviceUrl: string) {
         let dbParameters: any = {};
         let dbDataField: any = {};
         let dbIpAddress: string | null = existingDevice.ipAddress; // Default to existing
-        let dbStatus: string = existingDevice.status || "READY"; // Default to existing
+        let dbStatus:
+          | "off"
+          | "standby"
+          | "normal"
+          | "caution"
+          | "serious"
+          | "critical" = existingDevice.status || "normal"; // Default to existing
 
         const deviceType = existingDevice.type; // Use the type of the existing device
 
@@ -203,14 +209,14 @@ export async function fetchExternalDeviceDetails(serviceUrl: string) {
             dbStatus = "normal";
           } else {
             // Keep existing status if no new status info from external data
-            dbStatus = existingDevice.status || "READY";
+            dbStatus = existingDevice.status || "normal";
           }
         } else {
           // Generic handling for other device types
           dbParameters = externalData.parameters || {};
           dbDataField = externalData.data || externalData;
           dbIpAddress = externalData.ipAddress || existingDevice.ipAddress;
-          dbStatus = externalData.status || existingDevice.status || "READY";
+          dbStatus = externalData.status || existingDevice.status || "normal";
         }
 
         const dataToUpdate: Partial<typeof devices.$inferInsert> = {
@@ -266,7 +272,13 @@ async function createDevice(c: Context) {
     let dbParameters: any = {};
     let dbData: any = {};
     let dbIpAddress: string | null = null;
-    let dbStatus: string = "READY";
+    let dbStatus:
+      | "off"
+      | "standby"
+      | "normal"
+      | "caution"
+      | "serious"
+      | "critical" = "normal";
 
     if (type === "PDU") {
       dbParameters = externalDetails.parameters || {};
@@ -275,18 +287,60 @@ async function createDevice(c: Context) {
 
       // Determine status for PDU
       if (externalDetails.sensors?.load_state) {
-        dbStatus = externalDetails.sensors.load_state.toLowerCase();
+        const lowerStatus = externalDetails.sensors.load_state.toLowerCase();
+        // Map external status to valid schema status
+        switch (lowerStatus) {
+          case "critical":
+            dbStatus = "critical";
+            break;
+          case "serious":
+            dbStatus = "serious";
+            break;
+          case "caution":
+          case "warning":
+            dbStatus = "caution";
+            break;
+          case "standby":
+            dbStatus = "standby";
+            break;
+          case "off":
+            dbStatus = "off";
+            break;
+          default:
+            dbStatus = "normal";
+        }
       } else if (externalDetails.parameters?.ready === "READY") {
         dbStatus = "normal";
       } else {
-        dbStatus = "READY"; // Fallback
+        dbStatus = "normal"; // Default fallback
       }
     } else {
       dbParameters = externalDetails.parameters || {};
-
       dbData = externalDetails.data || externalDetails;
       dbIpAddress = externalDetails.ipAddress || null;
-      dbStatus = externalDetails.status || "READY";
+
+      // Map external status to valid schema status
+      const extStatus = externalDetails.status?.toLowerCase() || "normal";
+      switch (extStatus) {
+        case "critical":
+          dbStatus = "critical";
+          break;
+        case "serious":
+          dbStatus = "serious";
+          break;
+        case "caution":
+        case "warning":
+          dbStatus = "caution";
+          break;
+        case "standby":
+          dbStatus = "standby";
+          break;
+        case "off":
+          dbStatus = "off";
+          break;
+        default:
+          dbStatus = "normal";
+      }
     }
 
     const deviceToInsert = {
@@ -374,11 +428,11 @@ app.get("/:id/sites", async (c: Context) => {
       siteId: true,
     },
   });
-  if (!deviceSiteId) {
-    return c.json({ error: "Device not found" }, 404);
+  if (!deviceSiteId || !deviceSiteId.siteId) {
+    return c.json({ error: "Device not found or has no associated site" }, 404);
   }
   const relatedSites = await db.query.sites.findMany({
-    where: (s, { eq }) => eq(s.id, deviceSiteId.siteId),
+    where: (s, { eq }) => eq(s.id, deviceSiteId.siteId as number),
     columns: {
       id: true,
       name: true,
@@ -386,6 +440,32 @@ app.get("/:id/sites", async (c: Context) => {
   });
   return c.json(relatedSites);
 });
+
+// Update device status based on alerts
+app.post("/:id/update-status", async (c: Context) => {
+  const deviceId = parseInt(c.req.param("id"));
+  if (isNaN(deviceId)) {
+    return c.json({ error: "Invalid device ID" }, 400);
+  }
+
+  try {
+    // Import the function dynamically to avoid circular dependencies
+    const { updateDeviceStatusFromAlerts } = await import(
+      "../../poller/pollDevices"
+    );
+    const newStatus = await updateDeviceStatusFromAlerts(deviceId);
+
+    if (newStatus === null) {
+      return c.json({ error: "Failed to update device status" }, 500);
+    }
+
+    return c.json({ status: newStatus });
+  } catch (error) {
+    console.error("Error updating device status:", error);
+    return c.json({ error: "Failed to update device status" }, 500);
+  }
+});
+
 app.get("/", getDevice);
 app.get("/services", (c) => getServiceList(c, "GET"));
 app.get("/:id", getDeviceById);

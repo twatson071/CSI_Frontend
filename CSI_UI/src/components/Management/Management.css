@@ -1,0 +1,329 @@
+/* Management Components Styling */
+
+.management-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-4);
+}
+
+.management-main rux-container {
+  background: var(--color-background-surface-default);
+  border-radius: var(--radius-base);
+  box-shadow: var(--shadow-overlay);
+}
+
+/* Form Styling */
+.management-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4);
+  background: var(--color-background-surface-default);
+  border-radius: var(--radius-base);
+}
+
+.device-form.management-form {
+  max-width: 800px;
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--spacing-3);
+  justify-content: flex-end;
+  padding-top: var(--spacing-3);
+  border-top: 1px solid var(--color-background-surface-selected);
+  margin-top: var(--spacing-4);
+}
+
+/* Threshold Groups Styling */
+.threshold-group {
+  margin-bottom: var(--spacing-4);
+  padding: var(--spacing-4);
+  background: var(--color-background-surface-selected);
+  border: 1px solid var(--color-background-interactive-default);
+  border-radius: var(--radius-base);
+  transition: all 0.2s ease-in-out;
+}
+
+.threshold-group:hover {
+  border-color: var(--color-background-interactive-hover);
+  background: var(--color-background-surface-header);
+}
+
+.threshold-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-3);
+}
+
+.threshold-group-title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.threshold-group-description {
+  margin: 0 0 var(--spacing-3) 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono-family);
+}
+
+.threshold-group-metrics {
+  background: var(--color-background-base-default);
+  padding: var(--spacing-2);
+  border-radius: var(--radius-base);
+  border: 1px solid var(--color-background-interactive-default);
+}
+
+.threshold-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-4);
+}
+
+.threshold-input-wrapper {
+  position: relative;
+}
+
+.threshold-indicator {
+  position: absolute;
+  top: 0;
+  right: -8px;
+  width: 4px;
+  height: 100%;
+  border-radius: 2px;
+  transition: all 0.2s ease-in-out;
+}
+
+.threshold-indicator.caution {
+  background-color: var(--color-status-caution);
+  box-shadow: 0 0 8px var(--color-status-caution);
+}
+.threshold-indicator.serious {
+  background-color: var(--color-status-serious);
+  box-shadow: 0 0 8px var(--color-status-serious);
+}
+.threshold-indicator.critical {
+  background-color: var(--color-status-critical);
+  box-shadow: 0 0 8px var(--color-status-critical);
+}
+
+/* Individual Metric Styling */
+.individual-metric {
+  margin-bottom: var(--spacing-4);
+  padding: var(--spacing-3);
+  background: var(--color-background-surface-selected);
+  border: 1px solid var(--color-background-interactive-default);
+  border-radius: var(--radius-base);
+  border-left: 4px solid var(--color-status-standby);
+}
+
+.individual-metric-title {
+  margin: 0 0 var(--spacing-2) 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+/* Table Styling */
+.table-wrapper {
+  background: var(--color-background-surface-default);
+  border-radius: var(--radius-base);
+  overflow: hidden;
+  box-shadow: var(--shadow-overlay);
+}
+
+.table-wrapper rux-table {
+  width: 100%;
+  background: transparent;
+}
+
+.table-wrapper rux-table-header-row {
+  background: var(--color-background-surface-header);
+}
+
+.table-wrapper rux-table-header-cell {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  padding: var(--spacing-3) var(--spacing-4);
+  border-bottom: 2px solid var(--color-background-interactive-default);
+}
+
+.table-wrapper rux-table-row {
+  transition: all 0.2s ease-in-out;
+}
+
+.table-wrapper rux-table-row:hover {
+  background: var(--color-background-surface-selected);
+}
+
+.table-wrapper rux-table-cell {
+  padding: var(--spacing-3) var(--spacing-4);
+  border-bottom: 1px solid var(--color-background-interactive-default);
+  color: var(--color-text-primary);
+}
+
+.table-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: center;
+}
+
+/* Status Column Enhancements */
+.status-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.device-health-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-1) var(--spacing-2);
+  background: var(--color-background-surface-selected);
+  border-radius: var(--radius-base);
+  border: 1px solid var(--color-background-interactive-default);
+}
+
+/* Loading and Error States */
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-8);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.loading-state rux-icon,
+.error-state rux-icon {
+  font-size: 2rem;
+  color: var(--color-text-interactive-default);
+}
+
+/* Entity Badge */
+.entity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-2);
+  background: var(--color-background-surface-selected);
+  border: 1px solid var(--color-background-interactive-default);
+  border-radius: var(--radius-base);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.entity-badge.server {
+  border-left: 3px solid var(--color-status-normal);
+}
+
+.entity-badge.pdu {
+  border-left: 3px solid var(--color-status-standby);
+}
+
+.entity-badge.network {
+  border-left: 3px solid var(--color-status-caution);
+}
+
+/* Header Improvements */
+.management-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4);
+  background: var(--color-background-surface-header);
+  border-bottom: 1px solid var(--color-background-interactive-default);
+}
+
+.management-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+}
+
+.management-stats {
+  display: flex;
+  gap: var(--spacing-4);
+  align-items: center;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-1);
+  padding: var(--spacing-2) var(--spacing-3);
+  background: var(--color-background-surface-default);
+  border-radius: var(--radius-base);
+  border: 1px solid var(--color-background-interactive-default);
+}
+
+.stat-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.stat-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .threshold-inputs {
+    grid-template-columns: 1fr;
+  }
+
+  .management-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .management-stats {
+    justify-content: space-around;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+  }
+}
+
+/* Animation for status changes */
+@keyframes statusPulse {
+  0% {
+    box-shadow: 0 0 0 0 currentColor;
+  }
+  70% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.status-critical {
+  animation: statusPulse 2s ease-in-out infinite;
+}
