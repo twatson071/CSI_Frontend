@@ -10,7 +10,8 @@ import { eq, and } from "drizzle-orm";
 import { fetchExternalDeviceDetails } from "../routes/devices/deviceRoutes";
 import {
   broadcastCriticalAlert,
-  type CriticalAlertNotification,
+  broadcastAlert,
+  type AlertNotification,
 } from "../services/alertNotificationService";
 
 // Add threshold evaluation function
@@ -93,7 +94,7 @@ async function evaluateThresholds(
                 })
               : null;
 
-            const criticalAlert: CriticalAlertNotification = {
+            const criticalAlert: AlertNotification = {
               id: alertResult[0].id,
               type: "threshold_exceeded",
               message: alertResult[0].message,
@@ -109,6 +110,7 @@ async function evaluateThresholds(
             };
 
             broadcastCriticalAlert(criticalAlert);
+            broadcastAlert(criticalAlert);
           }
 
           console.log(
@@ -158,7 +160,7 @@ async function evaluateThresholds(
           });
 
           // Create warning alert
-          await db.insert(alerts).values({
+          const warningResult = await db.insert(alerts).values({
             type: "threshold_exceeded",
             message: `Warning threshold exceeded: ${
               device?.name || `Device ${deviceId}`
@@ -169,7 +171,32 @@ async function evaluateThresholds(
             metricId: metricId,
             thresholdId: threshold.id,
             createdAt: new Date().toISOString(),
-          });
+          }).returning();
+
+          if (warningResult[0]) {
+            const site = device?.siteId
+              ? await db.query.sites.findFirst({
+                  where: eq(sites.id, device.siteId),
+                })
+              : null;
+
+            const warningAlert: AlertNotification = {
+              id: warningResult[0].id,
+              type: "threshold_exceeded",
+              message: warningResult[0].message,
+              severity: "WARNING",
+              deviceId: deviceId,
+              deviceName: device?.name,
+              siteId: device?.siteId,
+              siteName: site?.name,
+              metricType,
+              metricValue: value,
+              threshold: warningThreshold,
+              timestamp: warningResult[0].createdAt || new Date().toISOString(),
+            };
+
+            broadcastAlert(warningAlert);
+          }
 
           console.log(
             `WARNING ALERT: Device ${deviceId} ${metricType} exceeded warning threshold (${value} > ${warningThreshold})`

@@ -2,11 +2,11 @@
 import { Server } from "socket.io";
 import { createServer } from "http";
 
-export interface CriticalAlertNotification {
+export interface AlertNotification {
   id: number;
   type: string;
   message: string;
-  severity: "CRITICAL";
+  severity: "INFO" | "WARNING" | "CRITICAL";
   deviceId: number;
   deviceName?: string;
   siteId?: number;
@@ -57,7 +57,7 @@ export function initializeAlertNotificationService(port: number = 8081) {
 }
 
 // Broadcast critical alert to all connected clients
-export function broadcastCriticalAlert(alert: CriticalAlertNotification) {
+export function broadcastCriticalAlert(alert: AlertNotification) {
   if (!io) {
     console.warn("Alert notification service not initialized");
     return;
@@ -67,6 +67,14 @@ export function broadcastCriticalAlert(alert: CriticalAlertNotification) {
 
   // Emit to all connected clients
   io.emit("critical_alert", alert);
+}
+
+export function broadcastAlert(alert: AlertNotification) {
+  if (!io) {
+    console.warn("Alert notification service not initialized");
+    return;
+  }
+  io.emit("alert", alert);
 }
 
 // Get count of connected clients

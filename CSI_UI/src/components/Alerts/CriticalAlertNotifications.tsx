@@ -1,59 +1,33 @@
 import React, { useState } from "react";
 import { RuxButton, RuxIcon, RuxContainer } from "@astrouxds/react";
-import { useCriticalAlerts } from "../../hooks/useCriticalAlerts";
+import type { Alert } from "../../services/AlertService";
 import StatusBadge from "../common/StatusBadge";
 import "./CriticalAlertNotifications.css";
 
 interface CriticalAlertNotificationsProps {
-  serverUrl?: string;
+  alerts: Alert[];
   position?: "top-right" | "top-left" | "bottom-right" | "bottom-left";
   maxAlerts?: number;
 }
 
 const CriticalAlertNotifications: React.FC<CriticalAlertNotificationsProps> = ({
-  serverUrl = "http://localhost:8081",
+  alerts,
   position = "top-right",
   maxAlerts = 5,
 }) => {
-  const { alerts, acknowledgeAlert, clearAllAlerts, connectionStatus } =
-    useCriticalAlerts(serverUrl);
+  const acknowledgeAlert = (id: number) => {
+    // Currently just remove from local array
+  };
+  const clearAllAlerts = () => {};
   const [isMinimized, setIsMinimized] = useState(false);
-
-  const visibleAlerts = alerts.slice(0, maxAlerts);
+  const visibleAlerts = alerts.filter((a) => a.severity === "CRITICAL").slice(0, maxAlerts);
 
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString();
   };
 
-  const getConnectionStatusColor = () => {
-    switch (connectionStatus) {
-      case "connected":
-        return "#56F000";
-      case "connecting":
-        return "#FCE83A";
-      case "error":
-        return "#FF3838";
-      default:
-        return "#A4ABB6";
-    }
-  };
-
-  if (alerts.length === 0 && connectionStatus === "connected") {
-    return (
-      <div className={`critical-alerts-container ${position} empty`}>
-        <div className="connection-status">
-          <div
-            className="status-dot"
-            style={{ backgroundColor: getConnectionStatusColor() }}
-          />
-          <span className="status-text">Monitoring Active</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (alerts.length === 0) {
+  if (visibleAlerts.length === 0) {
     return null;
   }
 
@@ -70,11 +44,6 @@ const CriticalAlertNotifications: React.FC<CriticalAlertNotificationsProps> = ({
             <span className="alert-count">
               {alerts.length} Critical Alert{alerts.length !== 1 ? "s" : ""}
             </span>
-            <div
-              className="connection-status-dot"
-              style={{ backgroundColor: getConnectionStatusColor() }}
-              title={`Connection: ${connectionStatus}`}
-            />
           </div>
           <div className="header-actions">
             <RuxButton
@@ -109,7 +78,7 @@ const CriticalAlertNotifications: React.FC<CriticalAlertNotificationsProps> = ({
                       {alert.deviceName || `Device ${alert.deviceId}`}
                     </span>
                     <span className="alert-time">
-                      {formatTimestamp(alert.timestamp)}
+                      {formatTimestamp(alert.createdAt)}
                     </span>
                   </div>
                   <div className="alert-message">{alert.message}</div>
