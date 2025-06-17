@@ -12,6 +12,16 @@
   font-size: var(--font-size-base);
 }
 
+.acknowledge-all {
+  margin-left: auto;
+}
+
+.no-alerts {
+  padding: var(--spacing-3);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
 .active-alerts > span {
   font-size: var(--font-size-5xl);
   font-weight: var(--font-weights-bold);
