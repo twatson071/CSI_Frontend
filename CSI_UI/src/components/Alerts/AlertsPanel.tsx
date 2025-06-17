@@ -1,4 +1,4 @@
-import { RuxContainer } from "@astrouxds/react";
+import { RuxContainer, RuxButton } from "@astrouxds/react";
 import AlertsList from "./AlertsList";
 import type { Alert } from "../../services/AlertService";
 import "./Alerts.css";
@@ -10,14 +10,33 @@ interface AlertsPanelProps {
 
 const AlertsPanel = ({ alerts = [], onAcknowledge }: AlertsPanelProps) => {
   // Provide default empty array
+  const acknowledgeAll = () => {
+    if (onAcknowledge) {
+      alerts.forEach((a) => onAcknowledge(a.id));
+    }
+  };
+
   return (
     <RuxContainer className="alerts">
       <div slot="header">
         <div className="active-alerts">
           <span>{alerts.length}</span> Active Alerts
         </div>
+        {alerts.length > 0 && onAcknowledge && (
+          <RuxButton
+            size="small"
+            className="acknowledge-all"
+            onClick={acknowledgeAll}
+          >
+            Acknowledge All
+          </RuxButton>
+        )}
       </div>
-      <AlertsList alerts={alerts} onAcknowledge={onAcknowledge} />
+      {alerts.length === 0 ? (
+        <p className="no-alerts">No active alerts</p>
+      ) : (
+        <AlertsList alerts={alerts} onAcknowledge={onAcknowledge} />
+      )}
     </RuxContainer>
   );
 };
