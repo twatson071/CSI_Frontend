@@ -15,13 +15,19 @@ export interface Alert {
   acknowledged?: number;
   acknowledgedBy?: number | null;
   acknowledgedAt?: string | null;
+  resolvedAt?: string | null; // Add resolution fields
+  isResolved?: boolean;
+  resolutionReason?: string;
 }
 
 export async function getAlerts(): Promise<Alert[]> {
   const resp = await axios.get<Alert[]>(`${API_URL}/alerts`);
   return resp.data;
 }
-
+export async function getAlertCount(): Promise<number> {
+  const resp = await axios.get<{ count: number }>(`${API_URL}/alerts/count`);
+  return resp.data.count;
+}
 export async function acknowledgeAlert(id: number): Promise<Alert> {
   const resp = await axios.put<Alert>(`${API_URL}/alerts/${id}`, {
     acknowledged: 1,

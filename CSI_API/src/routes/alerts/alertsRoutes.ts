@@ -1,7 +1,7 @@
 import { Hono, Context } from "hono";
 import { db } from "../../db";
 import { alerts } from "../../db/schema";
-import { eq, asc, desc, and } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
 import {
   CreateAlertSchema,
   UpdateAlertSchema,
@@ -79,19 +79,51 @@ async function updateDeviceStatusFromAlerts(deviceId: number) {
 }
 
 const app = new Hono();
+app.get("/count", async (c: Context) => {
+  try {
+    const alertCount = await db
+      .select({ count: count(alerts.id) })
+      .from(alerts)
+      .where(and(eq(alerts.acknowledged, 0), eq(alerts.isResolved, false))); // Only count unacknowledged and unresolved alerts
+    return c.json({ count: alertCount[0].count });
+  } catch (error) {
+    console.error("Error fetching alert count:", error);
+    return c.json({ error: "Failed to fetch alert count" }, 500);
+  }
+});
 
-// Get all unacknowledged alerts (recent 100)
+// Get all critical alerts
+app.get("/critical", async (c: Context) => {
+  try {
+    const criticalAlerts = await db.query.alerts.findMany({
+      where: and(
+        eq(alerts.severity, "CRITICAL"),
+        eq(alerts.acknowledged, 0),
+        eq(alerts.isResolved, false) // Only get unacknowledged critical alerts
+      ),
+      orderBy: (a, { desc }) => desc(a.createdAt),
+    });
+    return c.json(criticalAlerts);
+  } catch (error) {
+    console.error("Error fetching critical alerts:", error);
+    return c.json({ error: "Failed to fetch critical alerts" }, 500);
+  }
+});
+
+// Get all unacknowledged alerts
 app.get("/", async (c: Context) => {
   try {
-    const allAlerts = await db.query.alerts.findMany({
-      where: eq(alerts.acknowledged, 0), // Only get unacknowledged alerts
+    const unacknowledgedAlerts = await db.query.alerts.findMany({
+      where: and(
+        eq(alerts.acknowledged, 0),
+        eq(alerts.isResolved, false) // Only get unacknowledged critical alerts
+      ),
       orderBy: (a, { desc }) => desc(a.createdAt),
-      limit: 100,
     });
-    return c.json(allAlerts);
+    return c.json(unacknowledgedAlerts);
   } catch (error) {
-    console.error("Error fetching alerts:", error);
-    return c.json({ error: "Failed to fetch alerts" }, 500);
+    console.error("Error fetching unacknowledged alerts:", error);
+    return c.json({ error: "Failed to fetch unacknowledged alerts" }, 500);
   }
 });
 

@@ -29,26 +29,6 @@ We have successfully implemented a comprehensive critical alert system that auto
 
 ### Frontend (UI)
 
-1. **Critical Alerts Hook (`src/hooks/useCriticalAlerts.ts`)**
-
-   - React hook for consuming real-time alert notifications
-   - Browser notification support with permission handling
-   - Audio alert support (optional)
-   - Connection status monitoring
-   - Alert acknowledgment and management
-
-2. **Critical Alert Notifications Component (`src/components/Alerts/CriticalAlertNotifications.tsx`)**
-
-   - Floating notification overlay
-   - Real-time critical alert display
-   - Minimize/expand functionality
-   - Alert acknowledgment buttons
-   - Responsive design with multiple positioning options
-
-3. **Enhanced Status Badge (`src/components/common/StatusBadge.tsx`)**
-   - Pulsing animation for critical status indicators
-   - Visual attention-grabbing for critical alerts
-
 ## Key Features
 
 ### Real-time Monitoring

@@ -15,6 +15,9 @@ export interface AlertNotification {
   metricValue: number;
   threshold: number;
   timestamp: string;
+  // Add resolution tracking fields
+  isResolved?: boolean;
+  acknowledged?: number;
 }
 
 // Store Socket.IO server instance
@@ -56,14 +59,22 @@ export function initializeAlertNotificationService(port: number = 8081) {
   });
 }
 
-// Broadcast critical alert to all connected clients
+// Broadcast critical alert to all connected clients (only if not resolved/acknowledged)
 export function broadcastCriticalAlert(alert: AlertNotification) {
   if (!io) {
     console.warn("Alert notification service not initialized");
     return;
   }
 
-  console.log(`Broadcasting critical alert to connected clients`);
+  // Only broadcast if alert is not resolved and not acknowledged
+  if (alert.isResolved || alert.acknowledged) {
+    console.log(
+      `Skipping broadcast for resolved/acknowledged alert ${alert.id}`
+    );
+    return;
+  }
+
+  console.log(`Broadcasting critical alert ${alert.id} to connected clients`);
 
   // Emit to all connected clients
   io.emit("critical_alert", alert);
@@ -74,7 +85,55 @@ export function broadcastAlert(alert: AlertNotification) {
     console.warn("Alert notification service not initialized");
     return;
   }
+
+  // Only broadcast if alert is not resolved and not acknowledged
+  if (alert.isResolved || alert.acknowledged) {
+    console.log(
+      `Skipping broadcast for resolved/acknowledged alert ${alert.id}`
+    );
+    return;
+  }
+
+  console.log(
+    `Broadcasting alert ${alert.id} (${alert.severity}) to connected clients`
+  );
   io.emit("alert", alert);
+}
+
+// Broadcast alert resolution to inform clients to remove the alert
+export function broadcastAlertResolution(
+  alertId: number,
+  reason: string = "resolved"
+) {
+  if (!io) {
+    console.warn("Alert notification service not initialized");
+    return;
+  }
+
+  console.log(`Broadcasting alert resolution for alert ${alertId}`);
+  io.emit("alert_resolved", {
+    id: alertId,
+    reason,
+    timestamp: new Date().toISOString(),
+  });
+}
+
+// Broadcast alert acknowledgment to inform clients to remove the alert
+export function broadcastAlertAcknowledgment(
+  alertId: number,
+  acknowledgedBy?: number
+) {
+  if (!io) {
+    console.warn("Alert notification service not initialized");
+    return;
+  }
+
+  console.log(`Broadcasting alert acknowledgment for alert ${alertId}`);
+  io.emit("alert_acknowledged", {
+    id: alertId,
+    acknowledgedBy,
+    timestamp: new Date().toISOString(),
+  });
 }
 
 // Get count of connected clients

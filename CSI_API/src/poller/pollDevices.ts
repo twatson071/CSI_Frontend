@@ -11,6 +11,7 @@ import { fetchExternalDeviceDetails } from "../routes/devices/deviceRoutes";
 import {
   broadcastCriticalAlert,
   broadcastAlert,
+  broadcastAlertResolution,
   type AlertNotification,
 } from "../services/alertNotificationService";
 
@@ -21,6 +22,9 @@ async function evaluateThresholds(
   value: number,
   metricId: number
 ) {
+  // First, check for auto-resolution of existing alerts
+  await checkAndResolveAlerts(deviceId, metricType, value);
+
   // Get active thresholds for this device and metric type
   const thresholds = await db.query.metricThresholds.findMany({
     where: and(
@@ -108,6 +112,8 @@ async function evaluateThresholds(
               metricValue: value,
               threshold: criticalThreshold as number,
               timestamp: alertResult[0].createdAt || new Date().toISOString(),
+              isResolved: false,
+              acknowledged: 0,
             };
 
             broadcastCriticalAlert(criticalAlert);
@@ -116,10 +122,6 @@ async function evaluateThresholds(
 
           // Update device status based on new alert
           await updateDeviceStatusFromAlerts(deviceId);
-
-          console.log(
-            `CRITICAL ALERT: Device ${deviceId} ${metricType} exceeded critical threshold (${value} > ${criticalThreshold})`
-          );
         }
 
         // If critical threshold is exceeded, don't check lower severity thresholds
@@ -153,7 +155,8 @@ async function evaluateThresholds(
             eq(alerts.metricId, metricId),
             eq(alerts.thresholdId, threshold.id),
             eq(alerts.severity, "SERIOUS"),
-            eq(alerts.acknowledged, 0)
+            eq(alerts.acknowledged, 0),
+            eq(alerts.isResolved, false)
           ),
         });
 
@@ -207,10 +210,6 @@ async function evaluateThresholds(
 
           // Update device status based on new alert
           await updateDeviceStatusFromAlerts(deviceId);
-
-          console.log(
-            `SERIOUS ALERT: Device ${deviceId} ${metricType} exceeded serious threshold (${value} > ${seriousThreshold})`
-          );
         }
 
         // If serious threshold is exceeded, don't check caution threshold
@@ -244,7 +243,8 @@ async function evaluateThresholds(
             eq(alerts.metricId, metricId),
             eq(alerts.thresholdId, threshold.id),
             eq(alerts.severity, "CAUTION"),
-            eq(alerts.acknowledged, 0)
+            eq(alerts.acknowledged, 0),
+            eq(alerts.isResolved, false)
           ),
         });
 
@@ -298,10 +298,6 @@ async function evaluateThresholds(
 
           // Update device status based on new alert
           await updateDeviceStatusFromAlerts(deviceId);
-
-          console.log(
-            `CAUTION ALERT: Device ${deviceId} ${metricType} exceeded caution threshold (${value} > ${cautionThreshold})`
-          );
         }
       }
     }
@@ -310,7 +306,6 @@ async function evaluateThresholds(
 
 async function pollDevicesAndStore() {
   const allDevices = await db.query.devices.findMany();
-  console.log(`Polling ${allDevices.length} devices.`);
   for (const device of allDevices) {
     try {
       const externalData = await fetchExternalDeviceDetails(device.serviceUrl);
@@ -340,16 +335,13 @@ async function pollDevicesAndStore() {
               );
             }
           } else {
-            console.log(
-              `Watts data (total_draw_w) missing for PDU ${device.id}`
-            );
           }
 
           if (ampsValue !== undefined) {
             const metricResult = await db
               .insert(metrics)
               .values({
-                deviceId: device.id, // Corrected from 'device' to 'deviceId'
+                deviceId: device.id,
                 metricType: "amps",
                 value: Number(ampsValue) || 0,
                 createdAt: new Date().toISOString(),
@@ -365,16 +357,7 @@ async function pollDevicesAndStore() {
                 metricResult[0].id
               );
             }
-          } else {
-            console.log(
-              `Amps data (total_draw_a) missing for PDU ${device.id}`
-            );
           }
-        } else {
-          console.log(
-            `Sensor data missing in externalData for PDU ${device.id}. External data:`,
-            externalData
-          );
         }
       }
       if (device.type === "Server") {
@@ -613,41 +596,7 @@ async function pollDevicesAndStore() {
               }
             }
           }
-        } else {
-          console.log(
-            `Sensor data missing in externalData for Server ${device.id}. External data:`,
-            externalData
-          );
         }
-      }
-      if (
-        externalData &&
-        externalData.status &&
-        device.status !== externalData.status
-      ) {
-        await db.insert(alerts).values({
-          type: "status_change",
-          message: `Device ${device.name} status changed from ${device.status} to ${externalData.status}`,
-          severity: "CAUTION",
-          deviceId: device.id,
-          siteId: device.siteId || undefined,
-          createdAt: new Date().toISOString(),
-        });
-      } else if (externalData && !externalData.status) {
-        console.log(
-          `External data for device ${device.id} missing status property.`
-        );
-      }
-
-      // Update device status in DB
-      if (externalData && externalData.status) {
-        await db
-          .update(devices)
-          .set({
-            status: externalData.status,
-            updatedAt: new Date().toISOString(),
-          }) // Also update timestamp
-          .where(eq(devices.id, device.id));
       }
     } catch (err) {
       console.error(`Error polling device ${device.id} (${device.name}):`, err);
@@ -671,16 +620,132 @@ async function pollDevicesAndStore() {
       }
     }
   }
-
-  console.log("Device polling cycle complete.");
 }
 
-// Function to determine device status based on highest alert severity
+// Function to check and resolve alerts
+async function checkAndResolveAlerts(
+  deviceId: number,
+  metricType: string,
+  currentValue: number
+) {
+  // Get all unresolved alerts for this device and metric type
+  const unresolvedAlerts = await db.query.alerts.findMany({
+    where: and(
+      eq(alerts.deviceId, deviceId),
+      eq(alerts.type, "threshold_exceeded"),
+      eq(alerts.acknowledged, 0),
+      eq(alerts.isResolved, false)
+    ),
+  });
+
+  console.log(
+    `Checking ${unresolvedAlerts.length} unresolved alerts for device ${deviceId}, metric ${metricType}`
+  );
+
+  for (const alert of unresolvedAlerts) {
+    // Get the threshold information separately if relation isn't working
+    const threshold = await db.query.metricThresholds.findFirst({
+      where: eq(metricThresholds.id, alert.thresholdId!),
+    });
+
+    if (!threshold) {
+      console.log(
+        `No threshold found for alert ${alert.id}, thresholdId: ${alert.thresholdId}`
+      );
+      continue;
+    }
+
+    // Only check alerts that match the current metric type
+    if (threshold.metricType !== metricType) {
+      continue;
+    }
+
+    const { operator } = threshold;
+    let shouldResolve = false;
+
+    // Check if current value no longer violates the threshold
+    switch (alert.severity) {
+      case "CRITICAL":
+        if (threshold.criticalThreshold !== null) {
+          shouldResolve = !exceedsThreshold(
+            currentValue,
+            threshold.criticalThreshold,
+            operator
+          );
+        }
+        break;
+      case "SERIOUS":
+        if (threshold.seriousThreshold !== null) {
+          shouldResolve = !exceedsThreshold(
+            currentValue,
+            threshold.seriousThreshold,
+            operator
+          );
+        }
+        break;
+      case "CAUTION":
+        if (threshold.cautionThreshold !== null) {
+          shouldResolve = !exceedsThreshold(
+            currentValue,
+            threshold.cautionThreshold,
+            operator
+          );
+        }
+        break;
+    }
+
+    if (shouldResolve) {
+      console.log(
+        `Auto-resolving alert ${alert.id} for device ${deviceId}, metric ${metricType}`
+      );
+
+      // Auto-resolve the alert
+      await db
+        .update(alerts)
+        .set({
+          isResolved: true,
+          resolvedAt: new Date().toISOString(),
+          resolutionReason: "auto_resolved",
+        })
+        .where(eq(alerts.id, alert.id));
+
+      // Broadcast resolution notification
+      broadcastAlertResolution(alert.id, "auto_resolved");
+    }
+  }
+
+  // Update device status after resolving alerts
+  await updateDeviceStatusFromAlerts(deviceId);
+}
+
+// Helper function to check if value exceeds threshold
+function exceedsThreshold(
+  value: number,
+  threshold: number,
+  operator: string
+): boolean {
+  switch (operator) {
+    case "greater_than":
+      return value > threshold;
+    case "less_than":
+      return value < threshold;
+    case "equals":
+      return value === threshold;
+    default:
+      return value > threshold;
+  }
+}
+
+// Update the device status function to only consider unresolved alerts
 async function updateDeviceStatusFromAlerts(deviceId: number) {
   try {
-    // Get all unacknowledged alerts for this device, ordered by severity priority
+    // Get all unacknowledged AND unresolved alerts for this device
     const deviceAlerts = await db.query.alerts.findMany({
-      where: and(eq(alerts.deviceId, deviceId), eq(alerts.acknowledged, 0)),
+      where: and(
+        eq(alerts.deviceId, deviceId),
+        eq(alerts.acknowledged, 0),
+        eq(alerts.isResolved, false) // Only consider unresolved alerts
+      ),
       orderBy: (a, { desc }) => desc(a.createdAt),
     });
 
@@ -736,7 +801,6 @@ async function updateDeviceStatusFromAlerts(deviceId: number) {
       })
       .where(eq(devices.id, deviceId));
 
-    console.log(`Device ${deviceId} status updated to: ${newStatus}`);
     return newStatus;
   } catch (error) {
     console.error(`Error updating device ${deviceId} status:`, error);
@@ -751,19 +815,10 @@ pollDevicesAndStore().catch((err) => {
 
 const POLLING_INTERVAL_MS = 30 * 1000; // 30 seconds
 setInterval(() => {
-  console.log(
-    `Scheduled device poll starting (every ${
-      POLLING_INTERVAL_MS / 1000
-    } seconds)...`
-  );
   pollDevicesAndStore().catch((err) => {
     console.error("Error during scheduled device poll:", err);
   });
 }, POLLING_INTERVAL_MS);
-
-console.log(
-  `Device polling scheduled to run every ${POLLING_INTERVAL_MS / 1000} seconds.`
-);
 
 // Export functions for use in other modules
 export { updateDeviceStatusFromAlerts };

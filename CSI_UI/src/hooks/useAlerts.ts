@@ -2,17 +2,28 @@ import { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { addToast } from "../utils/toast";
 import type { Alert } from "../services/AlertService";
-import { getAlerts, acknowledgeAlert } from "../services/AlertService";
+import {
+  getAlerts,
+  acknowledgeAlert,
+  getAlertCount,
+} from "../services/AlertService";
 
 export function useAlerts(serverUrl: string = "http://localhost:8081") {
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [alertCount, setAlertCount] = useState<number>(0);
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    getAlerts()
-      .then(setAlerts)
+    setAlerts([]);
+    setAlertCount(0);
+
+    Promise.all([getAlerts(), getAlertCount()])
+      .then(([fetchedAlerts, count]) => {
+        setAlerts(fetchedAlerts);
+        setAlertCount(count);
+      })
       .catch((err) => {
-        console.error("Failed to fetch alerts", err);
+        console.error("Failed to fetch alerts or count", err);
       });
 
     const socket = io(serverUrl, {
@@ -24,13 +35,23 @@ export function useAlerts(serverUrl: string = "http://localhost:8081") {
     socketRef.current = socket;
 
     socket.on("alert", (alert: Alert) => {
-      setAlerts((prev) => {
-        if (prev.some((a) => a.id === alert.id)) {
-          return prev;
-        }
-        return [alert, ...prev];
-      });
+      // Instead of just adding to existing alerts, refetch from DB to get current state
+      Promise.all([getAlerts(), getAlertCount()])
+        .then(([fetchedAlerts, count]) => {
+          setAlerts(fetchedAlerts);
+          setAlertCount(count);
+        })
+        .catch((err) => {
+          console.error("Failed to refetch alerts after new alert", err);
+        });
+
       addToast(alert.message, false, 5000);
+    });
+
+    // Listen for alert resolution/removal
+    socket.on("alert_resolved", (alertId: number) => {
+      setAlerts((prev) => prev.filter((a) => a.id !== alertId));
+      setAlertCount((prev) => prev - 1);
     });
 
     socket.on("connect_error", (error: Error) => {
@@ -51,6 +72,7 @@ export function useAlerts(serverUrl: string = "http://localhost:8081") {
       await acknowledgeAlert(id);
       // Remove the acknowledged alert from the local state
       setAlerts((prev) => prev.filter((a) => a.id !== id));
+      setAlertCount((prev) => prev - 1);
       addToast("Alert acknowledged", true, 3000);
     } catch (error) {
       console.error("Failed to acknowledge alert:", error);
@@ -58,5 +80,5 @@ export function useAlerts(serverUrl: string = "http://localhost:8081") {
     }
   };
 
-  return { alerts, acknowledge };
+  return { alerts, alertCount, acknowledge };
 }

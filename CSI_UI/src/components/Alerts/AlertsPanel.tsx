@@ -1,6 +1,8 @@
 import { RuxContainer, RuxButton } from "@astrouxds/react";
+import { useState, useEffect } from "react";
 import AlertsList from "./AlertsList";
 import type { Alert } from "../../services/AlertService";
+import { getAlertCount } from "../../services/AlertService";
 import "./Alerts.css";
 
 interface AlertsPanelProps {
@@ -9,6 +11,13 @@ interface AlertsPanelProps {
 }
 
 const AlertsPanel = ({ alerts = [], onAcknowledge }: AlertsPanelProps) => {
+  const [alertCount, setAlertCount] = useState(0);
+
+  useEffect(() => {
+    // Update count based on the alerts prop
+    setAlertCount(alerts.length);
+  }, [alerts]);
+
   // Provide default empty array
   const acknowledgeAll = () => {
     if (onAcknowledge) {
@@ -20,7 +29,7 @@ const AlertsPanel = ({ alerts = [], onAcknowledge }: AlertsPanelProps) => {
     <RuxContainer className="alerts">
       <div slot="header">
         <div className="active-alerts">
-          <span>{alerts.length}</span> Active Alerts
+          <span>{alertCount}</span> Active Alerts
         </div>
         {alerts.length > 0 && onAcknowledge && (
           <RuxButton

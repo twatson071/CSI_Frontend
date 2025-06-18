@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
-import { acknowledgeAlert as acknowledgeAlertAPI } from "../services/AlertService";
+import {
+  acknowledgeAlert as acknowledgeAlertAPI,
+  getAlerts,
+} from "../services/AlertService";
+import type { Alert } from "../services/AlertService";
 
 export interface CriticalAlert {
   id: number;
@@ -34,6 +38,40 @@ export function useCriticalAlerts(
     "connecting" | "connected" | "disconnected" | "error"
   >("disconnected");
   const socketRef = useRef<Socket | null>(null);
+
+  // Load initial critical alerts that are unacknowledged and unresolved
+  useEffect(() => {
+    const loadInitialAlerts = async () => {
+      try {
+        const allAlerts = await getAlerts();
+        // Filter for critical alerts that are unacknowledged and unresolved
+        const criticalAlerts = allAlerts
+          .filter(
+            (alert: Alert) =>
+              alert.severity === "CRITICAL" &&
+              !alert.acknowledged &&
+              // Note: isResolved might not be in the Alert interface yet,
+              // you may need to add it to the AlertService interface
+              !(alert as any).isResolved
+          )
+          .map((alert: Alert) => ({
+            ...alert,
+            severity: "CRITICAL" as const,
+            deviceName: alert.deviceId?.toString(), // You might want to fetch device name
+            metricType: "", // These fields might need to be added to the Alert interface
+            metricValue: 0,
+            threshold: 0,
+            timestamp: alert.createdAt,
+          }));
+
+        setAlerts(criticalAlerts);
+      } catch (error) {
+        console.error("Failed to load initial critical alerts:", error);
+      }
+    };
+
+    loadInitialAlerts();
+  }, []);
 
   useEffect(() => {
     // Initialize socket connection
@@ -103,6 +141,17 @@ export function useCriticalAlerts(
       }
     });
 
+    // Listen for alert resolution events
+    socket.on("alert", (notification: any) => {
+      if (notification.type === "alert_resolved") {
+        console.log("Alert resolved:", notification);
+        // Remove resolved alert from local state
+        setAlerts((prev) =>
+          prev.filter((alert) => alert.id !== notification.id)
+        );
+      }
+    });
+
     socket.on("connection", (data: any) => {
       console.log("Connection confirmed:", data);
     });
@@ -137,7 +186,10 @@ export function useCriticalAlerts(
   };
 
   const clearAllAlerts = () => {
-    setAlerts([]);
+    // Acknowledge all alerts instead of just clearing them locally
+    alerts.forEach((alert) => {
+      acknowledgeAlert(alert.id);
+    });
   };
 
   return {

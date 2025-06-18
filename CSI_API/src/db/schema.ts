@@ -133,6 +133,9 @@ export const alerts = sqliteTable("alerts", {
   acknowledged: int().default(0),
   acknowledgedBy: int().references(() => users.id),
   acknowledgedAt: text(),
+  resolvedAt: text("resolved_at"), // When the alert was auto-resolved
+  isResolved: int("is_resolved", { mode: "boolean" }).default(false),
+  resolutionReason: text("resolution_reason"), // "auto_resolved", "manual", etc.
 });
 
 export const alertsRelations = relations(alerts, ({ one }) => ({
