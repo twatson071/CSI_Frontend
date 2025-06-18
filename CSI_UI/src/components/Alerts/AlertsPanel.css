@@ -92,6 +92,16 @@
   align-items: center;
 }
 
+.alert-item-critical rux-accordion-item::part(label-wrapper) {
+  background-color: color-mix(in srgb, var(--color-status-critical) 20%, transparent);
+}
+.alert-item-serious rux-accordion-item::part(label-wrapper) {
+  background-color: color-mix(in srgb, var(--color-status-serious) 20%, transparent);
+}
+.alert-item-caution rux-accordion-item::part(label-wrapper) {
+  background-color: color-mix(in srgb, var(--color-status-caution) 20%, transparent);
+}
+
 /* Spacing for the columns in the alert list */
 .alert-list-headers span:nth-of-type(1),
 .alert-list-label span:nth-of-type(1) {

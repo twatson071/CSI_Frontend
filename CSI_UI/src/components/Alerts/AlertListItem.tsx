@@ -37,7 +37,9 @@ const AlertListItem = ({
   };
 
   return (
-    <li>
+    <li
+      className={`alert-item-${getSeverityStatus(alertItem.severity)}`}
+    >
       <RuxAccordion>
         <RuxAccordionItem id={String(alertItem.id)}>
           <div className="accordion-item__content">
