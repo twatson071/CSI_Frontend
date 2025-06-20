@@ -48,3 +48,20 @@ export const CreateDeviceSchema = z.object({
 });
 
 export const UpdateDeviceSchema = CreateDeviceSchema.partial(); // Use partial for updates, all fields become optional
+
+export const DeviceThresholdSchema = z
+  .object({
+    metricType: z.string(),
+    warning: z.number().min(0),
+    critical: z.number().min(0),
+    units: z.string().optional(),
+    enabled: z.boolean().optional(),
+  })
+  .refine((data) => data.critical > data.warning, {
+    message: "Critical must be greater than warning",
+    path: ["critical"],
+  });
+
+export const UpdateDeviceThresholdsSchema = z.object({
+  thresholds: z.array(DeviceThresholdSchema),
+});

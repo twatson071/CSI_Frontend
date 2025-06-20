@@ -26,6 +26,14 @@ export interface CreateDevicePayload {
 
 export type UpdateDevicePayload = Partial<Omit<Device, "id">>;
 
+export interface DeviceThresholdInput {
+  metricType: string;
+  warning: number;
+  critical: number;
+  units?: string;
+  enabled?: boolean;
+}
+
 export async function getServiceList(): Promise<string[]> {
   const resp = await axios.get<string[]>(`${API_URL}/devices/services`);
   return resp.data;
@@ -94,6 +102,15 @@ export async function updateDeviceStatusFromAlerts(
     console.error(`Failed to update device ${deviceId} status:`, error);
     return null;
   }
+}
+
+export async function updateDeviceThresholds(
+  deviceId: number,
+  thresholds: DeviceThresholdInput[]
+): Promise<void> {
+  await axios.put(`${API_URL}/devices/${deviceId}/thresholds`, {
+    thresholds,
+  });
 }
 
 /**

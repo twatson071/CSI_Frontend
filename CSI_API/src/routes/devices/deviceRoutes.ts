@@ -2,11 +2,13 @@ import { Hono, Context } from "hono";
 import { eq } from "drizzle-orm";
 import "dotenv/config";
 import { db } from "../../db";
-import { devices, metrics } from "../../db/schema";
+import { devices, metrics, metricThresholds } from "../../db/schema";
 import {
   CreateDeviceClientPayloadSchema,
   UpdateDeviceSchema,
+  UpdateDeviceThresholdsSchema,
 } from "./deviceValidationSchemas";
+import { broadcastThresholdUpdate } from "../../services/alertNotificationService";
 
 const app = new Hono();
 
@@ -464,6 +466,48 @@ app.post("/:id/update-status", async (c: Context) => {
     console.error("Error updating device status:", error);
     return c.json({ error: "Failed to update device status" }, 500);
   }
+});
+
+app.put("/:id/thresholds", async (c: Context) => {
+  const deviceId = parseInt(c.req.param("id"));
+  if (isNaN(deviceId)) {
+    return c.json({ error: "Invalid device ID" }, 400);
+  }
+
+  const body = await c.req.json();
+  const validation = UpdateDeviceThresholdsSchema.safeParse(body);
+  if (!validation.success) {
+    return c.json(
+      { error: "Invalid input", details: validation.error.issues },
+      400
+    );
+  }
+
+  for (const t of validation.data.thresholds) {
+    const existing = await db.query.metricThresholds.findFirst({
+      where: (mt, { eq }) =>
+        eq(mt.deviceId, deviceId) && eq(mt.metricType, t.metricType),
+    });
+    if (existing) {
+      await db
+        .update(metricThresholds)
+        .set({
+          cautionThreshold: t.warning,
+          criticalThreshold: t.critical,
+        })
+        .where(eq(metricThresholds.id, existing.id));
+    } else {
+      await db.insert(metricThresholds).values({
+        deviceId,
+        metricType: t.metricType,
+        cautionThreshold: t.warning,
+        criticalThreshold: t.critical,
+      });
+    }
+  }
+
+  broadcastThresholdUpdate(deviceId);
+  return c.json({ message: "Thresholds updated" });
 });
 
 app.get("/", getDevice);
