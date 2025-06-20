@@ -136,6 +136,18 @@ export function broadcastAlertAcknowledgment(
   });
 }
 
+export function broadcastThresholdUpdate(deviceId: number) {
+  if (!io) {
+    console.warn("Alert notification service not initialized");
+    return;
+  }
+
+  io.emit("thresholds_updated", {
+    deviceId,
+    timestamp: new Date().toISOString(),
+  });
+}
+
 // Get count of connected clients
 export function getConnectedClientsCount(): number {
   return io ? io.sockets.sockets.size : 0;

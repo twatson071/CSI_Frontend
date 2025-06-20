@@ -24,6 +24,7 @@ import {
   Device,
   CreateDevicePayload,
 } from "../../services";
+import ThresholdForm from "./ThresholdForm";
 
 const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
   item,
@@ -436,6 +437,8 @@ const DeviceForm: React.FC<ManagementFormProps<Device>> = ({
 
 const ManageDevices = () => {
   const [sites, setSites] = useState<{ [deviceId: number]: string }>({});
+  const [thresholdDevice, setThresholdDevice] = useState<Device | null>(null);
+  const THRESHOLD_UI = import.meta.env.VITE_THRESHOLD_UI === "true";
 
   const getSiteName = async (deviceId: number) => {
     // Check if we already have the site name cached
@@ -482,14 +485,21 @@ const ManageDevices = () => {
   };
 
   return (
-    <ManagementMain<Device>
-      entityName="Device"
-      fetchItems={getDevices}
-      createItem={createDeviceWrapper}
-      updateItem={updateDevice}
-      deleteItem={deleteDevice}
-      getId={(d) => d.id}
-      FormComponent={DeviceForm}
+    <>
+      {thresholdDevice ? (
+        <ThresholdForm
+          deviceId={thresholdDevice.id}
+          onCancel={() => setThresholdDevice(null)}
+        />
+      ) : (
+        <ManagementMain<Device>
+          entityName="Device"
+          fetchItems={getDevices}
+          createItem={createDeviceWrapper}
+          updateItem={updateDevice}
+          deleteItem={deleteDevice}
+          getId={(d) => d.id}
+          FormComponent={DeviceForm}
       renderList={(items, onEdit, onDelete) => {
         // Fetch site names when items are rendered
         fetchSiteNames(items);
@@ -542,6 +552,14 @@ const ManageDevices = () => {
                         <RuxButton size="small" onClick={() => onEdit(dev)}>
                           Edit
                         </RuxButton>
+                        {THRESHOLD_UI && (
+                          <RuxButton
+                            size="small"
+                            onClick={() => setThresholdDevice(dev)}
+                          >
+                            Edit Thresholds
+                          </RuxButton>
+                        )}
                         <RuxButton
                           size="small"
                           secondary
@@ -557,8 +575,10 @@ const ManageDevices = () => {
             </RuxTable>
           </div>
         );
-      }}
-    />
+        }}
+        />
+      )}
+    </>
   );
 };
 
