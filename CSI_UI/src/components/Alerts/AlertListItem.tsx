@@ -1,9 +1,4 @@
-import {
-  RuxStatus,
-  RuxButton,
-  RuxAccordion,
-  RuxAccordionItem,
-} from "@astrouxds/react";
+import { RuxStatus, RuxCheckbox, RuxSelect, RuxOption } from "@astrouxds/react";
 import type { Alert } from "../../services/AlertService";
 
 type PropTypes = {
@@ -12,61 +7,56 @@ type PropTypes = {
   onAcknowledge?: (id: number) => void;
 };
 
-const AlertListItem = ({
-  alertItem,
-  handleButtonClick,
-  onAcknowledge,
-}: PropTypes) => {
+const AlertListItem = ({ alertItem, onAcknowledge }: PropTypes) => {
   const getSeverityStatus = (severity: string) => {
     switch (severity.toUpperCase()) {
-      case "CAUTION":
-        return "caution";
       case "CRITICAL":
         return "critical";
-      case "NORMAL":
-        return "normal";
       case "SERIOUS":
         return "serious";
-      case "OFF":
-        return "off";
-      case "STANDBY":
-        return "standby";
-      default:
+      case "CAUTION":
+        return "caution";
+      case "INFO":
         return "normal";
+      default:
+        return "off";
     }
   };
 
+  const handleActionChange = (event: any) => {
+    const action = event.target.value;
+
+    if (action === "acknowledge" && onAcknowledge) {
+      onAcknowledge(alertItem.id);
+    } else if (action === "investigate") {
+      console.log("Investigate clicked", alertItem.id);
+    } else if (action === "dismiss") {
+      console.log("Dismiss clicked", alertItem.id);
+    }
+
+    // Reset the dropdown after action
+    setTimeout(() => {
+      event.target.value = "";
+    }, 100);
+  };
+
   return (
-    <li
-      className={`alert-item-${getSeverityStatus(alertItem.severity)}`}
-    >
-      <RuxAccordion>
-        <RuxAccordionItem id={String(alertItem.id)}>
-          <div className="accordion-item__content">
-            <div>{alertItem.message}</div>
-            <div className="alert-buttons">
-              <RuxButton icon="launch" onClick={handleButtonClick}>
-                Investigate
-              </RuxButton>
-              {onAcknowledge && (
-                <RuxButton
-                  icon="check"
-                  onClick={() => onAcknowledge(alertItem.id)}
-                  secondary
-                >
-                  Acknowledge
-                </RuxButton>
-              )}
-            </div>
-          </div>
-          <div slot="label" className="alert-list-label">
-            <RuxStatus status={getSeverityStatus(alertItem.severity)} />
-            <span>{alertItem.message}</span>
-            <span>{new Date(alertItem.createdAt).toLocaleTimeString()}</span>
-          </div>
-        </RuxAccordionItem>
-      </RuxAccordion>
-    </li>
+    <div className="alerts-table-row">
+      <div className="table-cell-checkbox">
+        <RuxCheckbox />
+      </div>
+      <div className="table-cell-message">
+        <RuxStatus status={getSeverityStatus(alertItem.severity)} />
+        <span>{alertItem.message}</span>
+      </div>
+      <div className="table-cell-time">
+        {new Date(alertItem.createdAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        })}
+      </div>
+    </div>
   );
 };
 
