@@ -7,6 +7,7 @@ import { useAlerts } from "./hooks/useAlerts";
 import ManageUsers from "./components/Management/ManageUsers";
 import ManageDevices from "./components/Management/ManageDevices";
 import ManageSites from "./components/Management/ManageSites";
+import Login from "./components/Auth/Login";
 import "@astrouxds/astro-web-components/dist/astro-web-components/astro-web-components.css";
 import "./App.css";
 
@@ -21,6 +22,7 @@ const App: React.FC = () => {
         <GlobalStatusBar />
         <Routes>
           <Route path="/" element={<SiteEndpointLayout />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/manage-users" element={<ManageUsers />} />
           <Route path="/manage-sites" element={<ManageSites />} />
           <Route path="/manage-devices" element={<ManageDevices />} />

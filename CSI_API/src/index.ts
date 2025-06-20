@@ -9,6 +9,7 @@ import alerts from "./routes/alerts/alertsRoutes";
 import mock from "./routes/mock/mockRoutes";
 import { initializeAlertNotificationService } from "./services/alertNotificationService";
 import "./poller/pollDevices";
+import { auth } from "./auth";
 
 // Initialize the critical alert notification service
 initializeAlertNotificationService(8081);
@@ -22,5 +23,8 @@ app.route("/devices", devices);
 app.route("/metric-thresholds", metricThresholds);
 app.route("/alerts", alerts);
 app.route("/mock", mock);
+app.use("/auth/*", async (c) => {
+  return auth.handler(c.req.raw);
+});
 
 export default app;
