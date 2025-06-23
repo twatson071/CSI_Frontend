@@ -198,3 +198,8 @@ rux-container {
   color: var(--color-text-secondary);
   text-align: right;
 }
+.device-details-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}

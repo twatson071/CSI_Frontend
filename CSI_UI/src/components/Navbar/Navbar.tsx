@@ -25,6 +25,14 @@ const Navbar = () => {
   const [notifications3, setNotifications3] = useState(4);
   const [lightTheme, setLightTheme] = useState(false);
 
+  useEffect(() => {
+    const stored = localStorage.getItem("theme");
+    if (stored === "light") {
+      setLightTheme(true);
+      document.body.classList.add("light-theme");
+    }
+  }, []);
+
   const statusValuesArr = ["caution", "normal", "serious", "off"];
   const notificationsArr = [12, 14, 23, 42, 6, 37, 25, 38, 9];
 
@@ -63,8 +71,10 @@ const Navbar = () => {
         break;
       default:
         if (detail.value === "themeToggle") {
-          setLightTheme(!lightTheme);
-          document.body.classList.toggle("light-theme");
+          const newTheme = !lightTheme;
+          setLightTheme(newTheme);
+          document.body.classList.toggle("light-theme", newTheme);
+          localStorage.setItem("theme", newTheme ? "light" : "dark");
           return;
         }
         addToast("This feature has not been implemented", false, 3000);

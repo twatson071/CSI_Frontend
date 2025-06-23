@@ -13,13 +13,18 @@ import {
   RuxProgress,
   RuxTabs,
   RuxTab,
+  RuxInput,
 } from "@astrouxds/react";
 import { useDeviceStatus } from "../../hooks/useDeviceStatus";
+import DeviceDetailsDialog from "./DeviceDetailsDialog";
+import type { Device } from "../../services/DeviceService";
 import "./DeviceStatusDashboard.css";
 
 const DeviceStatusDashboard: React.FC = () => {
   const [activeView, setActiveView] = useState<"list" | "grid">("list");
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [detailsDevice, setDetailsDevice] = useState<Device | null>(null);
 
   // Use the new device status hook
   const {
@@ -36,9 +41,12 @@ const DeviceStatusDashboard: React.FC = () => {
 
   const deviceTypes = Array.from(new Set(devices.map((device) => device.type)));
 
-  const filteredDevices = selectedType
+  const typeFiltered = selectedType
     ? devices.filter((device) => device.type === selectedType)
     : devices;
+  const filteredDevices = typeFiltered.filter((d) =>
+    d.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Handle refresh functionality
   const handleRefresh = async () => {
@@ -76,6 +84,12 @@ const DeviceStatusDashboard: React.FC = () => {
         <div className="container-header">
           Device Status Dashboard
           <div className="dashboard-controls">
+            <RuxInput
+              size="small"
+              placeholder="Search devices"
+              value={searchQuery}
+              onRuxinput={(e: any) => setSearchQuery(e.target.value)}
+            />
             <RuxButton size="small" icon="refresh" onClick={handleRefresh}>
               Refresh
             </RuxButton>
@@ -177,7 +191,11 @@ const DeviceStatusDashboard: React.FC = () => {
                       </RuxTableCell>
                       <RuxTableCell>{device.ipAddress || "No IP"}</RuxTableCell>
                       <RuxTableCell>
-                        <RuxButton className="view-details-button" size="small">
+                        <RuxButton
+                          className="view-details-button"
+                          size="small"
+                          onClick={() => setDetailsDevice(device)}
+                        >
                           Details
                         </RuxButton>
                       </RuxTableCell>
@@ -215,7 +233,9 @@ const DeviceStatusDashboard: React.FC = () => {
                   )}
                 </div>
                 <div slot="footer">
-                  <RuxButton size="small">View Details</RuxButton>
+                  <RuxButton size="small" onClick={() => setDetailsDevice(device)}>
+                    View Details
+                  </RuxButton>
                 </div>
               </RuxContainer>
             ))}
@@ -234,6 +254,12 @@ const DeviceStatusDashboard: React.FC = () => {
       <div slot="footer" className="dashboard-footer">
         Last refreshed: {lastRefresh?.toLocaleString() || "Never"}
       </div>
+      {detailsDevice && (
+        <DeviceDetailsDialog
+          device={detailsDevice}
+          onClose={() => setDetailsDevice(null)}
+        />
+      )}
     </RuxContainer>
   );
 };
