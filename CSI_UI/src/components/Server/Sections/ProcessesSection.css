@@ -1,0 +1,28 @@
+/* /home/thomas/Documents/work/CSI_Frontend/CSI_UI/src/components/Server/Sections/ProcessesSection.css */
+.processes-section-content {
+  padding: 1rem;
+}
+
+.search-input {
+  margin-bottom: 1rem;
+}
+
+.process-details-container ul {
+  margin: 0;
+  padding-left: 1rem;
+  list-style: none;
+}
+
+.process-details-container ul ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+}
+
+.process-details-container li {
+  padding-top: 0.25rem;
+}
+
+.no-data-message {
+  padding: 1rem;
+  text-align: center;
+}

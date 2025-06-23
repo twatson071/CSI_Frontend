@@ -246,89 +246,84 @@ const ServerDetails: React.FC<Props> = ({ server, deviceId }) => {
     ram?.utilization_percent,
   ]);
   return (
-    <RuxAccordion className="server-details-container">
-      <RuxAccordionItem>
-        <div slot="prefix">
-          <RuxIcon icon="storage"></RuxIcon>
-        </div>
-        <div slot="label">Server Details</div>
+    <div className="server-details-container">
+      <div className="metric-cards-container">
+        <MetricCard
+          title="Load"
+          value={`${avgCpuUtilization.toFixed(1)}`}
+          unit="%"
+          data={loadData}
+          thresholds={{
+            normal: 0,
+            caution: 70,
+            serious: 85,
+            critical: 95,
+          }}
+          icon="processor"
+        />
+        <MetricCard
+          title="Memory"
+          value={ram ? Number(ram.utilization_percent || 0).toFixed(1) : "0"}
+          unit="%"
+          data={memoryData}
+          thresholds={{
+            normal: 70,
+            caution: 85,
+            serious: 95,
+            critical: 100,
+          }}
+          icon="memory"
+        />
+        <MetricCard
+          title="Network"
+          value={formatBandwidth(totalNetworkBytes).split(" ")[0]}
+          unit={formatBandwidth(totalNetworkBytes).split(" ")[1]}
+          data={networkData}
+          color={STATUS_COLORS.STANDBY.hex}
+          icon="settings-ethernet"
+        />
+        <MetricCard
+          title="Storage"
+          value={drives.length > 0 ? avgDriveUtilization.toFixed(1) : "0"}
+          unit="%"
+          data={storageData}
+          thresholds={{
+            normal: 70,
+            caution: 85,
+            serious: 95,
+            critical: 100,
+          }}
+          icon="storage"
+        />
+        <MetricCard
+          title="CPU Temperature"
+          value={cpus.length > 0 ? avgCpuTemp.toFixed(1) : "N/A"}
+          unit="°C"
+          data={cpuTempData}
+          thresholds={{
+            normal: 70,
+            caution: 80,
+            serious: 85,
+            critical: 90,
+          }}
+          icon="thermal"
+        />
+        <MetricCard
+          title="GPU Temperature"
+          value={gpus.length > 0 ? avgGpuTemp.toFixed(1) : "N/A"}
+          unit="°C"
+          data={gpuTempData}
+          thresholds={{
+            normal: 70,
+            caution: 80,
+            serious: 85,
+            critical: 90,
+          }}
+          icon="thermal"
+        />
+      </div>
 
-        <div className="metric-cards-container">
-          <MetricCard
-            title="Load"
-            value={`${avgCpuUtilization.toFixed(1)}`}
-            unit="%"
-            data={loadData}
-            thresholds={{
-              normal: 0,
-              caution: 70,
-              serious: 85,
-              critical: 95,
-            }}
-            icon="processor"
-          />
-          <MetricCard
-            title="Memory"
-            value={ram ? Number(ram.utilization_percent || 0).toFixed(1) : "0"}
-            unit="%"
-            data={memoryData}
-            thresholds={{
-              normal: 70,
-              caution: 85,
-              serious: 95,
-              critical: 100,
-            }}
-            icon="memory"
-          />
-          <MetricCard
-            title="Network"
-            value={formatBandwidth(totalNetworkBytes).split(" ")[0]}
-            unit={formatBandwidth(totalNetworkBytes).split(" ")[1]}
-            data={networkData}
-            color={STATUS_COLORS.STANDBY.hex}
-            icon="settings-ethernet"
-          />
-          <MetricCard
-            title="Storage"
-            value={drives.length > 0 ? avgDriveUtilization.toFixed(1) : "0"}
-            unit="%"
-            data={storageData}
-            thresholds={{
-              normal: 70,
-              caution: 85,
-              serious: 95,
-              critical: 100,
-            }}
-            icon="storage"
-          />
-          <MetricCard
-            title="CPU Temperature"
-            value={cpus.length > 0 ? avgCpuTemp.toFixed(1) : "N/A"}
-            unit="°C"
-            data={cpuTempData}
-            thresholds={{
-              normal: 70,
-              caution: 80,
-              serious: 85,
-              critical: 90,
-            }}
-            icon="thermal"
-          />
-          <MetricCard
-            title="GPU Temperature"
-            value={gpus.length > 0 ? avgGpuTemp.toFixed(1) : "N/A"}
-            unit="°C"
-            data={gpuTempData}
-            thresholds={{
-              normal: 70,
-              caution: 80,
-              serious: 85,
-              critical: 90,
-            }}
-            icon="thermal"
-          />
-        </div>
-
+      <RuxAccordion>
         <RuxAccordionItem>
           <div slot="prefix">
             <RuxIcon icon="processor" size="small"></RuxIcon>
@@ -338,7 +333,6 @@ const ServerDetails: React.FC<Props> = ({ server, deviceId }) => {
             <RuxButton
               size="small"
               icon="list"
-              className="view-toggle-button"
               aria-label="List View"
               secondary={view !== "table"}
               onClick={() => setView("table")}
@@ -382,58 +376,110 @@ const ServerDetails: React.FC<Props> = ({ server, deviceId }) => {
             <>
               <CPUPerCoreGrid server={server} deviceId={deviceId} />
               <CPUCoreTempHeatmap deviceId={deviceId} />
-              <GPULineChart server={server} />
-              <GPURamLineChart server={server} />
-              <RamLineChart server={server} />
-              <TemperatureLineChart server={server} />
             </>
           )}
-          {view === "table" && ram && (
-            <p>RAM Utilization: {ram.utilization_percent}%</p>
-          )}
+        </RuxAccordionItem>
+        {gpus.length > 0 && (
+          <RuxAccordionItem>
+            <div slot="prefix">
+              <RuxIcon icon="memory" size="small" />
+            </div>
+            <div slot="label">GPU Information</div>
+            <RuxTable>
+              <RuxTableHeader>
+                <RuxTableHeaderRow>
+                  <RuxTableHeaderCell>GPU</RuxTableHeaderCell>
+                  <RuxTableHeaderCell>Utilization %</RuxTableHeaderCell>
+                  <RuxTableHeaderCell>Memory Utilization %</RuxTableHeaderCell>
+                  <RuxTableHeaderCell>Temperature (°C)</RuxTableHeaderCell>
+                </RuxTableHeaderRow>
+              </RuxTableHeader>
+              <RuxTableBody>
+                {gpus.map((gpu: any, idx) => {
+                  const mem_util =
+                    gpu.memory_total_bytes && gpu.memory_used_bytes
+                      ? (gpu.memory_used_bytes / gpu.memory_total_bytes) * 100
+                      : 0;
+                  return (
+                    <RuxTableRow key={idx}>
+                      <RuxTableCell>{gpu.id || idx}</RuxTableCell>
+                      <RuxTableCell>
+                        {((gpu.utilization_percent ?? 0) * 100).toFixed(1)}
+                      </RuxTableCell>
+                      <RuxTableCell>{mem_util.toFixed(1)}</RuxTableCell>
+                      <RuxTableCell>
+                        {formatTemperature(gpu.temperature_c)}
+                      </RuxTableCell>
+                    </RuxTableRow>
+                  );
+                })}
+              </RuxTableBody>
+            </RuxTable>
+            <GPULineChart server={server} />
+            <GPURamLineChart server={server} />
+          </RuxAccordionItem>
+        )}
+        <RuxAccordionItem>
+          <div slot="prefix">
+            <RuxIcon icon="memory" size="small" />
+          </div>
+          <div slot="label">Memory Information</div>
+          <RamLineChart server={server} />
+          {ram && <p>RAM Utilization: {ram.utilization_percent}%</p>}
         </RuxAccordionItem>
         <RuxAccordionItem>
           <div slot="prefix">
             <RuxIcon icon="settings-ethernet" size="small"></RuxIcon>
           </div>
           <div slot="label">Network Information</div>
-          <RuxTable>
-            <RuxTableHeader>
-              <RuxTableHeaderRow>
-                <RuxTableHeaderCell>Interface</RuxTableHeaderCell>
-                <RuxTableHeaderCell>Admin Status</RuxTableHeaderCell>
-                <RuxTableHeaderCell>Oper Status</RuxTableHeaderCell>
-                <RuxTableHeaderCell>Max Speed</RuxTableHeaderCell>
-                <RuxTableHeaderCell>Current Speed</RuxTableHeaderCell>
-                <RuxTableHeaderCell>MTU</RuxTableHeaderCell>
-                <RuxTableHeaderCell>MAC Address</RuxTableHeaderCell>
-              </RuxTableHeaderRow>
-            </RuxTableHeader>
-            <RuxTableBody>
-              {nics.map((nic, idx) => (
-                <RuxTableRow key={idx}>
-                  <RuxTableCell>{nic.index}</RuxTableCell>
-                  <RuxTableCell>{nic.administrative_status}</RuxTableCell>
-                  <RuxTableCell>{nic.operational_status}</RuxTableCell>
-                  <RuxTableCell>
-                    {formatBandwidth(nic.max_speed_bps)}
-                  </RuxTableCell>
-                  <RuxTableCell>
-                    {formatBandwidth(nic.current_speed_bps)}
-                  </RuxTableCell>
-                  <RuxTableCell>{nic.mtu}</RuxTableCell>
-                  <RuxTableCell>{nic.mac}</RuxTableCell>
-                </RuxTableRow>
-              ))}
-            </RuxTableBody>
-          </RuxTable>
+          {nics.length > 0 ? (
+            <RuxTable>
+              <RuxTableHeader>
+                <RuxTableHeaderRow>
+                  <RuxTableHeaderCell>Interface</RuxTableHeaderCell>
+                  <RuxTableHeaderCell>Admin Status</RuxTableHeaderCell>
+                  <RuxTableHeaderCell>Oper Status</RuxTableHeaderCell>
+                  <RuxTableHeaderCell>Max Speed</RuxTableHeaderCell>
+                  <RuxTableHeaderCell>Current Speed</RuxTableHeaderCell>
+                  <RuxTableHeaderCell>MTU</RuxTableHeaderCell>
+                  <RuxTableHeaderCell>MAC Address</RuxTableHeaderCell>
+                </RuxTableHeaderRow>
+              </RuxTableHeader>
+              <RuxTableBody>
+                {nics.map((nic, idx) => (
+                  <RuxTableRow key={idx}>
+                    <RuxTableCell>{nic.index}</RuxTableCell>
+                    <RuxTableCell>{nic.administrative_status}</RuxTableCell>
+                    <RuxTableCell>{nic.operational_status}</RuxTableCell>
+                    <RuxTableCell>
+                      {formatBandwidth(nic.max_speed_bps)}
+                    </RuxTableCell>
+                    <RuxTableCell>
+                      {formatBandwidth(nic.current_speed_bps)}
+                    </RuxTableCell>
+                    <RuxTableCell>{nic.mtu}</RuxTableCell>
+                    <RuxTableCell>{nic.mac}</RuxTableCell>
+                  </RuxTableRow>
+                ))}
+              </RuxTableBody>
+            </RuxTable>
+          ) : (
+            <p>No network data available</p>
+          )}
         </RuxAccordionItem>
         <TemperatureFanSection server={server} />
+        <RuxAccordionItem>
+          <div slot="prefix">
+            <RuxIcon icon="thermal" size="small" />
+          </div>
+          <div slot="label">Temperature Charts</div>
+          <TemperatureLineChart server={server} />
+        </RuxAccordionItem>
         <StorageSection server={server} />
         <PeripheralsSection server={server} />
         <ProcessesSection server={server} />
-      </RuxAccordionItem>
-    </RuxAccordion>
+      </RuxAccordion>
+    </div>
   );
 };
 
