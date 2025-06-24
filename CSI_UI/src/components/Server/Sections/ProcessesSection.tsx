@@ -18,18 +18,39 @@ interface Props {
   server: ServerData;
 }
 
+const highlightMatch = (text: string, searchTerm: string) => {
+  if (!searchTerm) {
+    return <>{text}</>;
+  }
+  const parts = text.split(new RegExp(`(${searchTerm})`, "gi"));
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.toLowerCase() === searchTerm.toLowerCase() ? (
+          <mark key={i}>{part}</mark>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
+};
+
 // Helper component to display process details recursively
-const ProcessDetails: React.FC<{ details: any }> = ({ details }) => {
+const ProcessDetails: React.FC<{ details: any; isChild?: boolean }> = ({
+  details,
+  isChild = false,
+}) => {
   if (typeof details !== "object" || details === null) {
     return <>{String(details)}</>;
   }
 
   if (Array.isArray(details)) {
     return (
-      <ul>
+      <ul className="process-details-array">
         {details.map((item, index) => (
           <li key={index}>
-            <ProcessDetails details={item} />
+            <ProcessDetails details={item} isChild={true} />
           </li>
         ))}
       </ul>
@@ -37,13 +58,16 @@ const ProcessDetails: React.FC<{ details: any }> = ({ details }) => {
   }
 
   return (
-    <ul className="process-details-list">
+    <div className={`process-details-object ${isChild ? "is-child" : ""}`}>
       {Object.entries(details).map(([key, value]) => (
-        <li key={key}>
-          <strong>{key}:</strong> <ProcessDetails details={value} />
-        </li>
+        <div key={key} className="process-detail-entry">
+          <strong className="process-detail-key">{key}:</strong>
+          <span className="process-detail-value">
+            <ProcessDetails details={value} isChild={true} />
+          </span>
+        </div>
       ))}
-    </ul>
+    </div>
   );
 };
 
@@ -86,7 +110,9 @@ const ProcessesSection: React.FC<Props> = ({ server }) => {
                 <RuxTableBody>
                   {filteredProcesses.map(([name, details]) => (
                     <RuxTableRow key={name}>
-                      <RuxTableCell>{name}</RuxTableCell>
+                      <RuxTableCell>
+                        {highlightMatch(name, searchTerm)}
+                      </RuxTableCell>
                       <RuxTableCell>
                         <div className="process-details-container">
                           <ProcessDetails details={details} />

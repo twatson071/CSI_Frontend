@@ -16,6 +16,31 @@ type DeviceStatus =
   | "standby"
   | "off";
 
+const mapStatus = (
+  status: string | undefined
+): "normal" | "critical" | "caution" | "serious" | "off" | "standby" => {
+  if (!status) return "off";
+  const lowerStatus = status.toLowerCase();
+  switch (lowerStatus) {
+    case "normal":
+    case "online":
+      return "normal";
+    case "critical":
+      return "critical";
+    case "caution":
+      return "caution";
+    case "serious":
+      return "serious";
+    case "standby":
+      return "standby";
+    case "off":
+    case "offline":
+      return "off";
+    default:
+      return "normal";
+  }
+};
+
 interface SiteEndpointsTreeProps {
   sites: SiteWithOptionalDevices[];
   selectedSite: number;
@@ -82,17 +107,7 @@ const SiteEndpointsTree: React.FC<SiteEndpointsTreeProps> = ({
         {sites.map((site, si) => {
           const deviceStatusesForSite: DeviceStatus[] =
             site.devices?.map((dev: Device): DeviceStatus => {
-              if (dev.type === "PDU" && dev.data?.parameters?.outlets) {
-                const outlets = dev.data.parameters.outlets as Record<
-                  string,
-                  { state: string }
-                >;
-                const outletStatesNormal = Object.values(outlets).every(
-                  (o) => o.state === "POWER_ON"
-                );
-                return outletStatesNormal ? "normal" : "critical";
-              }
-              return (dev.status as DeviceStatus) || "standby";
+              return mapStatus(dev.status);
             }) || [];
 
           const siteOverallStatus = getAggregatedStatus(deviceStatusesForSite);
@@ -111,22 +126,7 @@ const SiteEndpointsTree: React.FC<SiteEndpointsTreeProps> = ({
                 site.devices && // Check if devices are loaded
                 site.devices.length > 0 &&
                 site.devices.map((dev, di) => {
-                  let currentDeviceDisplayStatus: DeviceStatus;
-                  if (dev.type === "PDU" && dev.data?.parameters?.outlets) {
-                    const outlets = dev.data.parameters.outlets as Record<
-                      string,
-                      { state: string }
-                    >;
-                    const outletStatesNormal = Object.values(outlets).every(
-                      (o) => o.state === "POWER_ON"
-                    );
-                    currentDeviceDisplayStatus = outletStatesNormal
-                      ? "normal"
-                      : "critical";
-                  } else {
-                    currentDeviceDisplayStatus =
-                      (dev.status as DeviceStatus) || "standby";
-                  }
+                  const currentDeviceDisplayStatus = mapStatus(dev.status);
 
                   return (
                     <RuxTreeNode

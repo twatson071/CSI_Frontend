@@ -7,6 +7,8 @@ import devices from "./routes/devices/deviceRoutes";
 import metricThresholds from "./routes/metricThresholds/metricThresholdRoutes";
 import alerts from "./routes/alerts/alertsRoutes";
 import mock from "./routes/mock/mockRoutes";
+import roles from "./routes/roles/rolesRoutes";
+import users from "./routes/users/userRoutes";
 import { initializeAlertNotificationService } from "./services/alertNotificationService";
 import "./poller/pollDevices";
 import { auth } from "./auth";
@@ -23,6 +25,8 @@ app.route("/devices", devices);
 app.route("/metric-thresholds", metricThresholds);
 app.route("/alerts", alerts);
 app.route("/mock", mock);
+app.route("/roles", roles);
+app.route("/users", users);
 app.use("/auth/*", async (c) => {
   return auth.handler(c.req.raw);
 });
