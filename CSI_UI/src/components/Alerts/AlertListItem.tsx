@@ -1,4 +1,13 @@
-import { RuxStatus, RuxButton, RuxIcon } from "@astrouxds/react";
+import {
+  RuxStatus,
+  RuxButton,
+  RuxIcon,
+  RuxTableRow,
+  RuxTableCell,
+  RuxTableHeader,
+  RuxTableHeaderRow,
+  RuxTableHeaderCell,
+} from "@astrouxds/react";
 import type { Alert } from "../../services/AlertService";
 import { formatDateTime } from "../../utils/FormatUtils";
 import "./Alerts.css";
@@ -45,22 +54,22 @@ const AlertListItem = ({
     return `${diffDays}d ago`;
   };
 
-  // Use grid layout for row, matching the modern panel
+  // Use RuxTableRow for consistent styling
   return (
-    <div
+    <RuxTableRow
       className={`alerts-table-row alert-row-${getSeverityStatus(
         alertItem.severity
       )}${alertItem.acknowledged ? " acknowledged" : ""}`}
       tabIndex={0}
       aria-label={`${alertItem.severity} alert: ${alertItem.message}`}
     >
-      <div className="table-cell-status">
+      <RuxTableCell className="table-cell-status">
         <div className="severity-indicator">
           <RuxStatus status={getSeverityStatus(alertItem.severity)} />
           <span className="severity-text">{alertItem.severity}</span>
         </div>
-      </div>
-      <div className="table-cell-content">
+      </RuxTableCell>
+      <RuxTableCell className="table-cell-content">
         <div className="alert-header">
           <div className="alert-location">
             <RuxIcon icon="place" size="small" />
@@ -90,8 +99,8 @@ const AlertListItem = ({
             </span>
           </div>
         )}
-      </div>
-      <div className="table-cell-actions">
+      </RuxTableCell>
+      <RuxTableCell className="table-cell-actions">
         <RuxButton
           className="acknowledge-btn"
           onClick={() => onAcknowledge && onAcknowledge(alertItem.id)}
@@ -101,18 +110,20 @@ const AlertListItem = ({
         >
           {alertItem.acknowledged ? "Unacknowledge" : "Acknowledge"}
         </RuxButton>
-      </div>
-    </div>
+      </RuxTableCell>
+    </RuxTableRow>
   );
 };
 
 // New AlertsListHeader component
 export const AlertsListHeader = () => (
-  <div className="alerts-table-header">
-    <div className="table-header-status">Severity</div>
-    <div className="table-header-content">Alert Details</div>
-    <div className="table-header-actions">Actions</div>
-  </div>
+  <RuxTableHeader className="alerts-table-header">
+    <RuxTableHeaderRow>
+      <RuxTableHeaderCell>Severity</RuxTableHeaderCell>
+      <RuxTableHeaderCell>Alert Details</RuxTableHeaderCell>
+      <RuxTableHeaderCell>Actions</RuxTableHeaderCell>
+    </RuxTableHeaderRow>
+  </RuxTableHeader>
 );
 
 export default AlertListItem;

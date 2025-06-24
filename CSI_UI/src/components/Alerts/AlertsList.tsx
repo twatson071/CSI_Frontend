@@ -1,6 +1,8 @@
-// Removed unused RuxTable imports for modern grid layout
-import AlertListItem from "./AlertListItem";
-import { AlertsListHeader } from "./AlertListItem";
+import AlertListItem, { AlertsListHeader } from "./AlertListItem";
+import {
+  RuxTable,
+  RuxTableBody,
+} from "@astrouxds/react";
 import type { Alert } from "../../services/AlertService";
 
 interface AlertsListProps {
@@ -25,9 +27,9 @@ const AlertsList = ({
   }
 
   return (
-    <div className="alerts-table">
+    <RuxTable className="alerts-table">
       <AlertsListHeader />
-      <div className="alerts-table-body">
+      <RuxTableBody className="alerts-table-body">
         {alerts.map((alert) => (
           <AlertListItem
             key={alert.id}
@@ -45,8 +47,8 @@ const AlertsList = ({
             }
           />
         ))}
-      </div>
-    </div>
+      </RuxTableBody>
+    </RuxTable>
   );
 };
 

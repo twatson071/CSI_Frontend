@@ -15,30 +15,19 @@
   min-height: 120px;
 }
 
+.alerts-panel::part(header) {
+  padding: 0;
+}
+
 .alerts-panel .rux-container__header {
   padding: 0 !important;
 }
 
-/* Remove all padding from rux-container__header, including shadow DOM and inline styles */
-:host(.alerts-panel) .rux-container__header,
-.alerts-panel .rux-container__header,
-.rux-container__header[part="header"],
-.rux-container__header {
-  padding: 0 !important;
-}
-
-/* Remove padding from slot content in header if present */
+/* Remove padding from slot content in header */
 .rux-container__header[part="header"] > *,
 .rux-container__header > * {
   margin: 0 !important;
   padding: 0 !important;
-}
-
-/* Remove padding from the slot itself if possible */
-.rux-container__header[part="header"] slot[name="header"] {
-  padding: 0 !important;
-  margin: 0 !important;
-  display: contents;
 }
 
 .alerts-list-wrapper {
