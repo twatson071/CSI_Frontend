@@ -12,8 +12,9 @@ import {
   RuxToastStack,
 } from "@astrouxds/react";
 import type { Status } from "@astrouxds/mock-data";
-import { addToast } from "../../utils/toast";
+import { addToast, ToastType } from "../../utils/toast";
 import "./Navbar.css";
+import NotificationPreferences from "../common/NotificationPreferences";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ const Navbar = () => {
   const [notifications2, setNotifications2] = useState(2);
   const [notifications3, setNotifications3] = useState(4);
   const [lightTheme, setLightTheme] = useState(false);
+  const [showPrefs, setShowPrefs] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("theme");
@@ -77,7 +79,7 @@ const Navbar = () => {
           localStorage.setItem("theme", newTheme ? "light" : "dark");
           return;
         }
-        addToast("This feature has not been implemented", false, 3000);
+        addToast("This feature has not been implemented", false, 3000, "info");
     }
   }
 
@@ -111,7 +113,13 @@ const Navbar = () => {
             <RuxMenuItem value="themeToggle">
               {lightTheme ? "Dark" : "Light"} Theme
             </RuxMenuItem>
-            <RuxMenuItem>Preferences</RuxMenuItem>
+            <RuxMenuItem
+              onClick={() => {
+                navigate("/preferences");
+              }}
+            >
+              Preferences
+            </RuxMenuItem>
             <RuxMenuItem>Sign Out</RuxMenuItem>
           </RuxMenu>
         </RuxPopUp>
@@ -121,7 +129,12 @@ const Navbar = () => {
           <RuxPopUp placement="bottom" closeOnSelect>
             <RuxMenu
               onRuxmenuselected={() =>
-                addToast("This feature has not been implemented", false, 3000)
+                addToast(
+                  "This feature has not been implemented",
+                  false,
+                  3000,
+                  "info"
+                )
               }
             >
               <RuxMenuItem>Investigate</RuxMenuItem>
@@ -138,7 +151,12 @@ const Navbar = () => {
           <RuxPopUp placement="bottom" closeOnSelect>
             <RuxMenu
               onRuxmenuselected={() =>
-                addToast("This feature has not been implemented", false, 3000)
+                addToast(
+                  "This feature has not been implemented",
+                  false,
+                  3000,
+                  "info"
+                )
               }
             >
               <RuxMenuItem>Investigate</RuxMenuItem>
@@ -155,7 +173,12 @@ const Navbar = () => {
           <RuxPopUp placement="bottom" closeOnSelect>
             <RuxMenu
               onRuxmenuselected={() =>
-                addToast("This feature has not been implemented", false, 3000)
+                addToast(
+                  "This feature has not been implemented",
+                  false,
+                  3000,
+                  "info"
+                )
               }
             >
               <RuxMenuItem>Investigate</RuxMenuItem>

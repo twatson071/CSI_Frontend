@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const apiRequest = async <T>(
-  method: "GET" | "POST",
+  method: "GET" | "POST" | "PUT" | "DELETE",
   url: string,
   data?: Record<string, any>
 ): Promise<T> => {

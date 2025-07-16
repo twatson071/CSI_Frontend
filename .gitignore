@@ -32,3 +32,4 @@ CSI_UI/coverage-*.json.gz
 bun.lock
 CSI_UI_API/package.json
 CSI_API/local.db
+.rules

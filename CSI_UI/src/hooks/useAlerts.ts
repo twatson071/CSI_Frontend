@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
-import { addToast } from "../utils/toast";
+import { addToast, ToastType } from "../utils/toast";
 import type { Alert } from "../services/AlertService";
 import {
   getAlerts,
   acknowledgeAlert,
   getAlertCount,
 } from "../services/AlertService";
+import { addAlertsToHistory } from "../utils/alertHistoryDB";
 
 export function useAlerts(serverUrl: string = "http://localhost:8081") {
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -21,6 +22,7 @@ export function useAlerts(serverUrl: string = "http://localhost:8081") {
       .then(([fetchedAlerts, count]) => {
         setAlerts(fetchedAlerts);
         setAlertCount(count);
+        addAlertsToHistory(fetchedAlerts); // Store in IndexedDB
       })
       .catch((err) => {
         console.error("Failed to fetch alerts or count", err);
@@ -40,12 +42,13 @@ export function useAlerts(serverUrl: string = "http://localhost:8081") {
         .then(([fetchedAlerts, count]) => {
           setAlerts(fetchedAlerts);
           setAlertCount(count);
+          addAlertsToHistory(fetchedAlerts); // Store in IndexedDB
         })
         .catch((err) => {
           console.error("Failed to refetch alerts after new alert", err);
         });
 
-      addToast(alert.message, false, 5000);
+      addToast(alert.message, false, 5000, "alerts");
     });
 
     // Listen for alert resolution/removal
@@ -73,10 +76,10 @@ export function useAlerts(serverUrl: string = "http://localhost:8081") {
       // Remove the acknowledged alert from the local state
       setAlerts((prev) => prev.filter((a) => a.id !== id));
       setAlertCount((prev) => prev - 1);
-      addToast("Alert acknowledged", true, 3000);
+      addToast("Alert acknowledged", true, 3000, "alerts");
     } catch (error) {
       console.error("Failed to acknowledge alert:", error);
-      addToast("Failed to acknowledge alert", false, 5000);
+      addToast("Failed to acknowledge alert", false, 5000, "alerts");
     }
   };
 

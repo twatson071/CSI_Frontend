@@ -217,4 +217,73 @@ app.delete("/:id", async (c: Context) => {
   }
 });
 
+// --- Notification Preferences Endpoints ---
+
+// Default notification types
+const DEFAULT_NOTIFICATION_PREFERENCES = {
+  alerts: true,
+  critical: true,
+  device: true,
+  info: true,
+  system: true,
+};
+
+// Get user notification preferences
+app.get("/:id/preferences", async (c: Context) => {
+  const id = parseInt(c.req.param("id"));
+  if (isNaN(id)) {
+    return c.json({ error: "Invalid user ID" }, 400);
+  }
+  try {
+    const user = await db.query.users.findFirst({ where: eq(users.id, id) });
+    if (!user) {
+      return c.json({ error: "User not found" }, 404);
+    }
+    let prefs = user.notificationPreferences;
+    if (!prefs || Object.keys(prefs).length === 0) {
+      prefs = DEFAULT_NOTIFICATION_PREFERENCES;
+    } else {
+      // Fill in any missing keys with defaults
+      prefs = { ...DEFAULT_NOTIFICATION_PREFERENCES, ...prefs };
+    }
+    return c.json(prefs);
+  } catch (error) {
+    console.error("Error fetching notification preferences:", error);
+    return c.json({ error: "Failed to fetch notification preferences" }, 500);
+  }
+});
+
+// Update user notification preferences
+app.put("/:id/preferences", async (c: Context) => {
+  const id = parseInt(c.req.param("id"));
+  if (isNaN(id)) {
+    return c.json({ error: "Invalid user ID" }, 400);
+  }
+  const body = await c.req.json();
+  // Validate: must be an object with boolean values for known types
+  const allowedKeys = Object.keys(DEFAULT_NOTIFICATION_PREFERENCES);
+  const isValid =
+    typeof body === "object" &&
+    Object.keys(body).every(
+      (k) => allowedKeys.includes(k) && typeof body[k] === "boolean"
+    );
+  if (!isValid) {
+    return c.json({ error: "Invalid preferences format" }, 400);
+  }
+  try {
+    const updated = await db
+      .update(users)
+      .set({ notificationPreferences: body })
+      .where(eq(users.id, id))
+      .returning({ notificationPreferences: users.notificationPreferences });
+    if (updated.length === 0) {
+      return c.json({ error: "User not found" }, 404);
+    }
+    return c.json(updated[0].notificationPreferences);
+  } catch (error) {
+    console.error("Error updating notification preferences:", error);
+    return c.json({ error: "Failed to update notification preferences" }, 500);
+  }
+});
+
 export default app;

@@ -10,7 +10,7 @@ import {
 } from "@astrouxds/react";
 import DeviceListItem, { Device } from "./DeviceListItem"; // Import Device interface
 import "./DeviceStatus.css"; // Consider renaming or reviewing Watcher.css content
-import { addToast } from "../../utils/toast";
+import { addToast, ToastType } from "../../utils/toast";
 
 // Placeholder for where you might fetch or manage device data
 // For now, using sample data
@@ -21,16 +21,17 @@ const initialDevices: Device[] = [
   { id: 4, name: "PDU-East-Wing", status: "off", type: "PDU" },
 ];
 
-
 const DeviceStatus: React.FC = () => {
   const [devices, setDevices] = useState<Device[]>(initialDevices);
-  const [investigateTarget, setInvestigateTarget] = useState<Device | null>(null);
+  const [investigateTarget, setInvestigateTarget] = useState<Device | null>(
+    null
+  );
 
   const handleDeleteDevice = (deviceId: string | number) => {
     setDevices((prevDevices) =>
       prevDevices.filter((device) => device.id !== deviceId)
     );
-    addToast("Device deleted", true, 3000);
+    addToast("Device deleted", true, 3000, "device");
     // TODO: Add API call or other state management logic for deletion
   };
 
@@ -72,7 +73,7 @@ const DeviceStatus: React.FC = () => {
           onRuxdialogclosed={() => setInvestigateTarget(null)}
           message={`Investigating device "${investigateTarget.name}" (Type: ${investigateTarget.type})`}
           confirmText="Close"
-          hideCancel
+          hideCancelBtn
         />
       )}
     </>

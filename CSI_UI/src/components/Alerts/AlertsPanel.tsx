@@ -210,33 +210,7 @@ const AlertsPanel = ({
               </div>
             )}
           </div>
-          <div className="header-actions">
-            {unacknowledgedCount > 0 && onAcknowledge && (
-              <RuxButton
-                size="small"
-                className="acknowledge-all"
-                onClick={acknowledgeAll}
-                title={`Acknowledge all ${unacknowledgedCount} unacknowledged alerts`}
-                icon="check"
-              >
-                Acknowledge All ({unacknowledgedCount})
-              </RuxButton>
-            )}
-            {hasActiveFilters && (
-              <RuxButton
-                size="small"
-                secondary
-                className="clear-filters"
-                onClick={clearAllFilters}
-                title="Clear all active filters"
-                icon="clear"
-              >
-                Clear Filters
-              </RuxButton>
-            )}
-          </div>
         </div>
-
         <div className="severity-summary">
           <div
             className="severity-counts"
@@ -288,81 +262,7 @@ const AlertsPanel = ({
             })}
           </div>
         </div>
-
-        <div className="filter-controls">
-          <div className="search-and-sort">
-            <RuxInput
-              className="search-input"
-              type="search"
-              placeholder="Search alerts, devices, sites..."
-              value={searchTerm}
-              onRuxinput={(e) => setSearchTerm(e.target.value || "")}
-              aria-label="Search alerts"
-              label="Search"
-              hide-label
-            ></RuxInput>
-            <div className="sort-controls">
-              <RuxSelect
-                value={sortField}
-                onRuxchange={(e) => setSortField((e.target as any).value)}
-                size="small"
-                label="Sort by"
-              >
-                <RuxOption value="time" label="Time" />
-                <RuxOption value="severity" label="Severity" />
-                <RuxOption value="site" label="Site" />
-                <RuxOption value="device" label="Device" />
-              </RuxSelect>
-              <RuxButton
-                size="small"
-                secondary
-                iconOnly
-                onClick={() =>
-                  setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-                }
-                className="sort-direction"
-                title={`Sort ${
-                  sortDirection === "asc" ? "descending" : "ascending"
-                }`}
-                aria-label={`Current sort: ${
-                  sortDirection === "asc" ? "ascending" : "descending"
-                }. Click to toggle.`}
-                icon={
-                  sortDirection === "asc"
-                    ? "keyboard-arrow-up"
-                    : "keyboard-arrow-down"
-                }
-              />
-            </div>
-          </div>
-
-          <div className="filter-dropdowns">
-            <RuxSelect
-              id="device-select"
-              value={deviceTypeFilter}
-              onRuxchange={(e) =>
-                setDeviceTypeFilter((e.target as any).value || "ALL")
-              }
-              size="small"
-              label="Device Type"
-            >
-              <RuxOption value="ALL" label="All Device Types" />
-              {uniqueDeviceTypes.map((t) => (
-                <RuxOption key={t} value={t} label={t} />
-              ))}
-            </RuxSelect>
-            <RuxCheckbox
-              id="show-acknowledged"
-              checked={showAcknowledged}
-              onRuxchange={() => setShowAcknowledged(!showAcknowledged)}
-              aria-label="Show acknowledged alerts"
-            >
-              Show Acknowledged
-            </RuxCheckbox>
-          </div>
-        </div>
       </div>
-
       <div className="alerts-list-wrapper">
         {isLoading ? (
           <div className="loading-state" role="status" aria-live="polite">
@@ -379,13 +279,6 @@ const AlertsPanel = ({
                   Try adjusting your search criteria or clearing filters to see
                   more results.
                 </p>
-                <RuxButton
-                  onClick={clearAllFilters}
-                  aria-label="Clear all filters to show more alerts"
-                  icon="clear"
-                >
-                  Clear All Filters
-                </RuxButton>
               </>
             ) : (
               <>
