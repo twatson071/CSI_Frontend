@@ -1,0 +1,27 @@
+# deps
+node_modules/
+# build
+dist/
+# misc
+.DS_Store
+# env
+.env
+# IDE
+.vscode/
+.idea/
+# macOS
+*.DS_Store
+# Windows
+Thumbs.db
+# Linux
+*~
+# logs
+*.log
+# coverage
+coverage/
+# npm
+package-lock.json
+# yarn
+yarn-error.log
+# bun
+bun.lock

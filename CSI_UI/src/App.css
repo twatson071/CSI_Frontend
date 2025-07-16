@@ -1,43 +1,207 @@
+/* APPLICATION LAYOUT & GRID STYLES */
+
 .app-container {
-  display: grid;
-  grid-template-columns: 300px 1fr; /* Sidebar and main content */
-  grid-template-rows: auto; /* Adjust height dynamically */
-  grid-template-areas:
-    "sidebar main-content"; /* Define grid areas */
-  height: 100vh; /* Full viewport height */
-  background-color: var(--color-background-base-default);
-  color: var(--color-text-primary);
+  height: 100%;
+  overflow: hidden;
 }
 
-.sidebar {
-  background-color: var(--color-background-surface-default);
-  border-right: 1px solid var(--color-border-divider);
-  padding: 1rem;
-  overflow-y: auto;
-}
-
-.main-content {
-  padding: 1rem;
-  overflow-y: auto;
-  background-color: var(--color-background-base-default);
-}
-
-.pdu {
+rux-container::part(container) {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--color-background-surface-default);
-  padding: 20px;
-  border-radius: 10px;
-  color: var(--color-text-primary);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  height: calc(100% - 2px);
+  overflow-y: hidden;
 }
 
-.plug-row {
+rux-container::part(body) {
+  flex-grow: 1;
   display: flex;
-  justify-content: space-around;
+  flex-direction: column;
+  overflow-y: hidden;
+  padding: 0;
+}
+
+rux-container.site-endpoints {
+  grid-area: site-endpoints;
+}
+rux-container.alerts rux-container.pass-plan {
+  grid-area: pass-plan;
+}
+rux-container.device-status {
+  grid-area: device-status;
+}
+.device-status {
+  grid-area: device-status;
+}
+
+.link-status {
+  grid-area: link-status;
+}
+
+.subsystems {
+  grid-area: subsystems;
+}
+
+.watcher rux-container {
+  grid-area: watcher;
+}
+
+rux-container.mnemonics {
+  grid-area: mnemonics;
+}
+
+rux-container.star-tracker {
+  grid-area: star-tracker;
+}
+
+rux-container.investigate-subsystem {
+  grid-area: investigate-subsystems;
+}
+
+rux-button.investigate-breadcrumb {
+  grid-area: breadcrumb;
+}
+
+/* GlOBAL TABLE STYLES */
+
+.table-wrapper {
+  overflow-y: auto;
+}
+
+.table-wrapper rux-table {
+  height: calc(100% - 2px);
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  margin-top: 40px;
+}
+
+rux-table-header {
+  top: 0;
+  position: sticky;
+  z-index: 10;
+}
+
+rux-status::part(status) {
+  margin-inline: auto;
+}
+
+/* GLOBAL TREE STYLES */
+
+rux-tree-node::part(node):focus {
+  outline-offset: -1px;
+}
+
+/* INVESTIGATE OVERLAY STYLES */
+
+.investigate__overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 99;
+  opacity: 0;
+  transition: opacity 0.3s;
+  will-change: opacity;
+  background-color: #000;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.investigate rux-container div[slot="header"] {
+  display: flex;
+  gap: 1rem;
+}
+
+.investigate rux-container div[slot="header"] rux-button {
+  margin-left: auto;
+}
+
+.investigate__close {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  margin-left: 1rem;
+}
+
+.investigate__wrapper {
+  position: fixed;
+  top: 6.75rem;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 500px;
+  z-index: 99;
+  overflow: auto;
+  transition: transform 0.3s;
+  will-change: transform;
+  display: flex;
+  flex-direction: column;
+  -webkit-transform: translate3d(103%, 0, 0);
+  transform: translate3d(103%, 0, 0); /* extra 3% because of box-shadow */
+  -webkit-overflow-scrolling: touch; /* enables momentum scrolling in iOS overflow elements */
+}
+
+/* investigate CONTENT  */
+
+.investigate-title-status {
+  margin-right: 0.25rem;
+}
+.main-container[data-active="true"] {
+  height: calc(100% - var(--spacing-24));
+  padding: var(--spacing-3);
+  background-color: var(--color-background-base-default);
+  color: var(--color-text-primary);
+  display: grid;
+  gap: var(--spacing-2);
+  grid-template-columns: calc(30% - 5px) calc(70% - 5px + var(--spacing-2));
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "site-endpoints pass-plan"
+    "alerts device-status"
+    "alerts     device-status";
+}
+.investigate__content {
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: 100%;
+  flex-grow: 1;
+  padding: 1.5rem;
+  background-color: var(--color-background-surface-default);
+}
+
+.investigate--left .investigate__wrapper {
+  left: 0;
+  right: auto;
+  -webkit-transform: translate3d(-100%, 0, 0);
+  transform: translate3d(-100%, 0, 0);
+}
+
+.investigate.is-active {
+  display: block;
+}
+
+.investigate.is-visible .investigate__wrapper {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+
+.investigate.is-visible .investigate__overlay {
+  opacity: 0.5;
+}
+
+.main-content-header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  margin-top: 20px;
-  gap: 20px;
+  width: 100%;
 }

@@ -1,78 +1,56 @@
-import React, { useState } from "react";
+import React, { useState, useImperativeHandle, forwardRef } from "react";
 import "./SiteEndpointForm.css";
-import { RuxButton, RuxInput } from "@astrouxds/react";
-interface AddSiteEndpointFormProps {
-  onSave: (endpoint: {
-    siteName: string;
-    endpointName: string;
-    equipmentType: string;
-    equipmentMake: string;
-    equipmentModel: string;
-  }) => void;
-  onCancel: () => void;
+import { RuxInput } from "@astrouxds/react";
+
+export interface AddSiteEndpointFormHandles {
+  getFormData: () => { name: string; location: string } | null;
+  reset: () => void;
 }
 
-const AddSiteEndpointForm: React.FC<AddSiteEndpointFormProps> = ({
-  onSave,
-  onCancel,
-}) => {
-  const [siteName, setSiteName] = useState("");
-  const [endpointName, setEndpointName] = useState("");
-  const [equipmentType, setEquipmentType] = useState("");
-  const [equipmentMake, setEquipmentMake] = useState("");
-  const [equipmentModel, setEquipmentModel] = useState("");
+interface AddSiteEndpointFormProps {
+  // No onSave/onCancel here; parent handles actions
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave({
-      siteName,
-      endpointName,
-      equipmentType,
-      equipmentMake,
-      equipmentModel,
-    });
-  };
+const AddSiteEndpointForm = forwardRef<
+  AddSiteEndpointFormHandles,
+  AddSiteEndpointFormProps
+>((props, ref) => {
+  const [siteName, setSiteName] = useState("");
+  const [location, setLocation] = useState("");
+
+  useImperativeHandle(ref, () => ({
+    getFormData: () => {
+      if (!siteName.trim() || !location.trim()) return null;
+      return { name: siteName, location: location };
+    },
+    reset: () => {
+      setSiteName("");
+      setLocation("");
+    },
+  }));
 
   return (
-    <form className="add-site-endpoint-form" onSubmit={handleSubmit}>
-      <RuxInput
-        label="Site Name"
-        value={siteName}
-        onChange={(e) => setSiteName((e.target as HTMLInputElement).value)}
-        required
-      ></RuxInput>
-      <RuxInput
-        label="Endpoint Name"
-        value={endpointName}
-        onChange={(e) => setEndpointName(e.currentTarget.value)}
-        required
-      ></RuxInput>
-      <RuxInput
-        label="Equipment Type"
-        value={equipmentType}
-        onChange={(e) => setEquipmentType(e.currentTarget.value)}
-        required
-      ></RuxInput>
-      <RuxInput
-        label="Equipment Make"
-        value={equipmentMake}
-        onChange={(e) => setEquipmentMake(e.currentTarget.value)}
-        required
-      ></RuxInput>
-      <RuxInput
-        label="Equipment Model"
-        value={equipmentModel}
-        onChange={(e) => setEquipmentModel(e.currentTarget.value)}
-        required
-      ></RuxInput>
-      <div className="form-actions">
-        <RuxButton type="submit">Save</RuxButton>
-        <RuxButton type="button" onClick={onCancel}>
-          Cancel
-        </RuxButton>
-      </div>
-    </form>
+    <div className="add-site-endpoint-form-container">
+      <h3>Add New Site</h3>
+      <form
+        className="add-site-endpoint-form"
+        onSubmit={(e) => e.preventDefault()}
+      >
+        <RuxInput
+          label="Site Name"
+          value={siteName}
+          onRuxinput={(e: any) => setSiteName(e.target.value)}
+          required
+        ></RuxInput>
+        <RuxInput
+          label="Location"
+          value={location}
+          onRuxinput={(e: any) => setLocation(e.target.value)}
+          required
+        ></RuxInput>
+      </form>
+    </div>
   );
-};
+});
 
 export default AddSiteEndpointForm;

@@ -1,158 +1,489 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import SiteEndpointsTree from "./SiteEndpointsTree";
-import PDU from "../PDU/PDU";
-import AddSiteEndpointForm from "./SiteEndpointForm";
+import AddSiteEndpointForm, {
+  AddSiteEndpointFormHandles,
+} from "./SiteEndpointForm";
+import MainContentDisplay from "./MainContentDisplay";
+import DeviceForm from "../Devices/DeviceForm";
+import DeviceStatusDashboard from "../Devices/DeviceStatusDashboard";
 import {
-  fetchPDUData,
+  fetchSiteSummaries,
+  fetchDevicesForSite,
+  SiteWithOptionalDevices,
+  SiteCreateData,
+  createSite,
+} from "../../services/SiteService";
+import {
   PDUData,
   toggleOutletPower,
-} from "../../services/tripplitePDU";
+  OutletAction,
+} from "../../services/PDUservice";
+import { Device } from "../../services/DeviceService";
 import "./SiteEndpointLayout.css";
 import { RuxContainer, RuxButton } from "@astrouxds/react";
-import LoadHistoryChart from "./LoadHistoryChart";
+import AlertsPanel from "../Alerts/AlertsPanel";
+import { useAlerts } from "../../hooks/useAlerts";
+
+const extractPduDataAndStatuses = (
+  deviceData: any
+): { pduData: PDUData | null; statuses: string[] } => {
+  if (
+    !deviceData ||
+    typeof deviceData !== "object" ||
+    !deviceData.parameters ||
+    typeof deviceData.parameters !== "object"
+  ) {
+    return { pduData: null, statuses: [] };
+  }
+
+  const rawPduParameters = deviceData.parameters;
+  const rawOutletsFromApi: Record<string, any> | undefined | null =
+    rawPduParameters.outlets;
+
+  if (
+    !rawOutletsFromApi ||
+    typeof rawOutletsFromApi !== "object" ||
+    rawOutletsFromApi === null
+  ) {
+    const pduShell: PDUData = {
+      ...(rawPduParameters as Omit<PDUData, "outlets">),
+      outlets: {},
+    };
+    return { pduData: pduShell, statuses: [] };
+  }
+
+  const normalizedOutlets: Record<string, { state?: string }> = {};
+  const uiStatuses: string[] = [];
+
+  const outletKeys = Object.keys(rawOutletsFromApi).sort();
+
+  for (const key of outletKeys) {
+    const rawOutletValue = rawOutletsFromApi[key];
+    let actualState: string | undefined = undefined;
+
+    if (typeof rawOutletValue === "string") {
+      actualState = rawOutletValue;
+      normalizedOutlets[key] = { state: actualState };
+    } else if (
+      typeof rawOutletValue === "object" &&
+      rawOutletValue !== null &&
+      typeof rawOutletValue.state === "string"
+    ) {
+      actualState = rawOutletValue.state;
+      normalizedOutlets[key] = { state: actualState };
+    } else if (typeof rawOutletValue === "object" && rawOutletValue !== null) {
+      normalizedOutlets[key] = { state: undefined };
+    } else {
+      normalizedOutlets[key] = { state: undefined };
+    }
+    if (actualState === "POWER_ON") {
+      uiStatuses.push("normal");
+    } else if (actualState === "POWER_OFF") {
+      uiStatuses.push("off");
+    } else {
+      uiStatuses.push("off");
+    }
+  }
+
+  const finalPduData: PDUData = {
+    ...(rawPduParameters as PDUData),
+    outlets: normalizedOutlets,
+  };
+
+  return { pduData: finalPduData, statuses: uiStatuses };
+};
 
 const SiteEndpointLayout: React.FC = () => {
+  const [sites, setSites] = useState<SiteWithOptionalDevices[]>([]);
+  const [selectedSiteIdx, setSelectedSiteIdx] = useState<number>(-1);
+  const [selectedDevIdx, setSelectedDevIdx] = useState<number>(-1);
   const [pduData, setPduData] = useState<PDUData | null>(null);
   const [statuses, setStatuses] = useState<string[]>([]);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [siteEndpoints, setSiteEndpoints] = useState<any[]>([]);
-  const [loadHistory, setLoadHistory] = useState<{ x: string; y: number }[]>(
-    []
+  const [showAddSiteModal, setShowAddSiteModal] = useState(false);
+  const [showAddDeviceForm, setShowAddDeviceForm] = useState(false);
+  const [showDeviceStatusDashboard, setShowDeviceStatusDashboard] =
+    useState(false);
+  const [isLoadingDevices, setIsLoadingDevices] = useState(false);
+  const [wattsData, setWattsData] = useState<{ x: string; y: number }[]>([]);
+  const [ampsData, setAmpsData] = useState<{ x: string; y: number }[]>([]);
+  const addSiteFormRef = useRef<AddSiteEndpointFormHandles>(null);
+
+  // Use the alerts hook to get current alerts
+  const { alerts, acknowledge } = useAlerts();
+
+  const updatePduDisplayCallback = useCallback(
+    (siteIdxToUpdate: number, deviceIndexToUpdate: number) => {
+      const site = sites[siteIdxToUpdate];
+      const device = site?.devices?.[deviceIndexToUpdate];
+
+      if (device && device.data && device.type === "PDU") {
+        const { pduData: newPduData, statuses: newStatuses } =
+          extractPduDataAndStatuses(device.data);
+        setPduData(newPduData);
+        setStatuses(newStatuses);
+
+        // Extract and append sensor data for chart
+        const sensors = device.data.sensors;
+        if (sensors && typeof sensors === "object") {
+          const now = new Date().toISOString();
+          const watts = Number(sensors.total_draw_w) || 0;
+          const amps = Number(sensors.total_draw_a) || 0;
+          setWattsData((prev) => [...prev, { x: now, y: watts }].slice(-100));
+          setAmpsData((prev) => [...prev, { x: now, y: amps }].slice(-100));
+        }
+      } else {
+        setPduData(null);
+        setStatuses([]);
+        setWattsData([]);
+        setAmpsData([]);
+      }
+    },
+    [sites]
   );
-  const [loadHistoryAmps, setLoadHistoryAmps] = useState<
-    { x: string; y: number }[]
-  >([]);
+
+  const refreshSelectedDeviceData = useCallback(
+    async (delayMs: number = 0) => {
+      if (selectedSiteIdx === -1 || selectedDevIdx === -1) return;
+
+      const site = sites[selectedSiteIdx];
+      if (!site) return;
+
+      if (delayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+
+      try {
+        const fetchedDevices = await fetchDevicesForSite(site.siteId);
+        setSites((prevSites) =>
+          prevSites.map((s, idx) =>
+            idx === selectedSiteIdx
+              ? { ...s, devices: fetchedDevices, devicesLoaded: true }
+              : s
+          )
+        );
+
+        const updatedDevice = fetchedDevices[selectedDevIdx];
+        if (
+          updatedDevice &&
+          updatedDevice.data &&
+          updatedDevice.type === "PDU"
+        ) {
+          const { pduData: newPduData, statuses: newStatuses } =
+            extractPduDataAndStatuses(updatedDevice.data);
+          setPduData(newPduData);
+          setStatuses(newStatuses);
+        } else if (updatedDevice) {
+          // Handle non-PDU devices or PDU devices without data
+          setPduData(null);
+          setStatuses([]);
+        }
+      } catch (error) {
+        console.error(`Error refreshing device data:`, error);
+      }
+    },
+    [selectedSiteIdx, selectedDevIdx, sites]
+  );
 
   useEffect(() => {
-    const fetchData = async () => {
-      const data = await fetchPDUData();
-      setPduData(data);
-      setStatuses(data.statuses || []);
+    const loadSiteSummaries = async () => {
+      try {
+        const summaries = await fetchSiteSummaries();
+        const sitesWithEmptyDevices: SiteWithOptionalDevices[] = summaries.map(
+          (summary) => ({
+            ...summary,
+            devices: [],
+            devicesLoaded: false,
+          })
+        );
+        setSites(sitesWithEmptyDevices);
 
-      setLoadHistory((prev) => {
-        const now = new Date();
-        const lastEntry = prev[prev.length - 1];
-        const isNewInterval =
-          !lastEntry ||
-          Math.floor(new Date(lastEntry.x).getTime() / (1 * 60 * 1000)) !==
-            Math.floor(now.getTime() / (1 * 60 * 1000));
+        if (sitesWithEmptyDevices.length > 0) {
+          setSelectedSiteIdx(0);
 
-        if (isNewInterval) {
-          const newWattsHistory = [
-            ...prev,
-            {
-              x: now.toISOString(),
-              y: (data.totalDrawWatts ?? 0) + Math.random() * 100, //Simulated data with Math.random()
-            },
-          ].slice(-50); // Limit to the last 50 entries
-          return newWattsHistory;
+          const loadAllSites = async () => {
+            try {
+              const siteDevicesPromises = sitesWithEmptyDevices.map((site) =>
+                fetchDevicesForSite(site.siteId)
+              );
+
+              const allSitesDevices = await Promise.all(siteDevicesPromises);
+              setSites((prev) =>
+                prev.map((site, idx) => ({
+                  ...site,
+                  devices: allSitesDevices[idx] || [],
+                  devicesLoaded: true,
+                }))
+              );
+            } catch (error) {
+              console.error("Error loading devices for all sites:", error);
+            }
+          };
+
+          loadAllSites();
+          loadDevicesForSite(0);
         }
-        return prev; // No update if not a new interval
-      });
-
-      setLoadHistoryAmps((prev) => {
-        const now = new Date();
-        const lastEntry = prev[prev.length - 1];
-        const isNewInterval =
-          !lastEntry ||
-          Math.floor(new Date(lastEntry.x).getTime() / (1 * 60 * 1000)) !==
-            Math.floor(now.getTime() / (1 * 60 * 1000));
-
-        if (isNewInterval) {
-          const newAmpsHistory = [
-            ...prev,
-            {
-              x: now.toISOString(),
-              y: (data.totalDrawAmps ?? 0) + Math.random() * 100, // Simulated data with Math.random()
-            },
-          ].slice(-50); // Limit to the last 50 entries
-          return newAmpsHistory;
-        }
-        return prev; // No update if not a new interval
-      });
+      } catch (error) {
+        console.error("Error fetching site summaries:", error);
+      }
     };
-
-    fetchData();
-
-    const interval = setInterval(fetchData, 5000);
-
-    return () => clearInterval(interval);
+    loadSiteSummaries();
   }, []);
 
+  const loadDevicesForSite = async (
+    siteIdxToLoad: number,
+    forceReload: boolean = false,
+    selectDeviceIndexAfterLoad: number = -1
+  ) => {
+    if (siteIdxToLoad < 0 || siteIdxToLoad >= sites.length) return;
+    const site = sites[siteIdxToLoad];
+    if (!site) return;
+    if (site.devicesLoaded && !forceReload) {
+      return;
+    }
+    setIsLoadingDevices(true);
+    try {
+      const fetchedDevices = await fetchDevicesForSite(site.siteId);
+      setSites((prevSites) =>
+        prevSites.map((s, idx) =>
+          idx === siteIdxToLoad
+            ? { ...s, devices: fetchedDevices, devicesLoaded: true }
+            : s
+        )
+      );
+      let newSelectedDevIdx = selectedDevIdx;
+      if (
+        selectDeviceIndexAfterLoad !== -1 &&
+        selectDeviceIndexAfterLoad < fetchedDevices.length
+      ) {
+        newSelectedDevIdx = selectDeviceIndexAfterLoad;
+      } else if (
+        fetchedDevices.length > 0 &&
+        (selectedDevIdx === -1 || selectedDevIdx >= fetchedDevices.length)
+      ) {
+        newSelectedDevIdx = 0;
+      }
+
+      if (fetchedDevices.length === 0) {
+        newSelectedDevIdx = -1;
+      }
+
+      setSelectedDevIdx(newSelectedDevIdx);
+    } catch (error) {
+      console.error(`Error fetching devices for site ${site.siteId}:`, error);
+      setSites((prevSites) =>
+        prevSites.map((s, idx) =>
+          idx === siteIdxToLoad ? { ...s, devicesLoaded: false } : s
+        )
+      );
+    } finally {
+      setIsLoadingDevices(false);
+    }
+  };
+
+  const onSelect = (siteIdx: number, devIdx: number) => {
+    setShowAddDeviceForm(false);
+
+    if (selectedSiteIdx !== siteIdx) {
+      setSelectedSiteIdx(siteIdx);
+      setSelectedDevIdx(devIdx);
+      loadDevicesForSite(siteIdx, false, devIdx);
+    } else if (selectedDevIdx !== devIdx) {
+      setSelectedDevIdx(devIdx);
+      if (devIdx !== -1) {
+        refreshSelectedDeviceData();
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (selectedSiteIdx !== -1 && selectedDevIdx !== -1) {
+      updatePduDisplayCallback(selectedSiteIdx, selectedDevIdx);
+    } else {
+      setPduData(null);
+      setStatuses([]);
+    }
+  }, [selectedSiteIdx, selectedDevIdx, sites, updatePduDisplayCallback]);
+
+  const handleSaveSite = async (newSiteData: SiteCreateData) => {
+    try {
+      // Call the service to actually create the site
+      await createSite(newSiteData);
+      setShowAddSiteModal(false);
+    } catch (error) {
+      console.error("Error creating site:", error);
+      return;
+    }
+
+    const summaries = await fetchSiteSummaries();
+    const sitesWithEmptyDevices: SiteWithOptionalDevices[] = summaries.map(
+      (summary) => ({ ...summary, devices: [], devicesLoaded: false })
+    );
+    setSites(sitesWithEmptyDevices);
+  };
+
+  const handleSaveDeviceSuccess = async () => {
+    setShowAddDeviceForm(false);
+    if (selectedSiteIdx !== -1) {
+      const currentSite = sites[selectedSiteIdx];
+      const previousDeviceCount = currentSite?.devices?.length || 0;
+      await loadDevicesForSite(selectedSiteIdx, true, previousDeviceCount);
+    }
+  };
+
+  const selectedSiteObject =
+    selectedSiteIdx !== -1 ? sites[selectedSiteIdx] : undefined;
+  const selectedDeviceObject =
+    selectedSiteObject?.devices?.[selectedDevIdx] || null;
+
+  const handleOutletAction = async (
+    outletIndex: number,
+    action: OutletAction
+  ) => {
+    if (
+      !selectedSiteObject ||
+      !selectedDeviceObject ||
+      selectedDeviceObject.type !== "PDU" ||
+      !pduData ||
+      !pduData.outlets
+    ) {
+      console.error(
+        "Cannot toggle power: No PDU selected or PDU data missing."
+      );
+      return;
+    }
+
+    const outletKey = (outletIndex + 1).toString();
+    const currentOutlet = pduData.outlets[outletKey];
+
+    if (!currentOutlet) {
+      console.error(`Outlet ${outletKey} not found in PDU data.`);
+      return;
+    }
+
+    const deviceArg: Device = {
+      id: selectedDeviceObject.deviceId,
+      name: selectedDeviceObject.name,
+      type: selectedDeviceObject.type,
+      serviceUrl: selectedDeviceObject.serviceUrl,
+      siteId: selectedSiteObject.siteId,
+      parameters: selectedDeviceObject.data?.parameters || null,
+      data: selectedDeviceObject.data || null,
+      ipAddress: null,
+      status: selectedDeviceObject.status,
+    };
+
+    try {
+      await toggleOutletPower(deviceArg, outletKey, action);
+
+      await refreshSelectedDeviceData(action === "REBOOT" ? 1000 : 500);
+    } catch (error) {
+      console.error("Failed to toggle power:", error);
+      await refreshSelectedDeviceData();
+    }
+  };
+
+  const toggleAddDeviceForm = (show: boolean) => {
+    setShowAddDeviceForm(show);
+    if (show) {
+      setShowDeviceStatusDashboard(false);
+    }
+  };
+
+  const toggleDeviceStatusDashboard = (show: boolean) => {
+    setShowDeviceStatusDashboard(show);
+    if (show) {
+      setShowAddDeviceForm(false);
+    }
+  };
+
   return (
-    <div className="site-endpoint-layout">
-      <RuxContainer class="sidebar">
-        <div slot="header">Site Endpoints</div>
-        {pduData && (
-          <SiteEndpointsTree
-            pduData={{ ...pduData, statuses }}
-            toggleStatus={(index) => {
-              if (!pduData) return;
-              const currentStatus = statuses[index];
-              const newState =
-                currentStatus === "normal" ? "POWER_OFF" : "POWER_ON";
-              toggleOutletPower(index + 1, newState)
-                .then(() => fetchPDUData())
-                .then((data) => {
-                  setPduData(data);
-                  setStatuses(data.statuses || []);
-                })
-                .catch((error) =>
-                  console.error("Failed to toggle outlet power:", error)
-                );
-            }}
-          />
-        )}
-        <div slot="footer">
-          <RuxButton onClick={() => setShowAddForm(true)}>
-            Add Endpoint
-          </RuxButton>
-          {showAddForm && (
-            <AddSiteEndpointForm
-              onSave={(endpoint) => {
-                setSiteEndpoints([...siteEndpoints, endpoint]);
-                setShowAddForm(false);
-              }}
-              onCancel={() => setShowAddForm(false)}
-            />
-          )}
+    <div className="main-container" data-active="true">
+      <RuxContainer className="site-endpoints">
+        <div
+          slot="header"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <span>Site Endpoints</span>
         </div>
-      </RuxContainer>
-      <div className="main-content">
-        {pduData && (
+        {!showAddSiteModal ? (
           <>
-            <PDU
-              pduData={{
-                ...pduData,
-                label: pduData.label || "Unknown Label",
-                statuses,
-              }}
-              toggleStatus={(index) => {
-                if (!pduData) return;
-                const currentStatus = statuses[index];
-                const newState =
-                  currentStatus === "normal" ? "POWER_OFF" : "POWER_ON";
-                toggleOutletPower(index + 1, newState)
-                  .then(() => fetchPDUData())
-                  .then((data) => {
-                    setPduData(data);
-                    setStatuses(data.statuses || []);
-                  })
-                  .catch((error) =>
-                    console.error("Failed to toggle outlet power:", error)
-                  );
-              }}
+            <SiteEndpointsTree
+              sites={sites}
+              selectedSite={selectedSiteIdx}
+              selectedDevice={selectedDevIdx}
+              onSelect={onSelect}
             />
-            <RuxContainer class="chart-container">
-              <div slot="header">Load History</div>
-              <LoadHistoryChart
-                wattsData={loadHistory}
-                ampsData={loadHistoryAmps}
-              />
-            </RuxContainer>
+            <div slot="footer">
+              <RuxButton onClick={() => setShowAddSiteModal(true)}>
+                Add Site
+              </RuxButton>
+            </div>
+          </>
+        ) : (
+          <>
+            <AddSiteEndpointForm ref={addSiteFormRef} />
+            <div slot="footer">
+              <RuxButton
+                type="button"
+                secondary
+                onClick={() => {
+                  addSiteFormRef.current?.reset();
+                  setShowAddSiteModal(false);
+                }}
+              >
+                Cancel
+              </RuxButton>
+              <RuxButton
+                type="button"
+                onClick={() => {
+                  const data = addSiteFormRef.current?.getFormData();
+                  if (data) {
+                    handleSaveSite(data);
+                    addSiteFormRef.current?.reset();
+                  }
+                }}
+              >
+                Save
+              </RuxButton>
+            </div>
           </>
         )}
-      </div>
+      </RuxContainer>
+
+      {showAddDeviceForm && selectedSiteObject && (
+        <DeviceForm
+          formId="addDeviceFormDetailed"
+          siteId={selectedSiteObject.siteId}
+          onCancel={() => setShowAddDeviceForm(false)}
+          onSaveSuccess={handleSaveDeviceSuccess}
+        />
+      )}
+
+      {showDeviceStatusDashboard && !showAddDeviceForm && (
+        <DeviceStatusDashboard />
+      )}
+
+      {!showAddDeviceForm && !showDeviceStatusDashboard && (
+        <MainContentDisplay
+          className="pass-plan"
+          selectedSite={selectedSiteObject}
+          selectedDevice={selectedDeviceObject}
+          pduData={pduData}
+          statuses={statuses}
+          handleOutletAction={handleOutletAction}
+          setShowAddDeviceForm={toggleAddDeviceForm}
+          isDeviceFormVisible={showAddDeviceForm}
+          isLoadingDevices={isLoadingDevices}
+          wattsData={wattsData}
+          ampsData={ampsData}
+        />
+      )}
+      <DeviceStatusDashboard />
+      <AlertsPanel alerts={alerts} onAcknowledge={acknowledge} />
     </div>
   );
 };

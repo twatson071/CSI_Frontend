@@ -13,11 +13,14 @@
     "@astrouxds/mock-data": "^0.6.5",
     "@astrouxds/react": "^7.25.1",
     "@nivo/core": "^0.93.0",
+    "@nivo/heatmap": "^0.93.0",
     "@nivo/line": "^0.93.0",
     "axios": "^1.8.4",
     "d3": "^7.9.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.6.2",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",

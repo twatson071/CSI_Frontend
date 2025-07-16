@@ -1,17 +1,35 @@
-import React from 'react';
-import GlobalStatusBar from './components/Navbar/Navbar';
-import PDU from './components/PDU/PDU';
-import SiteEndpointLayout from './components/SiteEndpointLayout/SiteEndpointLayout';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import GlobalStatusBar from "./components/Navbar/Navbar";
+import SiteEndpointLayout from "./components/SiteEndpointLayout/SiteEndpointLayout";
+import AlertsPanel from "./components/Alerts/AlertsPanel";
+import { useAlerts } from "./hooks/useAlerts";
+import ManageUsers from "./components/Management/ManageUsers";
+import ManageDevices from "./components/Management/ManageDevices";
+import ManageSites from "./components/Management/ManageSites";
+import Login from "./components/Auth/Login";
+import "@astrouxds/astro-web-components/dist/astro-web-components/astro-web-components.css";
+import "./App.css";
 
 const App: React.FC = () => {
+  const serverUrl =
+    import.meta.env.VITE_ALERT_SERVICE_URL || "http://localhost:8081";
+  const { alerts } = useAlerts(serverUrl);
+
   return (
-    <div className="App">
-      <GlobalStatusBar />
-      <SiteEndpointLayout>
-        <PDU />
-      </SiteEndpointLayout>
-    </div>
+    <Router>
+      <div className="app-container">
+        <GlobalStatusBar />
+        <Routes>
+          <Route path="/" element={<SiteEndpointLayout />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/manage-users" element={<ManageUsers />} />
+          <Route path="/manage-sites" element={<ManageSites />} />
+          <Route path="/manage-devices" element={<ManageDevices />} />
+        </Routes>
+        <AlertsPanel alerts={alerts} />
+      </div>
+    </Router>
   );
 };
 

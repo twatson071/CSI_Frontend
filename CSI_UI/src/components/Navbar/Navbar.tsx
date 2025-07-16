@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   RuxGlobalStatusBar,
   RuxClock,
@@ -15,6 +16,7 @@ import { addToast } from "../../utils/toast";
 import "./Navbar.css";
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [status1, setStatus1] = useState<Status>("normal");
   const [status2, setStatus2] = useState<Status>("off");
   const [status3, setStatus3] = useState<Status>("normal");
@@ -23,8 +25,15 @@ const Navbar = () => {
   const [notifications3, setNotifications3] = useState(4);
   const [lightTheme, setLightTheme] = useState(false);
 
-  const statusValuesArr = ["caution", "normal", "serious", "off"];
+  useEffect(() => {
+    const stored = localStorage.getItem("theme");
+    if (stored === "light") {
+      setLightTheme(true);
+      document.body.classList.add("light-theme");
+    }
+  }, []);
 
+  const statusValuesArr = ["caution", "normal", "serious", "off"];
   const notificationsArr = [12, 14, 23, 42, 6, 37, 25, 38, 9];
 
   useEffect(() => {
@@ -48,13 +57,28 @@ const Navbar = () => {
 
   function menuSelect(e: CustomEvent) {
     const { detail } = e;
-    if (detail.href) return;
-    if (detail.value === "themeToggle") {
-      setLightTheme(!lightTheme);
-      document.body.classList.toggle("light-theme");
-      return;
+
+    // Handle navigation for management routes
+    switch (detail.textContent?.trim()) {
+      case "Manage Users":
+        navigate("/manage-users");
+        break;
+      case "Manage Sites":
+        navigate("/manage-sites");
+        break;
+      case "Manage Devices":
+        navigate("/manage-devices");
+        break;
+      default:
+        if (detail.value === "themeToggle") {
+          const newTheme = !lightTheme;
+          setLightTheme(newTheme);
+          document.body.classList.toggle("light-theme", newTheme);
+          localStorage.setItem("theme", newTheme ? "light" : "dark");
+          return;
+        }
+        addToast("This feature has not been implemented", false, 3000);
     }
-    addToast("This feature has not been implemented", false, 3000);
   }
 
   return (
@@ -80,10 +104,9 @@ const Navbar = () => {
             icon="apps"
           />
           <RuxMenu onRuxmenuselected={(e) => menuSelect(e)}>
-            <RuxMenuItem href="https://ttc-command-react.netlify.app/">
-              TTC Command & Investigate
-            </RuxMenuItem>
-            <RuxMenuItem href="#">TTC Monitor</RuxMenuItem>
+            <RuxMenuItem>Manage Users</RuxMenuItem>
+            <RuxMenuItem>Manage Sites</RuxMenuItem>
+            <RuxMenuItem>Manage Devices</RuxMenuItem>
             <RuxMenuItemDivider />
             <RuxMenuItem value="themeToggle">
               {lightTheme ? "Dark" : "Light"} Theme

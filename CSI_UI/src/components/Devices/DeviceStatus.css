@@ -1,0 +1,82 @@
+.watcher rux-table-header-cell {
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  
+  .watcher rux-table-cell {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  
+  .watcher rux-table-cell:nth-of-type(1),
+  .watcher rux-table-header-cell:nth-of-type(1) {
+    min-width: 0.5rem;
+    max-width: fit-content;
+  }
+  
+  .watcher rux-table-cell:nth-of-type(2),
+  .watcher rux-table-header-cell:nth-of-type(2) {
+    min-width: 1.75rem;
+    max-width: 4.5rem;
+    text-align: left;
+  }
+  
+  .watcher rux-table-cell:nth-of-type(3),
+  .watcher rux-table-header-cell:nth-of-type(3) {
+    min-width: 1.5rem;
+    max-width: 2.5rem;
+    text-align: left;
+  }
+  
+  .watcher rux-table-cell:nth-of-type(4) {
+    border-right: transparent var(--spacing-1) solid;
+  }
+  
+  .watcher rux-table-cell:nth-of-type(4),
+  .watcher rux-table-header-cell:nth-of-type(4) {
+    min-width: 1.5rem;
+    max-width: 4.5rem;
+  }
+  
+  .watcher rux-table-cell:nth-of-type(5),
+  .watcher rux-table-header-cell:nth-of-type(5) {
+    min-width: 1.5rem;
+    max-width: 2.5rem;
+  }
+  
+  .watcher rux-table-cell:nth-of-type(6),
+  .watcher rux-table-header-cell:nth-of-type(6) {
+    width: 1rem;
+  }
+  
+  .watcher rux-table-cell {
+    text-align: right;
+  }
+  
+  .watcher rux-icon[icon="arrow-upward"],
+  .watcher rux-icon[icon="arrow-downward"] {
+    color: var(--color-text-primary);
+    margin-bottom: 5px;
+  }
+  
+  .watcher rux-icon[icon="arrow-upward"] {
+    transform: rotate(45deg);
+  }
+  
+  .watcher rux-icon[icon="arrow-downward"] {
+    transform: rotate(-45deg);
+  }
+  
+  .watcher rux-tooltip {
+    color: var(--color-text-interactive-default);
+    display: inline-block;
+    border-bottom: 1px solid transparent;
+  }
+  
+  .watcher rux-tooltip:hover {
+    border-bottom: 1px solid var(--color-text-interactive-default);
+  }
+  

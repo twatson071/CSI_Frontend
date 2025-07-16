@@ -1,6 +1,5 @@
 :root {
-  --color-background-base-default: #101923; /* Define your background color here */
-  --color-text-primary: white; /* Example: Define a primary text color */
+  --list-panel-box-shadow: 0px 3px 3px 0px rgb(0 0 0 / 40%);
 }
 
 body {
@@ -12,10 +11,44 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--color-background-base-default); /* Use the variable */
-  color: var(--color-text-primary); /* Use the variable */
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
 }
 
 #root {
   height: 100%;
+}
+
+/* Shared footer style for all RuxContainers with buttons */
+rux-container div[slot="footer"] {
+  display: flex;
+  gap: var(--spacing-3, 0.75rem);
+  justify-content: flex-end;
+  padding: 0.75rem;
+  position: sticky;
+  bottom: 0;
+  background-color: var(--color-background-surface-default);
+  border-top: 1px solid var(--color-border-divider);
+}
+
+/* Management form layout improvements */
+.management-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-3, 0.75rem);
+  overflow-y: auto;
+}
+
+.management-main .table-wrapper {
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-2, 0.5rem);
 }

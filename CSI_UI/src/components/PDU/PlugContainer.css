@@ -1,29 +1,246 @@
 .plug-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 1rem;
 }
 
 .plug-row {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    gap: 20px;
-    width: 80%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 20px;
+  width: 80%;
 }
 
 .plug-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-    cursor: pointer; /* Indicate clickable element */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.plug-item:hover {
+  outline: 1px dashed var(--color-background-surface-hover, #888);
 }
 
 .plug-label {
-    font-size: 14px;
-    font-weight: bold;
-    color: white;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+}
+
+/* Outlets grid and card styles - updated to match MetricCard */
+.outlets-grid {
+  display: grid;
+  gap: 1rem;
+  width: 100%;
+  height: 100%;
+  align-items: stretch;
+  justify-items: stretch;
+}
+
+.outlet-card {
+  border-radius: 8px;
+  padding: 16px;
+  opacity: 0.7;
+  min-width: 200px;
+  min-height: 120px;
+  position: relative;
+  box-shadow: #232020 0px 0px 15px 0px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+  background: var(--color-background-surface-default, #1a1a1a);
+}
+
+.outlet-card:hover {
+  opacity: 1;
+}
+
+.outlet-card.normal {
+  background: linear-gradient(
+    135deg,
+    rgba(86, 240, 0, 0.2) 0%,
+    rgba(86, 240, 0, 0.05) 100%
+  );
+  border: 2px solid var(--color-status-normal);
+  color: #ffffff;
+}
+
+.outlet-card.normal .outlet-name,
+.outlet-card.normal .outlet-info {
+  color: #e8f5e8;
+}
+
+.outlet-card.off {
+  background: linear-gradient(
+    135deg,
+    rgba(164, 171, 182, 0.2) 0%,
+    rgba(164, 171, 182, 0.05) 100%
+  );
+  border: 2px solid var(--color-status-off);
+  color: #ffffff;
+}
+
+.outlet-card.off .outlet-name,
+.outlet-card.off .outlet-info {
+  color: #e0e0e0;
+}
+
+.outlet-card.critical {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 56, 56, 0.2) 0%,
+    rgba(255, 56, 56, 0.05) 100%
+  );
+  border: 2px solid var(--color-status-critical);
+  color: #ffffff;
+}
+
+.outlet-card.critical .outlet-name,
+.outlet-card.critical .outlet-info {
+  color: #ffe8e8;
+}
+
+.outlet-card.standby {
+  background: linear-gradient(
+    135deg,
+    rgba(45, 204, 255, 0.2) 0%,
+    rgba(45, 204, 255, 0.05) 100%
+  );
+  border: 2px solid var(--color-status-standby);
+  color: #ffffff;
+}
+
+.outlet-card.standby .outlet-name,
+.outlet-card.standby .outlet-info {
+  color: #e8f8ff;
+}
+
+.outlet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.outlet-name {
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: auto;
+}
+
+.status-badge {
+  background: var(--color-background-surface-selected);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.outlet-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.power-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.power-toggle {
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.power-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.secondary-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-btn {
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #ffffff;
+}
+
+.outlet-info {
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+/* Container for consistent grid layout like metric cards */
+.plug-container-enhanced {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+  justify-content: center;
+}
+
+/* Dialog spacing improvements */
+.outlet-dialog {
+  --dialog-min-width: 420px;
+}
+
+.outlet-dialog::part(dialog) {
+  min-width: 420px;
+}
+
+.outlet-dialog::part(header) {
+  padding: 25px 15px 25px 20px !important;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.outlet-dialog::part(message) {
+  padding: 30px 24px 30px !important;
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+.outlet-dialog::part(footer) {
+  padding: 16px 24px 24px 24px !important;
+  gap: 12px;
+}
+
+/* Target the content wrapper if the above doesn't work */
+.outlet-dialog .rux-dialog__content {
+  padding: 20px 0 !important;
+}
+
+.outlet-dialog .rux-dialog__message {
+  padding: 0 24px !important;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+/* Ensure button spacing */
+.outlet-dialog .rux-button-group {
+  gap: 12px !important;
 }
