@@ -22,7 +22,7 @@ sleep 3
 
 # Start frontend in background
 echo "Starting frontend..."
-cd ../CSI_UI && npm run dev &
+cd CSI_UI && npm run dev &
 FRONTEND_PID=$!
 
 echo ""
