@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   RuxTable,
   RuxTableBody,
@@ -19,7 +19,7 @@ import { usePermissions } from "../../hooks/usePermissions";
 import type { Alert } from "../../services/AlertService";
 import "./EnhancedAlertsList.css";
 
-type SortField = "severity" | "timestamp" | "site" | "device" | "status";
+type SortField = "severity" | "timestamp" | "site" | "device";
 type SortDirection = "asc" | "desc";
 type ViewMode = "list" | "grid" | "timeline";
 
@@ -76,7 +76,7 @@ const formatRelativeTime = (dateString: string): string => {
   return date.toLocaleDateString();
 };
 
-const AlertListView: React.FC<EnhancedAlertsListProps> = ({
+const AlertListView: React.FC<EnhancedAlertsListProps> = React.memo(({
   alerts,
   deviceMap,
   siteMap,
@@ -93,6 +93,43 @@ const AlertListView: React.FC<EnhancedAlertsListProps> = ({
   enableBulkOperations,
 }) => {
   const permissions = usePermissions();
+  const [visibleAlerts, setVisibleAlerts] = useState<Alert[]>([]);
+  const [loadedCount, setLoadedCount] = useState(20); // Initial load of 20 items
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  
+  // Update visible alerts when alerts or loadedCount changes
+  useEffect(() => {
+    setVisibleAlerts(alerts.slice(0, loadedCount));
+  }, [alerts, loadedCount]);
+  
+  // Reset loaded count when alerts change
+  useEffect(() => {
+    setLoadedCount(20);
+  }, [alerts]);
+  
+  // Intersection observer for lazy loading
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && loadedCount < alerts.length) {
+          // Load 20 more items
+          setLoadedCount(prev => Math.min(prev + 20, alerts.length));
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+    
+    return () => {
+      if (loadMoreRef.current) {
+        observer.unobserve(loadMoreRef.current);
+      }
+    };
+  }, [loadedCount, alerts.length]);
 
   const renderSortHeader = (field: SortField, label: string, className?: string) => (
     <RuxTableHeaderCell className={className || ""}>
@@ -130,27 +167,27 @@ const AlertListView: React.FC<EnhancedAlertsListProps> = ({
         </div>
       )}
 
-      <RuxTable className="enhanced-alerts-table">
-        <RuxTableHeaderRow>
-            {enableBulkOperations && (
-              <RuxTableHeaderCell className="checkbox-column">
-                <RuxCheckbox
-                  checked={selectedAlerts.size === alerts.length && alerts.length > 0}
-                  indeterminate={selectedAlerts.size > 0 && selectedAlerts.size < alerts.length}
-                  onRuxchange={selectedAlerts.size === alerts.length ? onClearSelection : onSelectAll}
-                />
-              </RuxTableHeaderCell>
-            )}
-            {renderSortHeader("severity", "Severity", "severity-column")}
-            <RuxTableHeaderCell className="alert-column">Alert</RuxTableHeaderCell>
-            {renderSortHeader("device", "Device", "device-column")}
-            {renderSortHeader("site", "Site", "site-column")}
-            {renderSortHeader("timestamp", "Time", "time-column")}
-            {renderSortHeader("status", "Status", "status-column")}
-            <RuxTableHeaderCell className="actions-column">Actions</RuxTableHeaderCell>
-        </RuxTableHeaderRow>
-        <RuxTableBody>
-          {alerts.map((alert) => {
+      <div className="table-scroll-container" ref={scrollContainerRef}>
+        <RuxTable className="enhanced-alerts-table">
+          <RuxTableHeaderRow>
+              {enableBulkOperations && (
+                <RuxTableHeaderCell className="checkbox-column">
+                  <RuxCheckbox
+                    checked={selectedAlerts.size === alerts.length && alerts.length > 0}
+                    indeterminate={selectedAlerts.size > 0 && selectedAlerts.size < alerts.length}
+                    onRuxchange={selectedAlerts.size === alerts.length ? onClearSelection : onSelectAll}
+                  />
+                </RuxTableHeaderCell>
+              )}
+              {renderSortHeader("severity", "Severity", "severity-column")}
+              <RuxTableHeaderCell className="alert-column">Alert</RuxTableHeaderCell>
+              {renderSortHeader("device", "Device", "device-column")}
+              {renderSortHeader("site", "Site", "site-column")}
+              {renderSortHeader("timestamp", "Time", "time-column")}
+              <RuxTableHeaderCell className="actions-column">Actions</RuxTableHeaderCell>
+          </RuxTableHeaderRow>
+          <RuxTableBody>
+            {visibleAlerts.map((alert) => {
             const device = alert.deviceId ? deviceMap[alert.deviceId] : undefined;
             const site = alert.siteId ? siteMap[alert.siteId] : undefined;
             const isSelected = selectedAlerts.has(alert.id);
@@ -181,7 +218,23 @@ const AlertListView: React.FC<EnhancedAlertsListProps> = ({
 
                 <RuxTableCell className="alert-column">
                   <div className="alert-content">
-                    <span className="alert-type">{alert.type}</span>
+                    <div className="alert-header">
+                      <span className="alert-type">{alert.type}</span>
+                      <div className="alert-status-indicators">
+                        {alert.acknowledged && (
+                          <RuxStatus status="normal">
+                            <RuxIcon icon="check" size="extra-small" />
+                            ACK
+                          </RuxStatus>
+                        )}
+                        {alert.isResolved && (
+                          <RuxStatus status="normal">
+                            <RuxIcon icon="task-alt" size="extra-small" />
+                            RESOLVED
+                          </RuxStatus>
+                        )}
+                      </div>
+                    </div>
                     <span className="alert-message">{alert.message}</span>
                     {alert.metricId && (
                       <RuxStatus status="normal">Metric #{alert.metricId}</RuxStatus>
@@ -212,28 +265,6 @@ const AlertListView: React.FC<EnhancedAlertsListProps> = ({
                     <span className="absolute-time">
                       {new Date(alert.createdAt).toLocaleString()}
                     </span>
-                  </div>
-                </RuxTableCell>
-
-                <RuxTableCell className="status-column">
-                  <div className="status-indicators">
-                    {alert.acknowledged ? (
-                      <RuxStatus status="normal">
-                        <RuxIcon icon="check" size="extra-small" />
-                        Acknowledged
-                      </RuxStatus>
-                    ) : (
-                      <RuxStatus status="caution">
-                        <RuxIcon icon="notification-important" size="extra-small" />
-                        Active
-                      </RuxStatus>
-                    )}
-                    {alert.isResolved && (
-                      <RuxStatus status="normal">
-                        <RuxIcon icon="task-alt" size="extra-small" />
-                        Resolved
-                      </RuxStatus>
-                    )}
                   </div>
                 </RuxTableCell>
 
@@ -286,11 +317,37 @@ const AlertListView: React.FC<EnhancedAlertsListProps> = ({
               </RuxTableRow>
             );
           })}
-        </RuxTableBody>
-      </RuxTable>
+          </RuxTableBody>
+        </RuxTable>
+        
+        {/* Lazy loading indicator */}
+        {loadedCount < alerts.length && (
+          <div 
+            ref={loadMoreRef} 
+            className="lazy-load-trigger"
+            style={{ 
+              textAlign: 'center', 
+              padding: '1rem',
+              color: 'var(--color-text-secondary)'
+            }}
+          >
+            Loading more alerts... ({loadedCount} of {alerts.length})
+          </div>
+        )}
+        
+        {visibleAlerts.length === 0 && (
+          <div className="no-alerts-message" style={{ 
+            textAlign: 'center', 
+            padding: '2rem',
+            color: 'var(--color-text-secondary)'
+          }}>
+            No alerts found
+          </div>
+        )}
+      </div>
     </div>
   );
-};
+});
 
 const AlertGridView: React.FC<EnhancedAlertsListProps> = ({
   alerts,

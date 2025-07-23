@@ -46,8 +46,32 @@ const deviceData = [
     serviceUrl: 'http://192.168.1.101/snmp',
     status: 'normal' as const,
     siteIndex: 0,
-    parameters: ['outletCount', 'maxCurrent', 'voltageRating', 'phaseType', 'ratedPower'],
-    data: ['24', '16', '230', 'Single Phase', '3680']
+    parameters: {
+      outlets: {
+        "1": { state: "POWER_ON", name: "Server 1" },
+        "2": { state: "POWER_ON", name: "Server 2" },
+        "3": { state: "POWER_OFF", name: "Spare" },
+        "4": { state: "POWER_ON", name: "Switch 1" },
+        "5": { state: "POWER_ON", name: "Switch 2" },
+        "6": { state: "POWER_ON", name: "Router" },
+        "7": { state: "POWER_OFF", name: "Spare" },
+        "8": { state: "POWER_ON", name: "NAS Storage" }
+      },
+      total_outlets: 8,
+      model: "APC AP7921B",
+      firmware_version: "2.1.3",
+      maxCurrent: 16,
+      voltageRating: 230,
+      phaseType: "Single Phase",
+      ratedPower: 3680
+    },
+    sensors: {
+      total_draw_w: 1850,
+      total_draw_a: 8.5,
+      voltage: 230,
+      temperature_c: 24,
+      humidity: 45
+    }
   },
   {
     name: 'PDU 2 AP8870',
@@ -56,8 +80,36 @@ const deviceData = [
     serviceUrl: 'http://192.168.1.102/snmp',
     status: 'normal' as const,
     siteIndex: 0,
-    parameters: ['outletCount', 'maxCurrent', 'voltageRating', 'phaseType', 'ratedPower'],
-    data: ['36', '32', '230', 'Three Phase', '11040']
+    parameters: {
+      outlets: {
+        "1": { state: "POWER_ON", name: "Rack Server 1" },
+        "2": { state: "POWER_ON", name: "Rack Server 2" },
+        "3": { state: "POWER_ON", name: "Rack Server 3" },
+        "4": { state: "POWER_ON", name: "Rack Server 4" },
+        "5": { state: "POWER_OFF", name: "Spare" },
+        "6": { state: "POWER_ON", name: "Core Switch" },
+        "7": { state: "POWER_ON", name: "Firewall" },
+        "8": { state: "POWER_ON", name: "Load Balancer" },
+        "9": { state: "POWER_ON", name: "SAN Storage" },
+        "10": { state: "POWER_ON", name: "Backup Server" },
+        "11": { state: "POWER_OFF", name: "Test Server" },
+        "12": { state: "POWER_ON", name: "Management Console" }
+      },
+      total_outlets: 12,
+      model: "APC AP8870",
+      firmware_version: "3.2.1",
+      maxCurrent: 32,
+      voltageRating: 230,
+      phaseType: "Three Phase",
+      ratedPower: 11040
+    },
+    sensors: {
+      total_draw_w: 8200,
+      total_draw_a: 24.5,
+      voltage: 230,
+      temperature_c: 28,
+      humidity: 42
+    }
   },
 
   // UPS Device
@@ -68,30 +120,164 @@ const deviceData = [
     serviceUrl: 'http://192.168.1.103/snmp',
     status: 'normal' as const,
     siteIndex: 0,
-    parameters: ['capacity', 'batteryCapacity', 'inputVoltage', 'outputVoltage', 'loadPercentage'],
-    data: ['3000', '100', '230', '230', '85']
+    parameters: {
+      outlets: {
+        "1": { state: "POWER_ON", name: "Critical Server 1" },
+        "2": { state: "POWER_ON", name: "Critical Server 2" },
+        "3": { state: "POWER_ON", name: "Core Network" },
+        "4": { state: "POWER_ON", name: "Security System" },
+        "5": { state: "POWER_OFF", name: "Backup" },
+        "6": { state: "POWER_ON", name: "Monitoring" }
+      },
+      total_outlets: 6,
+      model: "APC SMX3000RMHV2U",
+      firmware_version: "3.2.1",
+      capacity: 3000,
+      batteryCapacity: 100,
+      inputVoltage: 230,
+      outputVoltage: 230,
+      loadPercentage: 85,
+      battery_status: "Good",
+      battery_charge: 98,
+      runtime_minutes: 42
+    },
+    sensors: {
+      total_draw_w: 2550,
+      total_draw_a: 11.1,
+      voltage: 230,
+      temperature_c: 26,
+      battery_voltage: 48,
+      input_frequency: 50.0,
+      output_frequency: 50.0
+    }
   },
 
   // Network Switches
   {
     name: 'Switch 1 C9300-24T',
-    type: 'Switch',
+    type: 'SWITCH',
     ipAddress: '192.168.1.201',
     serviceUrl: 'http://192.168.1.201/snmp',
     status: 'normal' as const,
     siteIndex: 1,
-    parameters: ['portCount', 'portSpeed', 'poeEnabled', 'poePower', 'activePortCount'],
-    data: ['24', '1000', 'true', '370', '18']
+    parameters: {
+      model: "Cisco Catalyst 9300-24T",
+      firmware_version: "16.12.4",
+      total_ports: 24,
+      poe_capable_ports: 24,
+      uptime_hours: 2184,
+      mac_address: "00:1a:2b:3c:4d:5e",
+      management_vlan: 1
+    },
+    port_status: {
+      port_1: { status: "connected", speed: "1000Mbps", vlan: 10, power_over_ethernet: "active", device: "Access Point 1" },
+      port_2: { status: "connected", speed: "1000Mbps", vlan: 10, power_over_ethernet: "active", device: "Access Point 2" },
+      port_3: { status: "connected", speed: "100Mbps", vlan: 20, power_over_ethernet: "inactive", device: "Printer" },
+      port_4: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_5: { status: "connected", speed: "1000Mbps", vlan: 30, power_over_ethernet: "active", device: "IP Phone 1" },
+      port_6: { status: "connected", speed: "1000Mbps", vlan: 30, power_over_ethernet: "active", device: "IP Phone 2" },
+      port_7: { status: "connected", speed: "1000Mbps", vlan: 10, power_over_ethernet: "inactive", device: "Workstation 1" },
+      port_8: { status: "connected", speed: "1000Mbps", vlan: 10, power_over_ethernet: "inactive", device: "Workstation 2" },
+      port_9: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_10: { status: "connected", speed: "1000Mbps", vlan: 100, power_over_ethernet: "inactive", device: "Server Link" },
+      port_11: { status: "connected", speed: "1000Mbps", vlan: 40, power_over_ethernet: "active", device: "Camera 1" },
+      port_12: { status: "connected", speed: "1000Mbps", vlan: 40, power_over_ethernet: "active", device: "Camera 2" },
+      port_13: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_14: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_15: { status: "connected", speed: "100Mbps", vlan: 10, power_over_ethernet: "inactive", device: "IoT Device" },
+      port_16: { status: "connected", speed: "1000Mbps", vlan: 10, power_over_ethernet: "inactive", device: "Workstation 3" },
+      port_17: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_18: { status: "connected", speed: "1000Mbps", vlan: 10, power_over_ethernet: "inactive", device: "Workstation 4" },
+      port_19: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_20: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_21: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_22: { status: "connected", speed: "1000Mbps", vlan: 999, power_over_ethernet: "inactive", device: "Management" },
+      port_23: { status: "connected", speed: "1000Mbps", vlan: "trunk", power_over_ethernet: "inactive", device: "Uplink to Core" },
+      port_24: { status: "connected", speed: "1000Mbps", vlan: "trunk", power_over_ethernet: "inactive", device: "Uplink to Core 2" }
+    },
+    statistics: {
+      total_traffic_gb: 8543,
+      active_ports: 15,
+      poe_power_used_w: 185,
+      cpu_usage_percent: 22,
+      memory_usage_percent: 45,
+      temperature_c: 42
+    }
   },
   {
     name: 'Switch 2 C9300-48P',
-    type: 'Switch',
+    type: 'SWITCH',
     ipAddress: '192.168.1.202',
     serviceUrl: 'http://192.168.1.202/snmp',
     status: 'normal' as const,
     siteIndex: 1,
-    parameters: ['portCount', 'portSpeed', 'poeEnabled', 'poePower', 'activePortCount'],
-    data: ['48', '1000', 'true', '740', '42']
+    parameters: {
+      model: "Cisco Catalyst 9300-48P",
+      firmware_version: "16.12.4",
+      total_ports: 48,
+      poe_capable_ports: 48,
+      uptime_hours: 2184,
+      mac_address: "00:1a:2b:3c:4d:5f",
+      management_vlan: 1
+    },
+    port_status: {
+      port_1: { status: "connected", speed: "1000Mbps", vlan: 10, power_over_ethernet: "active" },
+      port_2: { status: "connected", speed: "1000Mbps", vlan: 10, power_over_ethernet: "active" },
+      port_3: { status: "connected", speed: "1000Mbps", vlan: 10, power_over_ethernet: "inactive" },
+      port_4: { status: "connected", speed: "1000Mbps", vlan: 10, power_over_ethernet: "inactive" },
+      port_5: { status: "connected", speed: "1000Mbps", vlan: 20, power_over_ethernet: "active" },
+      port_6: { status: "connected", speed: "1000Mbps", vlan: 20, power_over_ethernet: "active" },
+      port_7: { status: "connected", speed: "1000Mbps", vlan: 20, power_over_ethernet: "inactive" },
+      port_8: { status: "connected", speed: "1000Mbps", vlan: 20, power_over_ethernet: "inactive" },
+      port_9: { status: "connected", speed: "100Mbps", vlan: 30, power_over_ethernet: "active" },
+      port_10: { status: "connected", speed: "100Mbps", vlan: 30, power_over_ethernet: "active" },
+      port_11: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_12: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_13: { status: "connected", speed: "1000Mbps", vlan: 40, power_over_ethernet: "active" },
+      port_14: { status: "connected", speed: "1000Mbps", vlan: 40, power_over_ethernet: "active" },
+      port_15: { status: "connected", speed: "1000Mbps", vlan: 40, power_over_ethernet: "active" },
+      port_16: { status: "connected", speed: "1000Mbps", vlan: 40, power_over_ethernet: "active" },
+      port_17: { status: "connected", speed: "1000Mbps", vlan: 50, power_over_ethernet: "inactive" },
+      port_18: { status: "connected", speed: "1000Mbps", vlan: 50, power_over_ethernet: "inactive" },
+      port_19: { status: "connected", speed: "1000Mbps", vlan: 50, power_over_ethernet: "inactive" },
+      port_20: { status: "connected", speed: "1000Mbps", vlan: 50, power_over_ethernet: "inactive" },
+      port_21: { status: "connected", speed: "1000Mbps", vlan: 60, power_over_ethernet: "active" },
+      port_22: { status: "connected", speed: "1000Mbps", vlan: 60, power_over_ethernet: "active" },
+      port_23: { status: "connected", speed: "1000Mbps", vlan: 60, power_over_ethernet: "active" },
+      port_24: { status: "connected", speed: "1000Mbps", vlan: 60, power_over_ethernet: "active" },
+      port_25: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_26: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_27: { status: "connected", speed: "100Mbps", vlan: 70, power_over_ethernet: "inactive" },
+      port_28: { status: "connected", speed: "100Mbps", vlan: 70, power_over_ethernet: "inactive" },
+      port_29: { status: "connected", speed: "1000Mbps", vlan: 80, power_over_ethernet: "inactive" },
+      port_30: { status: "connected", speed: "1000Mbps", vlan: 80, power_over_ethernet: "inactive" },
+      port_31: { status: "connected", speed: "1000Mbps", vlan: 80, power_over_ethernet: "inactive" },
+      port_32: { status: "connected", speed: "1000Mbps", vlan: 80, power_over_ethernet: "inactive" },
+      port_33: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_34: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_35: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_36: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_37: { status: "connected", speed: "1000Mbps", vlan: 90, power_over_ethernet: "active" },
+      port_38: { status: "connected", speed: "1000Mbps", vlan: 90, power_over_ethernet: "active" },
+      port_39: { status: "connected", speed: "1000Mbps", vlan: 90, power_over_ethernet: "active" },
+      port_40: { status: "connected", speed: "1000Mbps", vlan: 90, power_over_ethernet: "active" },
+      port_41: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_42: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_43: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_44: { status: "disconnected", speed: "auto", vlan: 1, power_over_ethernet: "inactive" },
+      port_45: { status: "connected", speed: "1000Mbps", vlan: 999, power_over_ethernet: "inactive" },
+      port_46: { status: "connected", speed: "1000Mbps", vlan: 999, power_over_ethernet: "inactive" },
+      port_47: { status: "connected", speed: "10Gbps", vlan: "trunk", power_over_ethernet: "inactive" },
+      port_48: { status: "connected", speed: "10Gbps", vlan: "trunk", power_over_ethernet: "inactive" }
+    },
+    statistics: {
+      total_traffic_gb: 24567,
+      active_ports: 35,
+      poe_power_used_w: 420,
+      cpu_usage_percent: 35,
+      memory_usage_percent: 52,
+      temperature_c: 45
+    }
   },
 
   // Server Devices
@@ -147,6 +333,83 @@ const deviceData = [
     parameters: ['inputPorts', 'outputPorts', 'frequencyRange', 'insertionLoss', 'activeConnections'],
     data: ['32', '16', '1-6000 MHz', '< 3dB', '12']
   },
+  
+  // RF to Fiber Converters
+  {
+    name: 'RF to Fiber Converter 1',
+    type: 'RF_FIBER',
+    ipAddress: '192.168.3.601',
+    serviceUrl: 'http://192.168.3.601/api',
+    status: 'normal' as const,
+    siteIndex: 2,
+    parameters: {
+      model: "Opticomm-Emcore OTS-2x2",
+      firmware_version: "1.4.2",
+      channels: 2,
+      frequency_range: "50 MHz - 3 GHz",
+      optical_wavelength: "1550 nm",
+      link_distance: "up to 40 km"
+    },
+    channel_status: {
+      channel_1: {
+        input_power_dbm: -15,
+        output_power_dbm: 2,
+        optical_power_mw: 3.2,
+        link_status: "active",
+        ber: "< 10^-12",
+        rf_gain_db: 12,
+        optical_loss_db: 0.5
+      },
+      channel_2: {
+        input_power_dbm: -18,
+        output_power_dbm: 1,
+        optical_power_mw: 2.8,
+        link_status: "active",
+        ber: "< 10^-12",
+        rf_gain_db: 12,
+        optical_loss_db: 0.7
+      }
+    },
+    alarms: {
+      temperature: false,
+      input_loss: false,
+      laser_fault: false,
+      optical_loss: false
+    }
+  },
+  {
+    name: 'RF to Fiber Converter 2',
+    type: 'RF_FIBER',
+    ipAddress: '192.168.3.602',
+    serviceUrl: 'http://192.168.3.602/api',
+    status: 'normal' as const,
+    siteIndex: 2,
+    parameters: {
+      model: "Foxcom PL7220T",
+      firmware_version: "2.1.0",
+      channels: 1,
+      frequency_range: "10 MHz - 2.5 GHz",
+      optical_wavelength: "1310 nm",
+      link_distance: "up to 20 km"
+    },
+    channel_status: {
+      channel_1: {
+        input_power_dbm: -12,
+        output_power_dbm: 3,
+        optical_power_mw: 4.1,
+        link_status: "active",
+        ber: "< 10^-11",
+        rf_gain_db: 15,
+        optical_loss_db: 0.3
+      }
+    },
+    alarms: {
+      temperature: false,
+      input_loss: false,
+      laser_fault: false,
+      optical_loss: false
+    }
+  },
   {
     name: 'GNS-196-1U Signal Generator',
     type: 'RF Equipment',
@@ -171,13 +434,42 @@ const deviceData = [
   // Spectrum Analyzer
   {
     name: 'Spectrum Analyzer 9010B',
-    type: 'Spectrum Analyzer',
-    ipAddress: '192.168.3.601',
-    serviceUrl: 'http://192.168.3.601/scpi',
+    type: 'SPECTRUM',
+    ipAddress: '192.168.3.701',
+    serviceUrl: 'http://192.168.3.701/scpi',
     status: 'normal' as const,
     siteIndex: 2,
-    parameters: ['frequencyRange', 'dynamicRange', 'phaseNoise', 'currentSpan', 'centerFrequency'],
-    data: ['9 kHz - 26.5 GHz', '165 dB', '< -110 dBc/Hz', '1 GHz', '2.4 GHz']
+    parameters: {
+      model: "Keysight N9030B",
+      firmware_version: "A.20.14",
+      frequency_range: "3 Hz - 50 GHz",
+      resolution_bandwidth: "1 Hz - 8 MHz",
+      dynamic_range: "165 dB",
+      phase_noise: "< -110 dBc/Hz"
+    },
+    current_measurement: {
+      center_frequency_mhz: 2450,
+      span_mhz: 100,
+      rbw_khz: 100,
+      vbw_khz: 100,
+      reference_level_dbm: 0,
+      peak_power_dbm: -35,
+      noise_floor_dbm: -95,
+      marker_frequency_mhz: 2442,
+      marker_amplitude_dbm: -35
+    },
+    sweep_status: {
+      sweep_time_ms: 250,
+      sweep_count: 1523,
+      averaging: true,
+      trace_mode: "max_hold",
+      detector: "peak"
+    },
+    traces: {
+      trace1: "max_hold",
+      trace2: "average",
+      trace3: "min_hold"
+    }
   },
 
   // Storage Device
@@ -286,16 +578,48 @@ async function seedDatabase() {
 
     // Insert devices
     console.log('🖥️  Inserting devices...');
-    const devicesWithSiteIds = deviceData.map(device => ({
-      name: device.name,
-      type: device.type,
-      ipAddress: device.ipAddress,
-      serviceUrl: device.serviceUrl,
-      status: device.status,
-      siteId: insertedSites[device.siteIndex].id,
-      parameters: JSON.stringify(device.parameters),
-      data: JSON.stringify(device.data)
-    }));
+    const devicesWithSiteIds = deviceData.map(device => {
+      // For devices with the new structure (parameters as object)
+      if (typeof device.parameters === 'object' && !Array.isArray(device.parameters)) {
+        return {
+          name: device.name,
+          type: device.type,
+          ipAddress: device.ipAddress,
+          serviceUrl: device.serviceUrl,
+          status: device.status,
+          siteId: insertedSites[device.siteIndex].id,
+          parameters: JSON.stringify(device.parameters),
+          data: JSON.stringify({
+            parameters: device.parameters,
+            sensors: device.sensors || {},
+            channel_status: device.channel_status || {},
+            port_status: device.port_status || {},
+            statistics: device.statistics || {},
+            current_measurement: device.current_measurement || {},
+            sweep_status: device.sweep_status || {},
+            traces: device.traces || {},
+            alarms: device.alarms || {}
+          })
+        };
+      }
+      // For devices with the old structure (parameters as array)
+      else {
+        const paramsObj = {};
+        device.parameters.forEach((key, index) => {
+          paramsObj[key] = device.data[index];
+        });
+        return {
+          name: device.name,
+          type: device.type,
+          ipAddress: device.ipAddress,
+          serviceUrl: device.serviceUrl,
+          status: device.status,
+          siteId: insertedSites[device.siteIndex].id,
+          parameters: JSON.stringify(paramsObj),
+          data: JSON.stringify({ parameters: paramsObj })
+        };
+      }
+    });
 
     const insertedDevices = await db.insert(schema.devices).values(devicesWithSiteIds).returning();
     console.log(`✅ Inserted ${insertedDevices.length} devices`);

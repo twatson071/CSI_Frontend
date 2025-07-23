@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import SiteEndpointsTree from "./SiteEndpointsTree";
 import AddSiteEndpointForm, {
   AddSiteEndpointFormHandles,
@@ -20,9 +20,11 @@ import {
 } from "../../services/PDUservice";
 import { Device } from "../../services/DeviceService";
 import "./SiteEndpointLayout.css";
-import { RuxContainer, RuxButton } from "@astrouxds/react";
-import EnhancedAlertsPanel from "../Alerts/EnhancedAlertsPanel";
+import { RuxContainer, RuxButton, RuxIndeterminateProgress } from "@astrouxds/react";
 import { useAlerts } from "../../hooks/useAlerts";
+
+// Lazy load the EnhancedAlertsPanel
+const EnhancedAlertsPanel = React.lazy(() => import("../Alerts/EnhancedAlertsPanel"));
 
 const extractPduDataAndStatuses = (
   deviceData: any
@@ -106,17 +108,27 @@ const SiteEndpointLayout: React.FC = () => {
   const [isLoadingDevices, setIsLoadingDevices] = useState(false);
   const [wattsData, setWattsData] = useState<{ x: string; y: number }[]>([]);
   const [ampsData, setAmpsData] = useState<{ x: string; y: number }[]>([]);
+  const [showAlerts, setShowAlerts] = useState(false);
   const addSiteFormRef = useRef<AddSiteEndpointFormHandles>(null);
 
   // Use the alerts hook to get current alerts
   const { alerts, acknowledge, resolve, remove, bulkAcknowledge, bulkResolve, bulkDelete } = useAlerts();
+  
+  // Delay showing alerts to improve initial load performance
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowAlerts(true);
+    }, 500); // Delay by 500ms
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const updatePduDisplayCallback = useCallback(
     (siteIdxToUpdate: number, deviceIndexToUpdate: number) => {
       const site = sites[siteIdxToUpdate];
       const device = site?.devices?.[deviceIndexToUpdate];
 
-      if (device && device.data && device.type === "PDU") {
+      if (device && device.data && (device.type === "PDU" || device.type === "UPS")) {
         const { pduData: newPduData, statuses: newStatuses } =
           extractPduDataAndStatuses(device.data);
         setPduData(newPduData);
@@ -166,14 +178,14 @@ const SiteEndpointLayout: React.FC = () => {
         if (
           updatedDevice &&
           updatedDevice.data &&
-          updatedDevice.type === "PDU"
+          (updatedDevice.type === "PDU" || updatedDevice.type === "UPS")
         ) {
           const { pduData: newPduData, statuses: newStatuses } =
             extractPduDataAndStatuses(updatedDevice.data);
           setPduData(newPduData);
           setStatuses(newStatuses);
         } else if (updatedDevice) {
-          // Handle non-PDU devices or PDU devices without data
+          // Handle non-PDU/UPS devices
           setPduData(null);
           setStatuses([]);
         }
@@ -483,18 +495,38 @@ const SiteEndpointLayout: React.FC = () => {
         />
       )}
       <DeviceStatusDashboard />
-      <EnhancedAlertsPanel 
-        alerts={alerts} 
-        onAcknowledge={acknowledge}
-        onResolve={resolve}
-        onDelete={remove}
-        onBulkAcknowledge={bulkAcknowledge}
-        onBulkResolve={bulkResolve}
-        onBulkDelete={bulkDelete}
-        isLoading={false}
-        enableBulkOperations={true}
-        enableExport={true}
-      />
+      {!showAlerts ? (
+        <RuxContainer className="alerts">
+          <div slot="header">Alerts</div>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <p style={{ color: 'var(--color-text-secondary)' }}>Loading alerts...</p>
+          </div>
+        </RuxContainer>
+      ) : (
+        <Suspense 
+          fallback={
+            <RuxContainer className="alerts">
+              <div slot="header">Alerts</div>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                <RuxIndeterminateProgress />
+              </div>
+            </RuxContainer>
+          }
+        >
+          <EnhancedAlertsPanel 
+            alerts={alerts} 
+            onAcknowledge={acknowledge}
+            onResolve={resolve}
+            onDelete={remove}
+            onBulkAcknowledge={bulkAcknowledge}
+            onBulkResolve={bulkResolve}
+            onBulkDelete={bulkDelete}
+            isLoading={false}
+            enableBulkOperations={true}
+            enableExport={true}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };

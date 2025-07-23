@@ -9,14 +9,14 @@ rux-container::part(container) {
   display: flex;
   flex-direction: column;
   height: calc(100% - 2px);
-  overflow-y: hidden;
+  overflow: hidden;
 }
 
 rux-container::part(body) {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: hidden;
+  overflow-y: auto;
   padding: 0;
 }
 
@@ -162,12 +162,45 @@ rux-tree-node::part(node):focus {
   color: var(--color-text-primary);
   display: grid;
   gap: var(--spacing-2);
-  grid-template-columns: calc(30% - 5px) calc(70% - 5px + var(--spacing-2));
-  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(250px, 30%) 1fr;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   grid-template-areas:
     "site-endpoints pass-plan"
-    "alerts device-status"
-    "alerts     device-status";
+    "alerts device-status";
+  overflow: hidden;
+}
+
+/* Ensure all grid items can scroll independently */
+.main-container[data-active="true"] > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Responsive layout for small laptops (1366px and below) */
+@media (max-width: 1366px) {
+  .main-container[data-active="true"] {
+    grid-template-columns: minmax(200px, 25%) 1fr;
+    padding: var(--spacing-2);
+    gap: var(--spacing-1);
+  }
+}
+
+/* Responsive layout for smaller screens (1280px and below) */
+@media (max-width: 1280px) {
+  .main-container[data-active="true"] {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    grid-template-areas:
+      "site-endpoints"
+      "pass-plan"
+      "device-status"
+      "alerts";
+    overflow-y: auto;
+  }
+  
+  rux-container.site-endpoints {
+    max-height: 300px;
+  }
 }
 .investigate__content {
   position: relative;
