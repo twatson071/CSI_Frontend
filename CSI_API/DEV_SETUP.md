@@ -119,7 +119,7 @@ bun run verify
 
 ### Option 4: Development Scripts
 
-If you've already set up the project, you can use these convenience scripts:
+Use these convenience scripts to start the development servers:
 
 ```bash
 # Start both servers simultaneously
@@ -129,6 +129,10 @@ If you've already set up the project, you can use these convenience scripts:
 ./start-backend.sh    # Backend only
 ./start-frontend.sh   # Frontend only
 ```
+
+**Note**: These scripts are available in the repository. If they don't exist, you can either:
+- Run `./setup-dev.sh` (which creates them automatically), or
+- Start servers manually using the commands in Option 2
 
 ## Database Management
 
