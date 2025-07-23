@@ -21,6 +21,12 @@ CSI_Frontend/
 └── CSI_UI/           # Frontend React App (Vite + React 19 + TypeScript)
 ```
 
+## Quick Reference
+
+**New to the project?** → Use Option 1 (Automated Setup)  
+**Need to refresh database?** → Use Option 3 (Database Refresh)  
+**Just starting development?** → Use Option 4 (Development Scripts)
+
 ## Quick Start
 
 ### Option 1: Automated Setup (Recommended)
@@ -93,7 +99,25 @@ npm run dev
 
 The frontend will be running at `http://localhost:5173`
 
-### Option 3: Development Scripts
+### Option 3: Database Refresh (Existing Developers)
+
+If you're already set up but need to refresh your database with the latest dummy data:
+
+```bash
+# Quick database refresh
+cd CSI_API
+bun run seed
+
+# Or full reset (clears everything and reseeds)
+rm local.db
+bun x drizzle-kit migrate
+bun run seed
+
+# Verify the data is correct
+bun run verify
+```
+
+### Option 4: Development Scripts
 
 If you've already set up the project, you can use these convenience scripts:
 
@@ -209,6 +233,30 @@ VITE_ALERT_SERVICE_URL=http://localhost:8081
 
 ## Troubleshooting
 
+### Common Scenarios
+
+```bash
+# "I pulled latest changes and my database is broken"
+cd CSI_API
+bun run seed  # Try quick refresh first
+# If that fails:
+rm local.db && bun x drizzle-kit migrate && bun run seed
+
+# "I don't have the latest dummy devices"
+cd CSI_API
+bun run seed  # This will clear old dummy data and add new
+
+# "My user doesn't have access to sites"
+cd CSI_API
+bun run seed  # This recreates user-site relationships
+
+# "I want to start completely fresh"
+cd CSI_API
+rm local.db
+bun x drizzle-kit migrate
+bun run seed
+```
+
 ### Database Issues
 
 ```bash
@@ -220,7 +268,7 @@ bun run seed
 # Check database schema
 echo ".schema" | sqlite3 local.db
 
-# Verify data
+# Verify data and relationships
 bun run verify
 ```
 
