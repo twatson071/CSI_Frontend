@@ -21,7 +21,7 @@ import {
 import { Device } from "../../services/DeviceService";
 import "./SiteEndpointLayout.css";
 import { RuxContainer, RuxButton } from "@astrouxds/react";
-import AlertsPanel from "../Alerts/AlertsPanel";
+import EnhancedAlertsPanel from "../Alerts/EnhancedAlertsPanel";
 import { useAlerts } from "../../hooks/useAlerts";
 
 const extractPduDataAndStatuses = (
@@ -109,7 +109,7 @@ const SiteEndpointLayout: React.FC = () => {
   const addSiteFormRef = useRef<AddSiteEndpointFormHandles>(null);
 
   // Use the alerts hook to get current alerts
-  const { alerts, acknowledge } = useAlerts();
+  const { alerts, acknowledge, resolve, remove, bulkAcknowledge, bulkResolve, bulkDelete } = useAlerts();
 
   const updatePduDisplayCallback = useCallback(
     (siteIdxToUpdate: number, deviceIndexToUpdate: number) => {
@@ -483,7 +483,18 @@ const SiteEndpointLayout: React.FC = () => {
         />
       )}
       <DeviceStatusDashboard />
-      <AlertsPanel alerts={alerts} onAcknowledge={acknowledge} />
+      <EnhancedAlertsPanel 
+        alerts={alerts} 
+        onAcknowledge={acknowledge}
+        onResolve={resolve}
+        onDelete={remove}
+        onBulkAcknowledge={bulkAcknowledge}
+        onBulkResolve={bulkResolve}
+        onBulkDelete={bulkDelete}
+        isLoading={false}
+        enableBulkOperations={true}
+        enableExport={true}
+      />
     </div>
   );
 };

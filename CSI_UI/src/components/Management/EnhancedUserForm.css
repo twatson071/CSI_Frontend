@@ -1,0 +1,261 @@
+/* Enhanced User Form */
+.enhanced-user-form-card {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.user-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-background-surface-header);
+}
+
+.user-form-header h3 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.enhanced-user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-section h4 {
+  margin: 0 0 1rem 0;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Role Selector */
+.role-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.role-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 2px solid var(--color-background-surface-header);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.role-option:hover {
+  border-color: var(--color-palette-brightblue-400);
+  background: var(--color-background-surface-header);
+}
+
+.role-option.selected {
+  border-color: var(--color-palette-brightblue-400);
+  background: var(--color-palette-brightblue-900);
+}
+
+.role-option input[type="radio"] {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-palette-brightblue-400);
+  border-radius: 50%;
+  position: relative;
+  margin-top: 0.125rem;
+}
+
+.role-option input[type="radio"]:checked::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--color-palette-brightblue-400);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.role-content {
+  flex: 1;
+}
+
+.role-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.role-label {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.role-description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+/* Password Inputs */
+.password-inputs {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: var(--color-text-primary);
+}
+
+/* User Details View */
+.user-details-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--color-background-surface-header);
+  border-radius: 4px;
+}
+
+.detail-label {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.detail-value {
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Role Badges */
+.role-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.role-critical {
+  background: var(--color-status-critical);
+  color: var(--color-text-inverse);
+}
+
+.role-serious {
+  background: var(--color-status-serious);
+  color: var(--color-text-inverse);
+}
+
+.role-normal {
+  background: var(--color-status-normal);
+  color: var(--color-text-inverse);
+}
+
+.role-off {
+  background: var(--color-status-off);
+  color: var(--color-text-primary);
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-background-surface-header);
+}
+
+.delete-button {
+  background: var(--color-status-critical) !important;
+  border-color: var(--color-status-critical) !important;
+  margin-right: auto;
+}
+
+.delete-button:hover:not(:disabled) {
+  background: var(--color-status-critical) !important;
+  opacity: 0.9;
+}
+
+/* Delete Confirmation */
+.delete-confirm-content p {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-text-primary);
+}
+
+.delete-confirm-content p:last-child {
+  margin-bottom: 0;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .enhanced-user-form-card {
+    margin: 1rem;
+    max-width: none;
+  }
+
+  .user-form-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .delete-button {
+    margin-right: 0;
+    margin-top: 1rem;
+  }
+
+  .role-selector {
+    gap: 0.5rem;
+  }
+
+  .role-option {
+    padding: 0.75rem;
+  }
+}

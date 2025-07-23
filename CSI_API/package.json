@@ -1,7 +1,10 @@
 {
   "name": "CSI_API",
   "scripts": {
-    "dev": "bun run --hot src/index.ts"
+    "dev": "bun run --hot src/index.ts",
+    "seed": "bun run scripts/seed-dummy-data.ts",
+    "seed:force": "bun run scripts/seed-dummy-data.ts --force",
+    "verify": "bun run scripts/verify-data.ts"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.7.0",

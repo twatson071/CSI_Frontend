@@ -1,0 +1,333 @@
+/* Enhanced User Management */
+.enhanced-user-management {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.user-management-card {
+  width: 100%;
+}
+
+/* Header */
+.user-management-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-background-surface-header);
+}
+
+.header-info h2 {
+  margin: 0 0 0.25rem 0;
+  color: var(--color-text-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.header-info p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+/* Filters */
+.user-management-filters {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--color-background-surface-header);
+  border-radius: 8px;
+}
+
+.search-section {
+  flex: 1;
+}
+
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.role-filters {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Bulk Actions Bar */
+.bulk-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--color-palette-brightblue-900);
+  border: 1px solid var(--color-palette-brightblue-400);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.bulk-info {
+  color: var(--color-palette-brightblue-400);
+  font-weight: 500;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.danger-button {
+  background: var(--color-status-critical) !important;
+  border-color: var(--color-status-critical) !important;
+}
+
+.danger-button:hover:not(:disabled) {
+  background: var(--color-status-critical) !important;
+  opacity: 0.9;
+}
+
+/* Table */
+.user-table-container {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.sortable:hover {
+  background: var(--color-background-surface-header);
+}
+
+.sortable.sorted {
+  background: var(--color-palette-brightblue-900);
+  color: var(--color-palette-brightblue-400);
+}
+
+/* User Name Cell */
+.user-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-palette-brightblue-400);
+  color: var(--color-text-inverse);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.user-name {
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.verified-icon {
+  color: var(--color-status-normal);
+}
+
+.user-email {
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+/* Role Badges */
+.role-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.role-critical {
+  background: var(--color-status-critical);
+  color: var(--color-text-inverse);
+}
+
+.role-serious {
+  background: var(--color-status-serious);
+  color: var(--color-text-inverse);
+}
+
+.role-normal {
+  background: var(--color-status-normal);
+  color: var(--color-text-inverse);
+}
+
+/* Status Indicator */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-active {
+  background: var(--color-status-normal);
+}
+
+.status-inactive {
+  background: var(--color-status-off);
+}
+
+.created-date {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+/* Table Actions */
+.table-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.danger-menu-item {
+  color: var(--color-status-critical) !important;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--color-text-secondary);
+}
+
+.empty-state rux-icon {
+  color: var(--color-text-secondary);
+  margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-text-primary);
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* Loading & Error States */
+.user-management-loading,
+.user-management-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+}
+
+.user-management-loading rux-icon,
+.user-management-error rux-icon {
+  margin-bottom: 1rem;
+}
+
+.user-management-loading p,
+.user-management-error p {
+  margin: 0 0 1rem 0;
+  color: var(--color-text-primary);
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Bulk Delete Dialog */
+.bulk-delete-content p {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-text-primary);
+}
+
+.bulk-delete-content p:last-child {
+  margin-bottom: 0;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .enhanced-user-management {
+    padding: 1rem;
+  }
+  
+  .user-management-filters {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .user-management-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .bulk-actions-bar {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .bulk-actions {
+    justify-content: center;
+  }
+
+  .user-name-cell {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  /* Hide less important columns on mobile */
+  .user-table-container rux-table-header-cell:nth-child(5),
+  .user-table-container rux-table-header-cell:nth-child(6),
+  .user-table-container rux-table-cell:nth-child(5),
+  .user-table-container rux-table-cell:nth-child(6) {
+    display: none;
+  }
+}

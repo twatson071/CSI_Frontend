@@ -15,9 +15,12 @@ import type { Status } from "@astrouxds/mock-data";
 import { addToast, ToastType } from "../../utils/toast";
 import "./Navbar.css";
 import NotificationPreferences from "../common/NotificationPreferences";
+import { useAuth } from "../../contexts/AuthContext";
+import { LogoutDialog } from "../Auth/Logout";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [status1, setStatus1] = useState<Status>("normal");
   const [status2, setStatus2] = useState<Status>("off");
   const [status3, setStatus3] = useState<Status>("normal");
@@ -26,6 +29,7 @@ const Navbar = () => {
   const [notifications3, setNotifications3] = useState(4);
   const [lightTheme, setLightTheme] = useState(false);
   const [showPrefs, setShowPrefs] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("theme");
@@ -71,6 +75,12 @@ const Navbar = () => {
       case "Manage Devices":
         navigate("/manage-devices");
         break;
+      case "Device Backup":
+        navigate("/device-backup");
+        break;
+      case "Sign Out":
+        setShowLogoutDialog(true);
+        break;
       default:
         if (detail.value === "themeToggle") {
           const newTheme = !lightTheme;
@@ -86,10 +96,15 @@ const Navbar = () => {
   return (
     <>
       <RuxToastStack />
+      <LogoutDialog
+        open={showLogoutDialog}
+        onClose={() => setShowLogoutDialog(false)}
+        onConfirm={() => setShowLogoutDialog(false)}
+      />
       <RuxGlobalStatusBar
         appDomain="CSI"
         appName="MONITOR"
-        username="J. Smith"
+        username={user?.name || user?.email || "J. Smith"}
         app-state="Demo"
         app-state-color="tag1"
       >
@@ -109,6 +124,7 @@ const Navbar = () => {
             <RuxMenuItem>Manage Users</RuxMenuItem>
             <RuxMenuItem>Manage Sites</RuxMenuItem>
             <RuxMenuItem>Manage Devices</RuxMenuItem>
+            <RuxMenuItem>Device Backup</RuxMenuItem>
             <RuxMenuItemDivider />
             <RuxMenuItem value="themeToggle">
               {lightTheme ? "Dark" : "Light"} Theme

@@ -18,6 +18,7 @@ import {
 import { useDeviceStatus } from "../../hooks/useDeviceStatus";
 import DeviceDetailsDialog from "./DeviceDetailsDialog";
 import type { Device } from "../../services/DeviceService";
+import { mapDeviceStatus } from "../../utils/deviceStatusUtils";
 import "./DeviceStatusDashboard.css";
 
 const DeviceStatusDashboard: React.FC = () => {
@@ -53,30 +54,6 @@ const DeviceStatusDashboard: React.FC = () => {
     await refreshDevices();
   };
 
-  const mapStatus = (
-    status: string | undefined
-  ): "normal" | "critical" | "caution" | "serious" | "off" | "standby" => {
-    if (!status) return "off";
-    const lowerStatus = status.toLowerCase();
-    switch (lowerStatus) {
-      case "normal":
-      case "online":
-        return "normal";
-      case "critical":
-        return "critical";
-      case "caution":
-        return "caution";
-      case "serious":
-        return "serious";
-      case "standby":
-        return "standby";
-      case "off":
-      case "offline":
-        return "off";
-      default:
-        return "normal";
-    }
-  };
 
   return (
     <RuxContainer className="device-status">
@@ -178,7 +155,7 @@ const DeviceStatusDashboard: React.FC = () => {
                   {filteredDevices.map((device, index) => (
                     <RuxTableRow key={device.id || index}>
                       <RuxTableCell>
-                        <RuxStatus status={mapStatus(device.status)} />
+                        <RuxStatus status={mapDeviceStatus(device.status)} />
                       </RuxTableCell>
                       <RuxTableCell>{device.name}</RuxTableCell>
                       <RuxTableCell>{device.type}</RuxTableCell>
@@ -218,7 +195,7 @@ const DeviceStatusDashboard: React.FC = () => {
             {filteredDevices.map((device) => (
               <RuxContainer key={device.id} className="device-card">
                 <div slot="header">
-                  <RuxStatus status={mapStatus(device.status)} /> {device.name}
+                  <RuxStatus status={mapDeviceStatus(device.status)} /> {device.name}
                 </div>
                 <div className="device-card-content">
                   <div className="device-type">{device.type}</div>

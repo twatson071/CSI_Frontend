@@ -11,6 +11,7 @@ import {
   RuxDialog,
 } from "@astrouxds/react";
 import { RuxDialogCustomEvent } from "@astrouxds/astro-web-components";
+import { mapDeviceStatus } from "../../utils/deviceStatusUtils";
 
 // Define a generic Device interface
 export interface Device {
@@ -64,7 +65,7 @@ const DeviceListItem: React.FC<DeviceListItemProps> = ({
       />
       <RuxTableRow key={device.id} data-index={index}>
         <RuxTableCell>
-          <RuxStatus status={device.status} />
+          <RuxStatus status={mapDeviceStatus(device.status)} />
         </RuxTableCell>
         <RuxTableCell>
           <RuxTooltip message={tooltipMessage} placement="top" delay={300}>
