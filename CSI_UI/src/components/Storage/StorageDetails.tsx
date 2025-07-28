@@ -4,7 +4,7 @@ import "./StorageDetails.css";
 
 interface StorageDetailsProps {
   deviceName: string;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 const StorageDetails: React.FC<StorageDetailsProps> = ({ deviceName, data }) => {

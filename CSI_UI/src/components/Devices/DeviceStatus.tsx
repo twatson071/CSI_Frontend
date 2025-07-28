@@ -10,7 +10,7 @@ import {
 } from "@astrouxds/react";
 import DeviceListItem, { Device } from "./DeviceListItem"; // Import Device interface
 import "./DeviceStatus.css"; // Consider renaming or reviewing Watcher.css content
-import { addToast, ToastType } from "../../utils/toast";
+import { addToast } from "../../utils/toast";
 
 // Placeholder for where you might fetch or manage device data
 // For now, using sample data

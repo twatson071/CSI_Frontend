@@ -11,10 +11,16 @@ export interface SignUpPayload {
   name?: string;
 }
 
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+}
+
 export interface AuthResponse {
   success: boolean;
   error?: string;
-  user?: any;
+  user?: User;
 }
 
 export const AuthService = {
@@ -30,8 +36,9 @@ export const AuthService = {
       }
 
       return { success: true, user: result.data?.user };
-    } catch (error: any) {
-      return { success: false, error: error.message || "Sign in failed" };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Sign in failed";
+      return { success: false, error: message };
     }
   },
 
@@ -48,8 +55,9 @@ export const AuthService = {
       }
 
       return { success: true, user: result.data?.user };
-    } catch (error: any) {
-      return { success: false, error: error.message || "Sign up failed" };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Sign up failed";
+      return { success: false, error: message };
     }
   },
 

@@ -42,24 +42,25 @@ const Navbar = () => {
   const statusValuesArr = ["caution", "normal", "serious", "off"];
   const notificationsArr = [12, 14, 23, 42, 6, 37, 25, 38, 9];
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const randomStatus = Math.floor(Math.random() * statusValuesArr.length);
-      const randomStatus2 = Math.floor(Math.random() * statusValuesArr.length);
-      const randomStatus3 = Math.floor(Math.random() * statusValuesArr.length);
-      setStatus1(statusValuesArr[randomStatus] as Status);
-      setStatus2(statusValuesArr[randomStatus2] as Status);
-      setStatus3(statusValuesArr[randomStatus3] as Status);
+  // Commented out demo random status updates to improve performance
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     const randomStatus = Math.floor(Math.random() * statusValuesArr.length);
+  //     const randomStatus2 = Math.floor(Math.random() * statusValuesArr.length);
+  //     const randomStatus3 = Math.floor(Math.random() * statusValuesArr.length);
+  //     setStatus1(statusValuesArr[randomStatus] as Status);
+  //     setStatus2(statusValuesArr[randomStatus2] as Status);
+  //     setStatus3(statusValuesArr[randomStatus3] as Status);
 
-      const randomNumber = Math.floor(Math.random() * notificationsArr.length);
-      const randomNumber2 = Math.floor(Math.random() * notificationsArr.length);
-      const randomNumber3 = Math.floor(Math.random() * notificationsArr.length);
-      setNotifications1(notificationsArr[randomNumber]);
-      setNotifications2(notificationsArr[randomNumber2]);
-      setNotifications3(notificationsArr[randomNumber3]);
-    }, 12000);
-    return () => clearInterval(interval);
-  });
+  //     const randomNumber = Math.floor(Math.random() * notificationsArr.length);
+  //     const randomNumber2 = Math.floor(Math.random() * notificationsArr.length);
+  //     const randomNumber3 = Math.floor(Math.random() * notificationsArr.length);
+  //     setNotifications1(notificationsArr[randomNumber]);
+  //     setNotifications2(notificationsArr[randomNumber2]);
+  //     setNotifications3(notificationsArr[randomNumber3]);
+  //   }, 12000);
+  //   return () => clearInterval(interval);
+  // });
 
   function menuSelect(e: CustomEvent) {
     const { detail } = e;

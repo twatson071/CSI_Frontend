@@ -8,8 +8,8 @@ export interface RetryConfig {
   initialDelay?: number;
   maxDelay?: number;
   backoffMultiplier?: number;
-  retryCondition?: (error: any, attempt: number) => boolean;
-  onRetry?: (error: any, attempt: number) => void;
+  retryCondition?: (error: unknown, attempt: number) => boolean;
+  onRetry?: (error: unknown, attempt: number) => void;
 }
 
 const DEFAULT_RETRY_CONFIG: Required<RetryConfig> = {
@@ -19,12 +19,14 @@ const DEFAULT_RETRY_CONFIG: Required<RetryConfig> = {
   backoffMultiplier: 2,
   retryCondition: (error) => {
     // Retry on network errors or 5xx status codes
-    if (!error.response) return true; // Network error
-    const status = error.response?.status || error.status;
+    const axiosError = error as { response?: { status?: number }; status?: number };
+    if (!axiosError.response) return true; // Network error
+    const status = axiosError.response?.status || axiosError.status;
     return status >= 500 || status === 0;
   },
   onRetry: (error, attempt) => {
-    console.warn(`API call failed, retry attempt ${attempt}:`, error.message);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.warn(`API call failed, retry attempt ${attempt}:`, message);
   },
 };
 
@@ -72,7 +74,7 @@ export async function withRetry<T>(
     onRetry,
   } = { ...DEFAULT_RETRY_CONFIG, ...config };
 
-  let lastError: any;
+  let lastError: unknown;
   
   for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
     try {
@@ -102,10 +104,10 @@ export async function withRetry<T>(
 /**
  * Axios interceptor for automatic retry
  */
-export function createAxiosRetryInterceptor(axios: any, config: RetryConfig = {}) {
+export function createAxiosRetryInterceptor(axios: { interceptors: { response: { use: (onFulfilled: (response: unknown) => unknown, onRejected: (error: unknown) => Promise<unknown>) => void } } }, config: RetryConfig = {}) {
   axios.interceptors.response.use(
-    (response: any) => response,
-    async (error: any) => {
+    (response: unknown) => response,
+    async (error: unknown) => {
       const originalRequest = error.config;
       
       // Prevent infinite loops

@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  # Mock External API Service
+  mock-api:
+    image: oven/bun:latest
+    working_dir: /app
+    volumes:
+      - ./CSI_API:/app
+    command: bun run scripts/mock-external-service.ts
+    ports:
+      - "8090:8090"
+    environment:
+      - PORT=8090
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Backend API
+  backend:
+    image: oven/bun:latest
+    working_dir: /app
+    volumes:
+      - ./CSI_API:/app
+      - ./data:/data
+    ports:
+      - "${BACKEND_PORT:-3001}:3001"
+    environment:
+      - NODE_ENV=test
+      - PORT=3001
+      - DB_FILE_NAME=/data/test.db
+      - EXTERNAL_BASE_URL=http://mock-api:8090
+      - SYSTEM_OPERATOR_KEY=TestSystemOperator-1
+      - HUB_KEY=TestHub-1
+      - CORS_ORIGIN=http://localhost:${FRONTEND_PORT:-3002}
+    depends_on:
+      mock-api:
+        condition: service_healthy
+    command: >
+      sh -c "
+        bun install &&
+        bun x drizzle-kit migrate &&
+        bun run seed:force &&
+        bun run src/index.ts
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Frontend
+  frontend:
+    image: node:18-alpine
+    working_dir: /app
+    volumes:
+      - ./CSI_UI:/app
+    ports:
+      - "${FRONTEND_PORT:-3002}:3002"
+    environment:
+      - VITE_API_URL=http://localhost:${BACKEND_PORT:-3001}
+      - VITE_APP_ENV=test
+    depends_on:
+      backend:
+        condition: service_healthy
+    command: >
+      sh -c "
+        npm install &&
+        npm run dev -- --host 0.0.0.0
+      "
+
+  # Optional: Production-like frontend with nginx
+  frontend-prod:
+    build:
+      context: ./CSI_UI
+      dockerfile: Dockerfile
+    ports:
+      - "${FRONTEND_PROD_PORT:-8080}:80"
+    environment:
+      - VITE_API_URL=http://localhost:${BACKEND_PORT:-3001}
+    depends_on:
+      backend:
+        condition: service_healthy
+    profiles:
+      - production
+
+volumes:
+  data:
+    driver: local
+
+networks:
+  default:
+    name: csi-test-network

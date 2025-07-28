@@ -3,7 +3,7 @@
  * Manages persistent configuration for various UI components
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { useLocalStorage } from './useLocalStorage';
 import { useSessionStorage } from './useSessionStorage';
 
@@ -193,13 +193,13 @@ export function useUIConfig() {
 
 // Hook for managing all configurations
 export function useAllConfigs() {
-  const [allConfigs, setAllConfigs] = useLocalStorage<Record<string, any>>(
+  const [, setAllConfigs] = useLocalStorage<Record<string, unknown>>(
     'csi-config:all',
     {}
   );
 
   const exportAllConfigs = useCallback((): string => {
-    const configs: Record<string, any> = {};
+    const configs: Record<string, unknown> = {};
     
     // Collect all configs from localStorage
     for (let i = 0; i < localStorage.length; i++) {

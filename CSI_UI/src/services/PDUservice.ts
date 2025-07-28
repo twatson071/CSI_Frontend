@@ -22,7 +22,7 @@ export interface PduCommandResponseItem {
   deviceId: number;
   name: string;
   status: number;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 const PDU_DEVICE_TYPE_IDENTIFIER = "PDU";

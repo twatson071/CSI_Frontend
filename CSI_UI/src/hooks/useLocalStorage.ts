@@ -7,16 +7,16 @@ import { useState, useEffect, useCallback } from 'react';
 
 type SetValue<T> = T | ((val: T) => T);
 
-interface UseLocalStorageOptions {
-  serializer?: (value: any) => string;
-  deserializer?: (value: string) => any;
+interface UseLocalStorageOptions<T> {
+  serializer?: (value: T) => string;
+  deserializer?: (value: string) => T;
   initializeWithValue?: boolean;
 }
 
 export function useLocalStorage<T>(
   key: string,
   initialValue: T,
-  options: UseLocalStorageOptions = {}
+  options: UseLocalStorageOptions<T> = {}
 ): [T, (value: SetValue<T>) => void, () => void] {
   const {
     serializer = JSON.stringify,

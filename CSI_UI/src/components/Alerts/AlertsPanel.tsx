@@ -1,11 +1,6 @@
 import {
   RuxContainer,
-  RuxButton,
-  RuxSelect,
-  RuxOption,
-  RuxInput,
   RuxIcon,
-  RuxCheckbox,
 } from "@astrouxds/react";
 import { useState, useEffect, useMemo } from "react";
 import AlertsList from "./AlertsList";
@@ -36,8 +31,8 @@ const AlertsPanel = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [devices, setDevices] = useState<Device[]>([]);
   const [sites, setSites] = useState<SiteSummary[]>([]);
-  const [sortField, setSortField] = useState<SortField>("time");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [sortField] = useState<SortField>("time");
+  const [sortDirection] = useState<SortDirection>("desc");
   const [showAcknowledged, setShowAcknowledged] = useState(false);
 
   useEffect(() => {
@@ -67,7 +62,7 @@ const AlertsPanel = ({
   }, [sites]);
 
   const filteredAlerts = useMemo(() => {
-    let filtered = alerts
+    const filtered = alerts
       .filter((a) => severityFilter === "ALL" || a.severity === severityFilter)
       .filter((a) => {
         if (deviceTypeFilter === "ALL") return true;
@@ -90,8 +85,8 @@ const AlertsPanel = ({
 
     // Apply sorting
     return filtered.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: string | number;
+      let bValue: string | number;
 
       const severityOrder = { CRITICAL: 4, SERIOUS: 3, CAUTION: 2, INFO: 1 };
 
@@ -134,15 +129,12 @@ const AlertsPanel = ({
     sortDirection,
   ]);
 
-  const uniqueDeviceTypes = useMemo(() => {
-    return Array.from(new Set(devices.map((d) => d.type)));
-  }, [devices]);
 
   // Get severity counts for better UX
   const severityCounts = useMemo(() => {
     const counts = { CRITICAL: 0, SERIOUS: 0, CAUTION: 0, INFO: 0 };
     filteredAlerts.forEach((alert) => {
-      if (counts.hasOwnProperty(alert.severity)) {
+      if (Object.prototype.hasOwnProperty.call(counts, alert.severity)) {
         counts[alert.severity as keyof typeof counts]++;
       }
     });
@@ -152,27 +144,14 @@ const AlertsPanel = ({
   const totalCounts = useMemo(() => {
     const counts = { CRITICAL: 0, SERIOUS: 0, CAUTION: 0, INFO: 0 };
     alerts.forEach((alert) => {
-      if (counts.hasOwnProperty(alert.severity)) {
+      if (Object.prototype.hasOwnProperty.call(counts, alert.severity)) {
         counts[alert.severity as keyof typeof counts]++;
       }
     });
     return counts;
   }, [alerts]);
 
-  const acknowledgeAll = () => {
-    if (onAcknowledge) {
-      filteredAlerts
-        .filter((a) => !a.acknowledged)
-        .forEach((a) => onAcknowledge(a.id));
-    }
-  };
 
-  const clearAllFilters = () => {
-    setSeverityFilter("ALL");
-    setDeviceTypeFilter("ALL");
-    setSearchTerm("");
-    setShowAcknowledged(false);
-  };
 
   const hasActiveFilters =
     severityFilter !== "ALL" ||
@@ -180,9 +159,6 @@ const AlertsPanel = ({
     searchTerm !== "" ||
     showAcknowledged;
 
-  const unacknowledgedCount = filteredAlerts.filter(
-    (a) => !a.acknowledged
-  ).length;
   const totalUnacknowledged = alerts.filter((a) => !a.acknowledged).length;
 
   return (

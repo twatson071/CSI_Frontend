@@ -10,7 +10,11 @@ interface SessionInfoProps {
 
 export const SessionInfo: React.FC<SessionInfoProps> = ({ compact = false }) => {
   const { user, isAuthenticated, refreshSession } = useAuth();
-  const [sessionDetails, setSessionDetails] = useState<any>(null);
+  const [sessionDetails, setSessionDetails] = useState<{
+    id?: string;
+    createdAt?: string;
+    expiresAt?: string;
+  } | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 

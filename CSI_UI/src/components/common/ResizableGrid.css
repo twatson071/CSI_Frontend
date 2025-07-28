@@ -1,0 +1,192 @@
+.resizable-grid-container {
+  display: grid;
+  gap: var(--spacing-2);
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.grid-cell {
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.grid-cell.top-left {
+  grid-area: 1 / 1 / 2 / 2;
+}
+
+.grid-cell.top-right {
+  grid-area: 1 / 2 / 2 / 3;
+}
+
+.grid-cell.bottom-left {
+  grid-area: 2 / 1 / 3 / 2;
+}
+
+.grid-cell.bottom-right {
+  grid-area: 2 / 2 / 3 / 3;
+}
+
+.resize-handle {
+  position: absolute;
+  z-index: 10;
+  background: transparent;
+  transition: opacity 0.2s ease;
+}
+
+.resize-handle:hover {
+  opacity: 1;
+}
+
+.resize-handle.column-handle {
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  margin-left: -6px;
+  cursor: col-resize;
+}
+
+.resize-handle.row-handle {
+  left: 0;
+  right: 0;
+  height: 12px;
+  margin-top: -6px;
+  cursor: row-resize;
+}
+
+.resize-handle.center-handle {
+  width: 20px;
+  height: 20px;
+  margin-left: -10px;
+  margin-top: -10px;
+  cursor: move;
+  pointer-events: none;
+}
+
+.resize-handle-visual {
+  position: absolute;
+  background: var(--color-palette-brightblue-400);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.column-handle .resize-handle-visual {
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+}
+
+.row-handle .resize-handle-visual {
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  margin-top: -1px;
+}
+
+.resize-handle:hover .resize-handle-visual {
+  opacity: 0.5;
+}
+
+.resize-handle:active .resize-handle-visual {
+  opacity: 1;
+}
+
+.resize-handle-center-visual {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: var(--color-background-surface-selected);
+  border: 2px solid var(--color-palette-brightblue-400);
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+/* Visual feedback during drag */
+.resizable-grid-container:has(.resize-handle:active) {
+  user-select: none;
+}
+
+.resizable-grid-container:has(.column-handle:active) .column-handle .resize-handle-visual,
+.resizable-grid-container:has(.row-handle:active) .row-handle .resize-handle-visual {
+  opacity: 1;
+  background: var(--color-palette-brightblue-300);
+}
+
+/* Drag and drop styles */
+.grid-cell {
+  cursor: grab;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.grid-cell:active {
+  cursor: grabbing;
+}
+
+.grid-cell.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+  z-index: 1000;
+}
+
+.grid-cell.drag-over {
+  background: var(--color-background-surface-selected);
+  box-shadow: 
+    inset 0 0 0 3px var(--color-palette-brightblue-400),
+    0 0 20px rgba(var(--color-palette-brightblue-400-rgb), 0.3);
+  transform: scale(1.02);
+}
+
+/* Drag handle indicator */
+.grid-cell::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  background-image: 
+    radial-gradient(circle, var(--color-text-secondary) 2px, transparent 2px),
+    radial-gradient(circle, var(--color-text-secondary) 2px, transparent 2px);
+  background-size: 8px 8px;
+  background-position: 0 0, 4px 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.grid-cell:hover::before {
+  opacity: 0.3;
+}
+
+.grid-cell.dragging::before {
+  opacity: 0;
+}
+
+/* Responsive behavior */
+@media (max-width: 1280px) {
+  .resize-handle {
+    display: none;
+  }
+  
+  .resizable-grid-container {
+    display: block;
+    overflow-y: auto;
+  }
+  
+  .grid-cell {
+    margin-bottom: var(--spacing-2);
+    cursor: default;
+  }
+  
+  .grid-cell::before {
+    display: none;
+  }
+}

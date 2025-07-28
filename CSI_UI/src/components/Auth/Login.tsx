@@ -48,8 +48,9 @@ const Login: React.FC = () => {
       } else {
         setError(result.error || "Authentication failed");
       }
-    } catch (error: any) {
-      setError(error.message || "An unexpected error occurred");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "An unexpected error occurred";
+      setError(message);
     }
   };
 
@@ -128,7 +129,7 @@ const Login: React.FC = () => {
                 label="Full Name"
                 value={name}
                 placeholder="Enter your full name"
-                onRuxinput={(e: any) => setName(e.target.value)}
+                onRuxinput={(e: CustomEvent<{value: string}>) => setName(e.detail.value)}
                 required={isSignUp}
               />
             </div>
@@ -140,7 +141,7 @@ const Login: React.FC = () => {
               type="email"
               value={email}
               placeholder="your.name@domain.mil"
-              onRuxinput={(e: any) => setEmail(e.target.value)}
+              onRuxinput={(e: CustomEvent<{value: string}>) => setEmail(e.detail.value)}
               required
             />
             <small className="field-hint">Must be a .mil email address</small>
@@ -155,7 +156,7 @@ const Login: React.FC = () => {
                 placeholder={
                   isSignUp ? "Create a secure password" : "Enter your password"
                 }
-                onRuxinput={(e: any) => setPassword(e.target.value)}
+                onRuxinput={(e: CustomEvent<{value: string}>) => setPassword(e.detail.value)}
                 required
               />
               <button

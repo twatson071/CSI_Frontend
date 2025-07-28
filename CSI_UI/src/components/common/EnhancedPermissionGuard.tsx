@@ -1,7 +1,7 @@
 import React from "react";
-import { RuxCard, RuxIcon } from "@astrouxds/react";
+import { RuxIcon } from "@astrouxds/react";
 import { usePermissions } from "../../hooks/usePermissions";
-import { RESOURCES, ACTIONS, ROLES } from "../../services/RoleService";
+import { RESOURCES, ROLES } from "../../services/RoleService";
 import "./EnhancedPermissionGuard.css";
 
 interface BasePermissionGuardProps {

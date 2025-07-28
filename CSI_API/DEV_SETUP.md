@@ -82,7 +82,7 @@ bun run seed
 bun run dev
 ```
 
-The API will be running at `http://localhost:3000`
+The API will be running at `http://localhost:3001`
 
 #### 2. Setup Frontend (CSI_UI)
 
@@ -97,7 +97,7 @@ npm install
 npm run dev
 ```
 
-The frontend will be running at `http://localhost:5173`
+The frontend will be running at `http://localhost:3002`
 
 ### Option 3: Database Refresh (Existing Developers)
 
@@ -230,7 +230,7 @@ NODE_ENV=development
 Check `CSI_UI/.env` or `CSI_UI/.env.local` for frontend-specific variables:
 
 ```bash
-VITE_BASE_URL=http://localhost:3000
+VITE_BASE_URL=http://localhost:3001
 VITE_LOCAL_LOGIN=true
 VITE_ALERT_SERVICE_URL=http://localhost:8081
 ```

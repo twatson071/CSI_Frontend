@@ -20,46 +20,7 @@ rux-container::part(body) {
   padding: 0;
 }
 
-rux-container.site-endpoints {
-  grid-area: site-endpoints;
-}
-rux-container.alerts rux-container.pass-plan {
-  grid-area: pass-plan;
-}
-rux-container.device-status {
-  grid-area: device-status;
-}
-.device-status {
-  grid-area: device-status;
-}
-
-.link-status {
-  grid-area: link-status;
-}
-
-.subsystems {
-  grid-area: subsystems;
-}
-
-.watcher rux-container {
-  grid-area: watcher;
-}
-
-rux-container.mnemonics {
-  grid-area: mnemonics;
-}
-
-rux-container.star-tracker {
-  grid-area: star-tracker;
-}
-
-rux-container.investigate-subsystem {
-  grid-area: investigate-subsystems;
-}
-
-rux-button.investigate-breadcrumb {
-  grid-area: breadcrumb;
-}
+/* Grid areas now handled by ResizableGrid component */
 
 /* GlOBAL TABLE STYLES */
 
@@ -160,13 +121,6 @@ rux-tree-node::part(node):focus {
   padding: var(--spacing-3);
   background-color: var(--color-background-base-default);
   color: var(--color-text-primary);
-  display: grid;
-  gap: var(--spacing-2);
-  grid-template-columns: minmax(250px, 30%) 1fr;
-  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-areas:
-    "site-endpoints pass-plan"
-    "alerts device-status";
   overflow: hidden;
 }
 
@@ -176,32 +130,7 @@ rux-tree-node::part(node):focus {
   overflow: hidden;
 }
 
-/* Responsive layout for small laptops (1366px and below) */
-@media (max-width: 1366px) {
-  .main-container[data-active="true"] {
-    grid-template-columns: minmax(200px, 25%) 1fr;
-    padding: var(--spacing-2);
-    gap: var(--spacing-1);
-  }
-}
-
-/* Responsive layout for smaller screens (1280px and below) */
-@media (max-width: 1280px) {
-  .main-container[data-active="true"] {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-    grid-template-areas:
-      "site-endpoints"
-      "pass-plan"
-      "device-status"
-      "alerts";
-    overflow-y: auto;
-  }
-  
-  rux-container.site-endpoints {
-    max-height: 300px;
-  }
-}
+/* Responsive layout handled by ResizableGrid component */
 .investigate__content {
   position: relative;
   overflow-x: hidden;

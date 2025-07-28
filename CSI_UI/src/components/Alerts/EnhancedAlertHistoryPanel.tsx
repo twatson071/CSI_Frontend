@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   RuxContainer,
   RuxButton,
   RuxInput,
   RuxIcon,
-  RuxCard,
   RuxPopUp,
   RuxMenu,
   RuxMenuItem,
   RuxDialog,
-  RuxCheckbox,
   RuxProgress,
   RuxStatus,
 } from "@astrouxds/react";
@@ -24,7 +22,6 @@ import {
   exportAlertHistory,
   performCleanup,
   getAlertHistorySettings,
-  updateAlertHistorySettings,
   type AlertHistoryFilter,
 } from "../../utils/alertHistoryDB";
 import { getDevices, type Device } from "../../services/DeviceService";
@@ -34,12 +31,10 @@ import "./EnhancedAlertHistoryPanel.css";
 
 interface EnhancedAlertHistoryPanelProps {
   onBulkAcknowledge?: (ids: number[]) => void;
-  onAlertUpdate?: (alertId: number, updates: Partial<Alert>) => void;
 }
 
 const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
   onBulkAcknowledge,
-  onAlertUpdate,
 }) => {
   const permissions = usePermissions();
   
@@ -48,11 +43,11 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
   const [devices, setDevices] = useState<Device[]>([]);
   const [sites, setSites] = useState<SiteSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<Record<string, unknown> | null>(null);
   const [selectedAlerts, setSelectedAlerts] = useState<Set<number>>(new Set());
   
   // Filter states
-  const [filter, setFilter] = useState<AlertHistoryFilter>({});
+  const [filter] = useState<AlertHistoryFilter>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [severityFilter, setSeverityFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -61,13 +56,13 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
   // UI states
   const [showBulkDialog, setShowBulkDialog] = useState(false);
   const [showCleanupDialog, setShowCleanupDialog] = useState(false);
-  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [showSettingsDialog] = useState(false);
   const [bulkAction, setBulkAction] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(50);
   
   // Settings
-  const [settings, setSettings] = useState<any>(null);
+  const [settings, setSettings] = useState<Record<string, unknown> | null>(null);
   const [cleanupProgress, setCleanupProgress] = useState<{
     inProgress: boolean;
     deleted: number;
@@ -77,13 +72,13 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
   useEffect(() => {
     loadData();
     loadSettings();
-  }, []);
+  }, [loadData]);
 
   useEffect(() => {
     applyFilters();
-  }, [filter, searchTerm, severityFilter, statusFilter, dateRange, currentPage]);
+  }, [applyFilters]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const [alertsData, devicesData, sitesData, statsData] = await Promise.all([
@@ -102,7 +97,7 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [pageSize, currentPage]);
 
   const loadSettings = async () => {
     try {
@@ -113,7 +108,7 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
     }
   };
 
-  const applyFilters = async () => {
+  const applyFilters = useCallback(async () => {
     try {
       setLoading(true);
       const appliedFilter: AlertHistoryFilter = {
@@ -135,7 +130,7 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter, searchTerm, severityFilter, statusFilter, dateRange, pageSize, currentPage]);
 
   const deviceMap = useMemo(() => {
     return devices.reduce<Record<number, { name: string; type: string }>>(
@@ -426,7 +421,7 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
               type="search"
               placeholder="Search alert history..."
               value={searchTerm}
-              onRuxinput={(e: any) => setSearchTerm(e.target.value)}
+              onRuxinput={(e: CustomEvent<{value: string}>) => setSearchTerm(e.detail.value)}
               className="search-input"
             >
               <RuxIcon icon="search" slot="prefix" />
@@ -448,14 +443,14 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
               type="date"
               label="From"
               value={dateRange.start || ""}
-              onRuxinput={(e: any) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+              onRuxinput={(e: CustomEvent<{value: string}>) => setDateRange(prev => ({ ...prev, start: e.detail.value }))}
             />
 
             <RuxInput
               type="date"
               label="To"
               value={dateRange.end || ""}
-              onRuxinput={(e: any) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+              onRuxinput={(e: CustomEvent<{value: string}>) => setDateRange(prev => ({ ...prev, end: e.detail.value }))}
             />
 
             {(searchTerm || severityFilter.length > 0 || statusFilter !== "ALL" || dateRange.start || dateRange.end) && (

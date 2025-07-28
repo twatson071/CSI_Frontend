@@ -74,10 +74,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return { success: false, error: result.error.message };
       }
       return { success: true };
-    } catch (error: any) {
+    } catch (error) {
       return {
         success: false,
-        error: error.message || "Sign in failed. Please try again.",
+        error: error instanceof Error ? error.message : "Sign in failed. Please try again.",
       };
     } finally {
       setIsLoading(false);
@@ -104,10 +104,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return { success: false, error: result.error.message };
       }
       return { success: true };
-    } catch (error: any) {
+    } catch (error) {
       return {
         success: false,
-        error: error.message || "Sign up failed. Please try again.",
+        error: error instanceof Error ? error.message : "Sign up failed. Please try again.",
       };
     } finally {
       setIsLoading(false);

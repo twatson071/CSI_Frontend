@@ -3,7 +3,6 @@ import {
   getDevices,
   updateDeviceStatusFromAlerts,
   getDeviceStatusFromAlerts,
-  getDeviceStatusPriority,
   type Device,
 } from "../services/DeviceService";
 import { useAlerts } from "./useAlerts";
@@ -108,7 +107,7 @@ export function useDeviceStatus() {
     if (alerts.length > 0 && devices.length > 0) {
       updateDeviceStatuses();
     }
-  }, [alerts, devices.length]); // Added devices.length to dependencies
+  }, [alerts]); // Remove devices from dependencies to prevent infinite loop
 
   // Get device status with priority mapping
   const getDeviceStatusPriority = (status: string): number => {

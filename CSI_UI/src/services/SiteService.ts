@@ -6,7 +6,7 @@ export interface DeviceResponse {
   deviceId: number;
   name: string;
   status: string;
-  data: any;
+  data: Record<string, unknown>;
   type: string;
   serviceUrl: string;
 }

@@ -35,8 +35,6 @@ const DeviceStatusDashboard: React.FC = () => {
     lastRefresh,
     refreshDevices,
     getSystemHealth,
-    updateDeviceStatus,
-    getDeviceStatusFromAlerts,
   } = useDeviceStatus();
   const systemHealth = getSystemHealth();
 
@@ -65,7 +63,7 @@ const DeviceStatusDashboard: React.FC = () => {
               size="small"
               placeholder="Search devices"
               value={searchQuery}
-              onRuxinput={(e: any) => setSearchQuery(e.target.value)}
+              onRuxinput={(e: CustomEvent<{value: string}>) => setSearchQuery(e.detail.value)}
             />
             <RuxButton size="small" icon="refresh" onClick={handleRefresh}>
               Refresh

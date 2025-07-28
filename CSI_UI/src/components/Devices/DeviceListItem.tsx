@@ -37,7 +37,7 @@ const DeviceListItem: React.FC<DeviceListItemProps> = ({
 }) => {
   const dialogElement = useRef<HTMLRuxDialogElement>(null);
 
-  const handleRuxMenuSelected = (e: any) => {
+  const handleRuxMenuSelected = (e: CustomEvent<{value: string}>) => {
     if (e.detail.value === "delete") {
       if (dialogElement.current) dialogElement.current.open = true;
     }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   RuxContainer,
   RuxButton,
@@ -19,8 +19,6 @@ import {
   RuxDialog,
   RuxStatus,
   RuxCard,
-  RuxTabs,
-  RuxTab,
   RuxProgress,
 } from "@astrouxds/react";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -47,7 +45,6 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
   onDeviceSelect,
 }) => {
   const permissions = usePermissions();
-  const dummyData = useDummyData();
   
   // State management
   const [devices, setDevices] = useState<Device[]>([]);
@@ -55,7 +52,6 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
   const [selectedDevices, setSelectedDevices] = useState<Set<number>>(new Set());
   const [sites, setSites] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
-  const [useDummyDataMode, setUseDummyDataMode] = useState(false);
   
   // View and filtering state
   const [viewMode, setViewMode] = useState<ViewMode>("table");
@@ -87,7 +83,7 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
   // Filter and sort devices
   useEffect(() => {
     filterAndSortDevices();
-  }, [devices, searchTerm, filterSite, filterType, filterStatus, sortField, sortDirection]);
+  }, [filterAndSortDevices]);
 
   const loadDevices = async () => {
     try {
@@ -110,8 +106,8 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
     }
   };
 
-  const filterAndSortDevices = () => {
-    let filtered = devices.filter(device => {
+  const filterAndSortDevices = useCallback(() => {
+    const filtered = devices.filter(device => {
       const matchesSearch = !searchTerm || 
         device.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         device.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -126,8 +122,8 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
 
     // Sort devices
     filtered.sort((a, b) => {
-      let aValue: any = a[sortField];
-      let bValue: any = b[sortField];
+      let aValue: string | number | null | undefined = a[sortField as keyof Device];
+      let bValue: string | number | null | undefined = b[sortField as keyof Device];
       
       if (sortField === "lastSeen") {
         aValue = new Date(a.updatedAt || a.createdAt || 0).getTime();
@@ -149,7 +145,7 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
     });
 
     setFilteredDevices(filtered);
-  };
+  }, [devices, searchTerm, filterSite, filterType, filterStatus, sortField, sortDirection]);
 
   const deviceTypes = useMemo(() => {
     return Array.from(new Set(devices.map(d => d.type)));
@@ -188,7 +184,7 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
     }
   };
 
-  const handleDeviceAdded = (device: any) => {
+  const handleDeviceAdded = () => {
     loadDevices(); // Reload to get the new device
     setShowDiscovery(false);
     setShowDeviceForm(false);
@@ -445,13 +441,13 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
               type="search"
               placeholder="Search devices, types, IP addresses..."
               value={searchTerm}
-              onRuxinput={(e: any) => setSearchTerm(e.target.value)}
+              onRuxinput={(e: CustomEvent<{value: string}>) => setSearchTerm(e.detail.value)}
               className="search-input"
             />
             
             <RuxSelect
               value={filterSite.toString()}
-              onRuxchange={(e: any) => setFilterSite(parseInt(e.target.value) || 0)}
+              onRuxchange={(e: CustomEvent<{value: string}>) => setFilterSite(parseInt(e.detail.value) || 0)}
             >
               <RuxOption value="0">All Sites</RuxOption>
               {sites.map(site => (
@@ -463,7 +459,7 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
             
             <RuxSelect
               value={filterType}
-              onRuxchange={(e: any) => setFilterType(e.target.value)}
+              onRuxchange={(e: CustomEvent<{value: string}>) => setFilterType(e.detail.value)}
             >
               <RuxOption value="ALL">All Types</RuxOption>
               {deviceTypes.map(type => (
@@ -475,7 +471,7 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
             
             <RuxSelect
               value={filterStatus}
-              onRuxchange={(e: any) => setFilterStatus(e.target.value)}
+              onRuxchange={(e: CustomEvent<{value: string}>) => setFilterStatus(e.detail.value)}
             >
               <RuxOption value="ALL">All Status</RuxOption>
               {statusTypes.map(status => (
@@ -507,7 +503,7 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
             {selectedDevices.size > 0 && (canUpdateDevices || canDeleteDevices) && (
               <RuxPopUp 
                 open={showBulkActions}
-                onRuxtoggle={(e: any) => setShowBulkActions(e.detail)}
+                onRuxtoggle={(e: CustomEvent<boolean>) => setShowBulkActions(e.detail)}
                 placement="bottom-start"
               >
                 <RuxButton slot="trigger">
@@ -630,7 +626,7 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
           message={`Are you sure you want to delete ${selectedDevices.size} selected device${selectedDevices.size !== 1 ? 's' : ''}? This action cannot be undone.`}
           confirmText="Delete"
           denyText="Cancel"
-          onRuxdialogclosed={(e: any) => {
+          onRuxdialogclosed={() => {
             if (e.detail.confirmed) {
               executeBulkOperation('delete');
             }

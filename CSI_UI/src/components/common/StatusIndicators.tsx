@@ -55,7 +55,6 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
 };
 
 export const StatusLegend: React.FC = () => {
-  const colors = getAllStatusColors();
 
   return (
     <div

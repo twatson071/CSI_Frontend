@@ -29,40 +29,34 @@ function generateTimestamp(): string {
 // PDU Mock Data Generator
 function generatePDUData() {
   const outletCount = Math.floor(rand(8, 24));
-  const outlets = [];
+  const outlets = {};
   
   for (let i = 1; i <= outletCount; i++) {
-    outlets.push({
-      outlet_id: i,
-      name: `Outlet ${i}`,
-      state: randomChoice(['on', 'off']),
-      current_amps: Number(rand(0.5, 8.5).toFixed(2)),
-      voltage_volts: Number(rand(110, 125).toFixed(1)),
-      power_watts: Number(rand(50, 1000).toFixed(1)),
-      power_factor: Number(rand(0.85, 0.99).toFixed(2))
-    });
+    outlets[i.toString()] = {
+      state: randomChoice(['POWER_ON', 'POWER_OFF'])
+    };
   }
 
+  const totalWatts = Number(rand(500, 3000).toFixed(1));
+  const totalAmps = Number(rand(2, 15).toFixed(2));
+
   return {
-    device_info: {
+    parameters: {
+      make: randomChoice(['APC', 'Raritan', 'Vertiv']),
       model: randomChoice(['AP7921B', 'AP8870', 'AP9630']),
-      firmware_version: randomChoice(['v6.7.4', 'v6.8.1', 'v7.0.2']),
-      serial_number: `PDU${Math.floor(rand(100000, 999999))}`,
-      uptime_seconds: Math.floor(rand(86400, 2592000))
+      label: `Power Distribution Unit ${Math.floor(rand(1, 10))}`,
+      numOfOutlets: outletCount,
+      outlets,
+      totalDrawWatts: totalWatts.toString(),
+      totalDrawAmps: totalAmps.toString(),
+      ratingAmps: Math.floor(rand(15, 30)),
+      loadState: totalAmps > 12 ? 'high' : totalAmps > 8 ? 'medium' : 'low'
     },
-    power_summary: {
-      total_current_amps: Number(outlets.reduce((sum, o) => sum + o.current_amps, 0).toFixed(2)),
-      total_power_watts: Number(outlets.reduce((sum, o) => sum + o.power_watts, 0).toFixed(1)),
-      input_voltage: Number(rand(115, 125).toFixed(1)),
-      frequency_hz: Number(rand(59.8, 60.2).toFixed(1))
-    },
-    outlets,
-    environmental: {
-      temperature_c: Number(rand(18, 35).toFixed(1)),
-      humidity_percent: Number(rand(30, 70).toFixed(1))
-    },
-    status: randomChoice(['normal', 'caution']),
-    last_updated: generateTimestamp()
+    sensors: {
+      total_draw_w: totalWatts,
+      total_draw_a: totalAmps,
+      load_state: totalAmps > 12 ? 'high' : totalAmps > 8 ? 'medium' : 'low'
+    }
   };
 }
 
@@ -70,213 +64,227 @@ function generatePDUData() {
 function generateUPSData() {
   const batteryCharge = Number(rand(85, 100).toFixed(1));
   const isOnBattery = Math.random() < 0.1; // 10% chance on battery
+  const outletCount = Math.floor(rand(4, 8));
+  const outlets = {};
   
+  for (let i = 1; i <= outletCount; i++) {
+    outlets[i.toString()] = {
+      state: randomChoice(['POWER_ON', 'POWER_OFF'])
+    };
+  }
+
+  const totalWatts = Number(rand(800, 2500).toFixed(1));
+  const totalAmps = Number(rand(5, 15).toFixed(2));
+
   return {
-    device_info: {
+    parameters: {
+      make: randomChoice(['APC', 'Eaton', 'CyberPower']),
       model: randomChoice(['SMX3000RMHV2U', 'SMT2200RM2U', 'SRT3000XLA']),
-      firmware_version: randomChoice(['UPS 09.2', 'UPS 09.4', 'UPS 10.1']),
-      serial_number: `UPS${Math.floor(rand(100000, 999999))}`,
-      uptime_seconds: Math.floor(rand(86400, 2592000))
-    },
-    power_status: {
-      input_voltage: isOnBattery ? 0 : Number(rand(115, 125).toFixed(1)),
-      output_voltage: Number(rand(115, 125).toFixed(1)),
-      output_current: Number(rand(5, 15).toFixed(2)),
-      output_power_watts: Number(rand(800, 2500).toFixed(0)),
-      load_percent: Number(rand(25, 85).toFixed(1)),
-      frequency_hz: Number(rand(59.8, 60.2).toFixed(1))
-    },
-    battery_status: {
-      charge_percent: batteryCharge,
+      label: `Uninterruptible Power Supply ${Math.floor(rand(1, 5))}`,
+      numOfOutlets: outletCount,
+      outlets,
+      totalDrawWatts: totalWatts.toString(),
+      totalDrawAmps: totalAmps.toString(),
+      ratingAmps: Math.floor(rand(20, 40)),
+      loadState: totalAmps > 12 ? 'high' : totalAmps > 8 ? 'medium' : 'low',
+      // UPS-specific parameters
+      battery_status: batteryCharge,
+      battery_charge: batteryCharge,
       runtime_minutes: Math.floor(rand(15, 180)),
-      voltage: Number(rand(48, 54).toFixed(1)),
-      temperature_c: Number(rand(20, 35).toFixed(1)),
-      last_test_date: new Date(Date.now() - Math.floor(rand(1, 30)) * 86400000).toISOString(),
-      status: batteryCharge > 90 ? 'normal' : 'caution'
-    },
-    system_status: {
       on_battery: isOnBattery,
-      alarm_active: Math.random() < 0.05,
-      status: isOnBattery ? 'caution' : 'normal'
+      input_voltage: isOnBattery ? 0 : Number(rand(115, 125).toFixed(1)),
+      output_voltage: Number(rand(115, 125).toFixed(1))
     },
-    environmental: {
-      temperature_c: Number(rand(18, 40).toFixed(1)),
-      humidity_percent: Number(rand(30, 70).toFixed(1))
-    },
-    last_updated: generateTimestamp()
+    sensors: {
+      total_draw_w: totalWatts,
+      total_draw_a: totalAmps,
+      load_state: totalAmps > 12 ? 'high' : totalAmps > 8 ? 'medium' : 'low',
+      battery_charge: batteryCharge
+    }
   };
 }
 
 // Network Switch Mock Data Generator
 function generateSwitchData() {
   const portCount = randomChoice([24, 48]);
-  const ports = [];
+  const poeCapablePorts = Math.floor(portCount * 0.6); // 60% PoE capable
+  const port_status = {};
+  let activePorts = 0;
+  let totalTrafficGb = 0;
+  let poeUsedW = 0;
   
   for (let i = 1; i <= portCount; i++) {
     const isActive = Math.random() < 0.7; // 70% chance port is active
-    ports.push({
-      port_number: i,
-      name: `Port ${i}`,
-      status: isActive ? 'up' : 'down',
-      speed_mbps: isActive ? randomChoice([100, 1000, 10000]) : 0,
-      duplex: isActive ? 'full' : 'unknown',
-      rx_bytes: isActive ? Math.floor(rand(1000000, 999999999)) : 0,
-      tx_bytes: isActive ? Math.floor(rand(1000000, 999999999)) : 0,
-      rx_packets: isActive ? Math.floor(rand(1000, 9999999)) : 0,
-      tx_packets: isActive ? Math.floor(rand(1000, 9999999)) : 0,
-      errors: Math.floor(rand(0, 10)),
-      last_change: new Date(Date.now() - Math.floor(rand(0, 86400)) * 1000).toISOString()
-    });
+    const isPoeCapable = i <= poeCapablePorts;
+    const poeActive = isPoeCapable && isActive && Math.random() < 0.4;
+    
+    if (isActive) {
+      activePorts++;
+      totalTrafficGb += Number(rand(0.1, 50).toFixed(2));
+    }
+    
+    if (poeActive) {
+      poeUsedW += Number(rand(5, 25).toFixed(1));
+    }
+    
+    port_status[`port_${i}`] = {
+      status: isActive ? 'connected' : 'disconnected',
+      speed: isActive ? randomChoice(['100M', '1G', '10G']) : 'N/A',
+      vlan: isActive ? randomChoice([1, 100, 200]) : 1,
+      power_over_ethernet: isPoeCapable ? (poeActive ? 'active' : 'inactive') : false,
+      device: isActive && Math.random() < 0.5 ? randomChoice(['Workstation', 'Server', 'Access Point', 'Camera']) : undefined
+    };
   }
 
   return {
-    device_info: {
+    parameters: {
       model: randomChoice(['C9300-24T', 'C9300-48P', 'C2960X-48FPD-L']),
       firmware_version: randomChoice(['16.12.07', '16.12.08', '17.03.04a']),
-      serial_number: `SW${Math.floor(rand(100000, 999999))}`,
-      uptime_seconds: Math.floor(rand(86400, 2592000)),
-      mac_address: Array.from({length: 6}, () => Math.floor(rand(0, 255)).toString(16).padStart(2, '0')).join(':')
-    },
-    system_stats: {
-      cpu_utilization_percent: Number(rand(5, 45).toFixed(1)),
-      memory_utilization_percent: Number(rand(20, 80).toFixed(1)),
-      temperature_c: Number(rand(25, 55).toFixed(1)),
-      fan_status: randomChoice(['normal', 'warning']),
-      power_consumption_watts: Number(rand(150, 400).toFixed(1))
-    },
-    network_stats: {
       total_ports: portCount,
-      active_ports: ports.filter(p => p.status === 'up').length,
-      total_rx_bytes: ports.reduce((sum, p) => sum + p.rx_bytes, 0),
-      total_tx_bytes: ports.reduce((sum, p) => sum + p.tx_bytes, 0)
+      poe_capable_ports: poeCapablePorts,
+      uptime_hours: Math.floor(rand(24, 8760)) // 1 day to 1 year
     },
-    ports,
-    vlans: [
-      { vlan_id: 1, name: 'default', ports: [1, 2, 3, 4, 5] },
-      { vlan_id: 100, name: 'servers', ports: [10, 11, 12] },
-      { vlan_id: 200, name: 'workstations', ports: [13, 14, 15, 16] }
-    ],
-    status: randomChoice(['normal', 'caution']),
-    last_updated: generateTimestamp()
+    port_status,
+    statistics: {
+      total_traffic_gb: Number(totalTrafficGb.toFixed(2)),
+      active_ports: activePorts,
+      poe_power_used_w: Number(poeUsedW.toFixed(1)),
+      cpu_usage_percent: Number(rand(5, 45).toFixed(1)),
+      memory_usage_percent: Number(rand(20, 80).toFixed(1)),
+      temperature_c: Number(rand(25, 55).toFixed(1))
+    }
   };
 }
 
 // RF Equipment Mock Data Generator
 function generateRFEquipmentData() {
-  return {
-    device_info: {
-      model: randomChoice(['GNS-196-1U', 'Cape SDR System', 'RF Matrix Switch']),
-      firmware_version: randomChoice(['v2.1.4', 'v3.0.1', 'v1.8.2']),
-      serial_number: `RF${Math.floor(rand(100000, 999999))}`,
-      uptime_seconds: Math.floor(rand(86400, 2592000))
-    },
-    rf_parameters: {
-      frequency_mhz: Number(rand(100, 6000).toFixed(2)),
-      power_dbm: Number(rand(-20, 30).toFixed(1)),
-      gain_db: Number(rand(0, 40).toFixed(1)),
-      noise_figure_db: Number(rand(1, 8).toFixed(2)),
-      temperature_c: Number(rand(25, 65).toFixed(1))
-    },
-    channels: Array.from({length: rand(4, 16)}, (_, i) => ({
-      channel_id: i + 1,
-      frequency_mhz: Number(rand(100, 6000).toFixed(2)),
-      power_dbm: Number(rand(-10, 20).toFixed(1)),
-      status: randomChoice(['active', 'inactive', 'error']),
-      snr_db: Number(rand(10, 40).toFixed(1))
-    })),
-    system_status: {
-      lock_status: randomChoice(['locked', 'unlocked']),
-      reference_source: randomChoice(['internal', 'external', 'gps']),
-      alarm_status: Math.random() < 0.1 ? 'alarm' : 'normal'
-    },
-    status: randomChoice(['normal', 'caution']),
-    last_updated: generateTimestamp()
-  };
+  const equipmentType = randomChoice(['matrix', 'sdr', 'signal_gen']);
+  
+  if (equipmentType === 'matrix') {
+    return {
+      parameters: {
+        model: randomChoice(['RF Matrix 8x8', 'RF Matrix 16x16', 'RF Matrix 32x32']),
+        firmware_version: randomChoice(['v2.1.4', 'v2.3.1', 'v3.0.2']),
+        inputPorts: randomChoice([8, 16, 32]),
+        outputPorts: randomChoice([8, 16, 32]),
+        activeConnections: Math.floor(rand(2, 12)),
+        insertionLoss: `${Number(rand(0.5, 3.0).toFixed(1))} dB`,
+        frequencyRange: randomChoice(['DC-18GHz', 'DC-26.5GHz', '100MHz-6GHz'])
+      }
+    };
+  } else if (equipmentType === 'sdr') {
+    const channels = randomChoice([2, 4, 8, 16]);
+    return {
+      parameters: {
+        model: randomChoice(['USRP B210', 'BladeRF 2.0', 'HackRF One']),
+        firmware_version: randomChoice(['v4.1.0', 'v4.2.1', 'v4.3.0']),
+        channels: channels,
+        activeChannels: Math.floor(rand(1, channels)),
+        bandwidth: randomChoice(['56MHz', '61.44MHz', '20MHz']),
+        sampleRate: randomChoice(['61.44 MSPS', '56 MSPS', '20 MSPS']),
+        frequencyRange: randomChoice(['70MHz-6GHz', '47MHz-6GHz', '1MHz-6GHz'])
+      },
+      channel_status: Array.from({length: channels}, (_, i) => ({
+        channel: i + 1,
+        frequency_mhz: Number(rand(100, 6000).toFixed(2)),
+        gain_db: Number(rand(0, 40).toFixed(1)),
+        status: randomChoice(['active', 'idle', 'error'])
+      }))
+    };
+  } else {
+    return {
+      parameters: {
+        model: randomChoice(['Keysight E8257D', 'R&S SMW200A', 'Anritsu MG3692C']),
+        firmware_version: randomChoice(['v3.1.2', 'v3.2.0', 'v3.3.1']),
+        frequencyRange: randomChoice(['250kHz-20GHz', '100kHz-12.75GHz', '10MHz-40GHz']),
+        outputPower: randomChoice(['+20dBm', '+24dBm', '+18dBm']),
+        currentFrequency: `${Number(rand(100, 6000).toFixed(2))} MHz`,
+        currentPower: `${Number(rand(-20, 15).toFixed(1))} dBm`,
+        phaseNoise: `${Number(rand(-110, -100).toFixed(1))} dBc/Hz @ 10kHz`
+      }
+    };
+  }
 }
 
 // RF to Fiber Converter Mock Data Generator
 function generateRFToFiberData() {
+  const channelCount = randomChoice([4, 8, 16]);
+  const channels = {};
+  
+  for (let i = 1; i <= channelCount; i++) {
+    const channelKey = `channel_${i}`;
+    channels[channelKey] = {
+      input_power_dbm: Number(rand(-20, 10).toFixed(1)),
+      output_power_dbm: Number(rand(-15, 15).toFixed(1)),
+      optical_power_mw: Number(rand(0.1, 5.0).toFixed(2)),
+      link_status: randomChoice(['active', 'inactive', 'error']),
+      ber: Number((Math.random() * 1e-9).toExponential(2)),
+      rf_gain_db: Number(rand(10, 30).toFixed(1)),
+      optical_loss_db: Number(rand(0.1, 3.0).toFixed(2))
+    };
+  }
+
   return {
-    device_info: {
-      model: 'RF to Fiber Converter',
-      firmware_version: randomChoice(['v1.2.3', 'v1.3.1', 'v1.4.0']),
-      serial_number: `RFC${Math.floor(rand(100000, 999999))}`,
-      uptime_seconds: Math.floor(rand(86400, 2592000))
+    parameters: {
+      model: randomChoice(['RF-2000-F', 'OptiLink-16', 'FiberRF-Pro']),
+      firmware_version: randomChoice(['v2.1.4', 'v2.3.1', 'v3.0.2']),
+      channels: channelCount,
+      frequency_range: randomChoice(['50MHz-6GHz', '100MHz-3GHz', '500MHz-18GHz']),
+      optical_wavelength: randomChoice(['1310nm', '1550nm']),
+      link_distance: randomChoice(['10km', '20km', '40km', '80km'])
     },
-    optical_parameters: {
-      optical_power_dbm: Number(rand(-15, 5).toFixed(2)),
-      wavelength_nm: randomChoice([1310, 1550]),
-      fiber_type: randomChoice(['single_mode', 'multi_mode']),
-      link_status: randomChoice(['up', 'down']),
-      ber: Number((Math.random() * 1e-9).toExponential(2))
-    },
-    rf_parameters: {
-      rf_frequency_mhz: Number(rand(100, 6000).toFixed(2)),
-      rf_power_dbm: Number(rand(-10, 20).toFixed(1)),
-      gain_db: Number(rand(0, 30).toFixed(1)),
-      noise_figure_db: Number(rand(2, 10).toFixed(2))
-    },
-    environmental: {
-      temperature_c: Number(rand(20, 50).toFixed(1)),
-      humidity_percent: Number(rand(30, 70).toFixed(1))
-    },
-    alarms: [],
-    status: randomChoice(['normal', 'caution']),
-    last_updated: generateTimestamp()
+    channel_status: channels,
+    alarms: {
+      temperature: Math.random() < 0.1,
+      input_loss: Math.random() < 0.05,
+      laser_fault: Math.random() < 0.02,
+      optical_loss: Math.random() < 0.08
+    }
   };
 }
 
 // Spectrum Analyzer Mock Data Generator
 function generateSpectrumAnalyzerData() {
-  const sweepPoints = 401;
-  const startFreq = 1000; // MHz
-  const stopFreq = 6000; // MHz
-  const span = stopFreq - startFreq;
+  const centerFreq = Number(rand(1000, 6000).toFixed(2));
+  const span = Number(rand(100, 2000).toFixed(2));
+  const rbw = Number(rand(1, 100).toFixed(1));
+  const vbw = Number(rand(1, 100).toFixed(1));
+  const refLevel = Number(rand(-30, 10).toFixed(1));
+  const peakPower = Number(rand(-60, refLevel).toFixed(1));
+  const noiseFloor = Number(rand(-90, -70).toFixed(1));
   
-  const spectrum = Array.from({length: sweepPoints}, (_, i) => {
-    const freq = startFreq + (i / (sweepPoints - 1)) * span;
-    // Generate realistic spectrum with some peaks
-    let amplitude = -80 + Math.random() * 10; // Base noise floor
-    
-    // Add some signal peaks
-    if (Math.random() < 0.05) {
-      amplitude += rand(20, 60);
-    }
-    
-    return {
-      frequency_mhz: Number(freq.toFixed(2)),
-      amplitude_dbm: Number(amplitude.toFixed(1))
-    };
-  });
-
   return {
-    device_info: {
-      model: randomChoice(['9010B', 'E4407B', 'FSW-43']),
+    parameters: {
+      model: randomChoice(['Keysight E4407B', 'R&S FSW', 'Anritsu MS2692A']),
       firmware_version: randomChoice(['v2.1.0', 'v2.2.1', 'v3.0.0']),
-      serial_number: `SA${Math.floor(rand(100000, 999999))}`,
-      uptime_seconds: Math.floor(rand(86400, 2592000))
+      frequency_range: randomChoice(['9 kHz - 26.5 GHz', '10 Hz - 50 GHz', '100 kHz - 8.5 GHz']),
+      resolution_bandwidth: randomChoice(['1 Hz - 10 MHz', '0.1 Hz - 5 MHz', '10 Hz - 3 MHz']),
+      dynamic_range: randomChoice(['70 dB', '80 dB', '90 dB']),
+      phase_noise: randomChoice(['-108 dBc/Hz @ 10 kHz', '-115 dBc/Hz @ 10 kHz', '-110 dBc/Hz @ 10 kHz'])
     },
-    measurement_settings: {
-      start_frequency_mhz: startFreq,
-      stop_frequency_mhz: stopFreq,
-      resolution_bandwidth_hz: randomChoice([1000, 3000, 10000, 30000]),
-      video_bandwidth_hz: randomChoice([1000, 3000, 10000, 30000]),
-      sweep_time_ms: Number(rand(100, 5000).toFixed(0)),
-      reference_level_dbm: randomChoice([0, -10, -20, -30])
+    current_measurement: {
+      center_frequency_mhz: centerFreq,
+      span_mhz: span,
+      rbw_khz: rbw,
+      vbw_khz: vbw,
+      reference_level_dbm: refLevel,
+      peak_power_dbm: peakPower,
+      noise_floor_dbm: noiseFloor,
+      marker_frequency_mhz: Number(rand(centerFreq - span/2, centerFreq + span/2).toFixed(2)),
+      marker_amplitude_dbm: Number(rand(noiseFloor, peakPower).toFixed(1))
     },
-    spectrum_data: spectrum,
-    peak_analysis: {
-      peak_frequency_mhz: Number(rand(startFreq, stopFreq).toFixed(2)),
-      peak_amplitude_dbm: Number(rand(-40, 10).toFixed(1)),
-      noise_floor_dbm: Number(rand(-85, -75).toFixed(1))
+    sweep_status: {
+      sweep_time_ms: Math.floor(rand(100, 5000)),
+      sweep_count: Math.floor(rand(1, 1000)),
+      averaging: Math.random() < 0.3,
+      trace_mode: randomChoice(['normal', 'max_hold', 'min_hold', 'average']),
+      detector: randomChoice(['peak', 'average', 'rms'])
     },
-    system_status: {
-      calibration_status: randomChoice(['calibrated', 'needs_cal']),
-      temperature_c: Number(rand(25, 45).toFixed(1)),
-      internal_reference: randomChoice(['locked', 'unlocked'])
-    },
-    status: randomChoice(['normal', 'caution']),
-    last_updated: generateTimestamp()
+    traces: {
+      trace1: 'normal',
+      trace2: Math.random() < 0.4 ? 'max_hold' : undefined,
+      trace3: Math.random() < 0.2 ? 'average' : undefined
+    }
   };
 }
 

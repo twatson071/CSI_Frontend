@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Device } from '../types/device';
-import { dummyDevices, dummySites, Site, getDevicesBySite, getDevicesByType, getDeviceStats } from '../data/dummyDeviceData';
+import { dummyDevices, dummySites, Site, getDeviceStats } from '../data/dummyDeviceData';
 
 interface UseDummyDataReturn {
   devices: Device[];
@@ -46,7 +46,7 @@ export function useDummyData(): UseDummyDataReturn {
     } else {
       loadDummyData();
     }
-  }, []);
+  }, [loadDummyData]);
 
   // Save devices to localStorage whenever they change
   useEffect(() => {

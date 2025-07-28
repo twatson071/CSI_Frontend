@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   RuxContainer,
   RuxButton,
   RuxInput,
   RuxIcon,
-  RuxCheckbox,
   RuxSegmentedButton,
   RuxCard,
   RuxPopUp,
@@ -14,7 +13,6 @@ import {
   RuxStatus,
 } from "@astrouxds/react";
 import { usePermissions } from "../../hooks/usePermissions";
-import { RESOURCES, ACTIONS } from "../../services/RoleService";
 import EnhancedAlertsList from "./EnhancedAlertsList";
 import type { Alert } from "../../services/AlertService";
 import { getDevices, type Device } from "../../services/DeviceService";
@@ -111,7 +109,7 @@ const EnhancedAlertsPanel: React.FC<EnhancedAlertsPanelProps> = ({
   };
 
   const filteredAlerts = useMemo(() => {
-    let filtered = alerts.filter((alert) => {
+    const filtered = alerts.filter((alert) => {
       // Severity filter
       if (severityFilter.length > 0 && !severityFilter.includes(alert.severity)) {
         return false;
@@ -167,8 +165,8 @@ const EnhancedAlertsPanel: React.FC<EnhancedAlertsPanelProps> = ({
 
     // Apply sorting
     return filtered.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: string | number;
+      let bValue: string | number;
 
       const severityOrder = { CRITICAL: 4, SERIOUS: 3, CAUTION: 2, INFO: 1 };
 
@@ -220,7 +218,7 @@ const EnhancedAlertsPanel: React.FC<EnhancedAlertsPanelProps> = ({
   const severityCounts = useMemo(() => {
     const counts = { CRITICAL: 0, SERIOUS: 0, CAUTION: 0, INFO: 0 };
     alerts.forEach((alert) => {
-      if (counts.hasOwnProperty(alert.severity)) {
+      if (Object.prototype.hasOwnProperty.call(counts, alert.severity)) {
         counts[alert.severity as keyof typeof counts]++;
       }
     });
@@ -464,7 +462,7 @@ const EnhancedAlertsPanel: React.FC<EnhancedAlertsPanelProps> = ({
               type="search"
               placeholder="Search alerts, devices, sites..."
               value={searchTerm}
-              onRuxinput={(e: any) => setSearchTerm(e.target.value)}
+              onRuxinput={(e: CustomEvent<{value: string}>) => setSearchTerm(e.detail.value)}
               className="search-input"
             />
 

@@ -52,7 +52,7 @@ export function useCriticalAlerts(
               !alert.acknowledged &&
               // Note: isResolved might not be in the Alert interface yet,
               // you may need to add it to the AlertService interface
-              !(alert as any).isResolved
+              !('isResolved' in alert && alert.isResolved)
           )
           .map((alert: Alert) => ({
             ...alert,
@@ -136,13 +136,13 @@ export function useCriticalAlerts(
         audio.play().catch(() => {
           // Ignore audio play errors (browser may block autoplay)
         });
-      } catch (error) {
+      } catch {
         // Audio not available, continue silently
       }
     });
 
     // Listen for alert resolution events
-    socket.on("alert", (notification: any) => {
+    socket.on("alert", (notification: { type?: string; data?: { id?: number } }) => {
       if (notification.type === "alert_resolved") {
         console.log("Alert resolved:", notification);
         // Remove resolved alert from local state
@@ -152,7 +152,7 @@ export function useCriticalAlerts(
       }
     });
 
-    socket.on("connection", (data: any) => {
+    socket.on("connection", (data: unknown) => {
       console.log("Connection confirmed:", data);
     });
 

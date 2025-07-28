@@ -9,7 +9,6 @@ import {
   StatusIndicator,
   StatusLegend,
   ThresholdColorBar,
-  StatusBadge,
 } from "./StatusIndicators";
 
 const StatusColorsDemo: React.FC = () => {

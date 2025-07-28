@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
-import { addToast, ToastType } from "../utils/toast";
+import { addToast } from "../utils/toast";
 import type { Alert } from "../services/AlertService";
 import {
   getAlerts,

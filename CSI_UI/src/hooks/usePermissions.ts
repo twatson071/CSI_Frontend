@@ -129,7 +129,7 @@ export function usePermissions() {
     can,
     
     // Permission checkers
-    hasPermission: (resource: string, action: string, context?: any) => 
+    hasPermission: (resource: string, action: string, context?: unknown) => 
       hasPermission(roleKey, resource, action, context),
     hasAnyPermission,
     hasAllPermissions,
