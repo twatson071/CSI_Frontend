@@ -384,6 +384,15 @@ function generateStorageData() {
 // Camera Mock Data Generator
 function generateCameraData() {
   return {
+    parameters: {
+      model: randomChoice(['DS-2CD2185FWD-I', 'AXIS M3007-PV', 'Dahua IPC-HFW4431R-Z']),
+      firmware_version: randomChoice(['v5.6.0', 'v5.7.1', 'v6.0.2']),
+      resolution: randomChoice(['1920x1080', '2592x1944', '3840x2160']),
+      frame_rate: randomChoice([15, 25, 30]),
+      bitrate_kbps: Math.floor(rand(2000, 8000)),
+      codec: randomChoice(['H.264', 'H.265']),
+      stream_url: 'rtsp://192.168.1.802:554/stream1'
+    },
     device_info: {
       model: randomChoice(['DS-2CD2185FWD-I', 'AXIS M3007-PV', 'Dahua IPC-HFW4431R-Z']),
       firmware_version: randomChoice(['v5.6.0', 'v5.7.1', 'v6.0.2']),
@@ -587,7 +596,7 @@ app.get('/health', (c) => {
 });
 
 // Start the mock service
-const port = 8091;
+const port = 8092;
 console.log(`🚀 Mock External Service starting on port ${port}`);
 console.log(`📡 Ready to serve mock data for CSI device polling`);
 

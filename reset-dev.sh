@@ -100,7 +100,7 @@ fi
 print_info "Checking for running services..."
 kill_port 3001
 kill_port 3002
-kill_port 8090
+kill_port 8092
 
 # Reset database
 if [ "$RESET_DB" = true ]; then

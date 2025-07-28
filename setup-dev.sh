@@ -107,7 +107,7 @@ setup_backend() {
         print_info "Creating .env file..."
         cat > .env << EOF
 DB_FILE_NAME=local.db
-EXTERNAL_BASE_URL=http://localhost:8090
+EXTERNAL_BASE_URL=http://localhost:8092
 SYSTEM_OPERATOR_KEY=SystemOperator-1
 HUB_KEY=Hub-1
 NODE_ENV=development

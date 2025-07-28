@@ -67,7 +67,7 @@ cp .env.example .env  # If .env.example exists, otherwise create .env
 
 # Create .env with the following content:
 echo "DB_FILE_NAME=local.db
-EXTERNAL_BASE_URL=http://localhost:8090
+EXTERNAL_BASE_URL=http://localhost:8092
 SYSTEM_OPERATOR_KEY=SystemOperator-1
 HUB_KEY=Hub-1
 NODE_ENV=development" > .env
@@ -219,7 +219,7 @@ The database is populated with:
 
 ```bash
 DB_FILE_NAME=local.db
-EXTERNAL_BASE_URL=http://localhost:8090
+EXTERNAL_BASE_URL=http://localhost:8092
 SYSTEM_OPERATOR_KEY=SystemOperator-1
 HUB_KEY=Hub-1
 NODE_ENV=development

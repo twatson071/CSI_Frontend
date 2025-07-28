@@ -124,7 +124,7 @@ show_dev_info() {
     echo -e "${BOLD}URLs:${NC}"
     echo "   Frontend:  ${CYAN}http://localhost:3002${NC}"
     echo "   Backend:   ${CYAN}http://localhost:3001${NC}"
-    echo "   Mock API:  ${CYAN}http://localhost:8090${NC}"
+    echo "   Mock API:  ${CYAN}http://localhost:8092${NC}"
     echo ""
     echo -e "${BOLD}Credentials:${NC}"
     echo "   Email:     ${MAGENTA}dev@localhost.com${NC}"

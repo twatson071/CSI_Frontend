@@ -9,11 +9,11 @@ services:
       - ./CSI_API:/app
     command: bun run scripts/mock-external-service.ts
     ports:
-      - "8090:8090"
+      - "8092:8092"
     environment:
-      - PORT=8090
+      - PORT=8092
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8092/health"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -31,7 +31,7 @@ services:
       - NODE_ENV=test
       - PORT=3001
       - DB_FILE_NAME=/data/test.db
-      - EXTERNAL_BASE_URL=http://mock-api:8090
+      - EXTERNAL_BASE_URL=http://mock-api:8092
       - SYSTEM_OPERATOR_KEY=TestSystemOperator-1
       - HUB_KEY=TestHub-1
       - CORS_ORIGIN=http://localhost:${FRONTEND_PORT:-3002}

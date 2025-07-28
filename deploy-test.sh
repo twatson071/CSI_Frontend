@@ -94,7 +94,7 @@ create_test_env() {
     cat > CSI_API/$ENV_FILE << EOF
 # Test Deployment Configuration
 DB_FILE_NAME=test.db
-EXTERNAL_BASE_URL=http://localhost:8090
+EXTERNAL_BASE_URL=http://localhost:8092
 SYSTEM_OPERATOR_KEY=TestSystemOperator-1
 HUB_KEY=TestHub-1
 NODE_ENV=test
@@ -245,7 +245,7 @@ module.exports = {
       script: 'bun',
       args: 'run scripts/mock-external-service.ts',
       env: {
-        PORT: 8090
+        PORT: 8092
       }
     }
   ]
@@ -301,7 +301,7 @@ services:
     environment:
       - NODE_ENV=test
       - DB_FILE_NAME=/data/test.db
-      - EXTERNAL_BASE_URL=http://mock-api:8090
+      - EXTERNAL_BASE_URL=http://mock-api:8092
     volumes:
       - ./data:/data
     depends_on:
@@ -328,9 +328,9 @@ services:
       context: ./CSI_API
       dockerfile: Dockerfile.mock
     ports:
-      - "8090:8090"
+      - "8092:8092"
     environment:
-      - PORT=8090
+      - PORT=8092
 
 volumes:
   data:
@@ -369,7 +369,7 @@ WORKDIR /app
 COPY package.json bun.lockb ./
 RUN bun install
 COPY scripts/mock-external-service.ts ./scripts/
-EXPOSE 8090
+EXPOSE 8092
 CMD ["bun", "run", "scripts/mock-external-service.ts"]
 EOF
 

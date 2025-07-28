@@ -104,7 +104,7 @@ if [ "$RUN_FRONTEND" = true ]; then
     kill_port 3002
 fi
 if [ "$RUN_MOCK" = true ]; then
-    kill_port 8090
+    kill_port 8092
 fi
 
 # Start mock service if requested
@@ -120,8 +120,8 @@ if [ "$RUN_MOCK" = true ]; then
     cd ..
     
     # Wait for mock service
-    if wait_for_service "http://localhost:8090/health" 10; then
-        print_status "Mock service started on port 8090"
+    if wait_for_service "http://localhost:8092/health" 10; then
+        print_status "Mock service started on port 8092"
     else
         print_warning "Mock service may not be ready yet"
     fi
@@ -173,7 +173,7 @@ echo ""
 print_section "Services Running"
 [ "$RUN_BACKEND" = true ] && echo -e "   Backend:   ${GREEN}✓${NC} http://localhost:3001"
 [ "$RUN_FRONTEND" = true ] && echo -e "   Frontend:  ${GREEN}✓${NC} http://localhost:3002"
-[ "$RUN_MOCK" = true ] && echo -e "   Mock API:  ${GREEN}✓${NC} http://localhost:8090"
+[ "$RUN_MOCK" = true ] && echo -e "   Mock API:  ${GREEN}✓${NC} http://localhost:8092"
 
 # Show dev info
 show_dev_info

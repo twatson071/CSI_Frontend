@@ -126,7 +126,7 @@ docker-compose -f docker-compose.test.yml down -v
 ```
 
 ### Services
-1. **mock-api** - Mock external service (port 8090)
+1. **mock-api** - Mock external service (port 8092)
 2. **backend** - API server (port 3001)
 3. **frontend** - Development server (port 3002)
 4. **frontend-prod** - Production build with nginx (port 8080, optional)
@@ -261,7 +261,7 @@ npm install -g pm2
 All deployment methods include health checks:
 
 - Backend: `http://localhost:3001/health`
-- Mock API: `http://localhost:8090/health`
+- Mock API: `http://localhost:8092/health`
 - Frontend: `http://localhost:3002`
 
 ## Security Notes
@@ -282,6 +282,6 @@ After deployment:
 2. Login with `dev@localhost.com` / `password`
 3. Explore the dummy data and test features
 4. Check the API at `http://localhost:3001`
-5. View mock service at `http://localhost:8090`
+5. View mock service at `http://localhost:8092`
 
 For development setup, see [DEV_SETUP.md](CSI_API/DEV_SETUP.md)

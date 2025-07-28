@@ -44,8 +44,8 @@ check_services() {
     fi
     
     # Mock service
-    if port_in_use 8090; then
-        echo -e "Mock API:   ${GREEN}✓ Running${NC} (port 8090)"
+    if port_in_use 8092; then
+        echo -e "Mock API:   ${GREEN}✓ Running${NC} (port 8092)"
     else
         echo -e "Mock API:   ${RED}✗ Not running${NC}"
     fi
@@ -90,7 +90,7 @@ kill_all_services() {
     print_warning "Killing all development services..."
     kill_port 3001
     kill_port 3002
-    kill_port 8090
+    kill_port 8092
     print_status "All services stopped"
 }
 
