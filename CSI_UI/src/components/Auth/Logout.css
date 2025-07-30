@@ -1,0 +1,98 @@
+/* Logout Page */
+.logout-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-background-base-default);
+}
+
+.logout-content {
+  text-align: center;
+  padding: 2rem;
+}
+
+.logout-content h2 {
+  margin: 1rem 0 0.5rem;
+  color: var(--color-text-primary);
+}
+
+.logout-content p {
+  color: var(--color-text-secondary);
+}
+
+/* Logout Dialog */
+.logout-dialog-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.logout-dialog {
+  background: var(--color-background-surface-default);
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--color-background-surface-header);
+}
+
+.logout-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.logout-dialog-header h3 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.logout-dialog-header rux-icon {
+  color: var(--color-palette-yellow-400);
+}
+
+.logout-dialog p {
+  margin: 0 0 1.5rem 0;
+  color: var(--color-text-primary);
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+/* Spinning animation */
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .logout-dialog {
+    margin: 1rem;
+    width: calc(100% - 2rem);
+  }
+}

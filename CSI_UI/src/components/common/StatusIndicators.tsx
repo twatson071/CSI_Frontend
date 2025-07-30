@@ -2,7 +2,6 @@ import React from "react";
 import {
   STATUS_COLORS,
   StatusType,
-  getAllStatusColors,
 } from "../../utils/statusColors";
 
 // Export StatusBadge component
@@ -55,7 +54,6 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
 };
 
 export const StatusLegend: React.FC = () => {
-  const colors = getAllStatusColors();
 
   return (
     <div

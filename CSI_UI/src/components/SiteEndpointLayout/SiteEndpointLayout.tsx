@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import SiteEndpointsTree from "./SiteEndpointsTree";
 import AddSiteEndpointForm, {
   AddSiteEndpointFormHandles,
@@ -6,6 +6,7 @@ import AddSiteEndpointForm, {
 import MainContentDisplay from "./MainContentDisplay";
 import DeviceForm from "../Devices/DeviceForm";
 import DeviceStatusDashboard from "../Devices/DeviceStatusDashboard";
+import ResizableGrid from "../common/ResizableGrid";
 import {
   fetchSiteSummaries,
   fetchDevicesForSite,
@@ -20,9 +21,11 @@ import {
 } from "../../services/PDUservice";
 import { Device } from "../../services/DeviceService";
 import "./SiteEndpointLayout.css";
-import { RuxContainer, RuxButton } from "@astrouxds/react";
-import AlertsPanel from "../Alerts/AlertsPanel";
+import { RuxContainer, RuxButton, RuxIndeterminateProgress } from "@astrouxds/react";
 import { useAlerts } from "../../hooks/useAlerts";
+
+// Lazy load the EnhancedAlertsPanel
+const EnhancedAlertsPanel = React.lazy(() => import("../Alerts/EnhancedAlertsPanel"));
 
 const extractPduDataAndStatuses = (
   deviceData: any
@@ -106,17 +109,29 @@ const SiteEndpointLayout: React.FC = () => {
   const [isLoadingDevices, setIsLoadingDevices] = useState(false);
   const [wattsData, setWattsData] = useState<{ x: string; y: number }[]>([]);
   const [ampsData, setAmpsData] = useState<{ x: string; y: number }[]>([]);
+  const [showAlerts, setShowAlerts] = useState(false);
   const addSiteFormRef = useRef<AddSiteEndpointFormHandles>(null);
 
   // Use the alerts hook to get current alerts
-  const { alerts, acknowledge } = useAlerts();
+  const { alerts, acknowledge, resolve, remove, bulkAcknowledge, bulkResolve, bulkDelete } = useAlerts();
+  
+  // Delay showing alerts to improve initial load performance
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowAlerts(true);
+    }, 500); // Delay by 500ms
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const updatePduDisplayCallback = useCallback(
     (siteIdxToUpdate: number, deviceIndexToUpdate: number) => {
       const site = sites[siteIdxToUpdate];
       const device = site?.devices?.[deviceIndexToUpdate];
+      
+      console.log('updatePduDisplayCallback - device:', device);
 
-      if (device && device.data && device.type === "PDU") {
+      if (device && device.data && (device.type === "PDU" || device.type === "UPS")) {
         const { pduData: newPduData, statuses: newStatuses } =
           extractPduDataAndStatuses(device.data);
         setPduData(newPduData);
@@ -166,14 +181,14 @@ const SiteEndpointLayout: React.FC = () => {
         if (
           updatedDevice &&
           updatedDevice.data &&
-          updatedDevice.type === "PDU"
+          (updatedDevice.type === "PDU" || updatedDevice.type === "UPS")
         ) {
           const { pduData: newPduData, statuses: newStatuses } =
             extractPduDataAndStatuses(updatedDevice.data);
           setPduData(newPduData);
           setStatuses(newStatuses);
         } else if (updatedDevice) {
-          // Handle non-PDU devices or PDU devices without data
+          // Handle non-PDU/UPS devices
           setPduData(null);
           setStatuses([]);
         }
@@ -250,24 +265,18 @@ const SiteEndpointLayout: React.FC = () => {
             : s
         )
       );
-      let newSelectedDevIdx = selectedDevIdx;
-      if (
-        selectDeviceIndexAfterLoad !== -1 &&
-        selectDeviceIndexAfterLoad < fetchedDevices.length
-      ) {
-        newSelectedDevIdx = selectDeviceIndexAfterLoad;
-      } else if (
-        fetchedDevices.length > 0 &&
-        (selectedDevIdx === -1 || selectedDevIdx >= fetchedDevices.length)
-      ) {
-        newSelectedDevIdx = 0;
+      // Only update device selection if explicitly requested or if current selection is invalid
+      if (selectDeviceIndexAfterLoad !== -1 && selectDeviceIndexAfterLoad < fetchedDevices.length) {
+        // Explicit device selection requested
+        setSelectedDevIdx(selectDeviceIndexAfterLoad);
+      } else if (fetchedDevices.length === 0) {
+        // No devices available
+        setSelectedDevIdx(-1);
+      } else if (selectedDevIdx >= fetchedDevices.length) {
+        // Current selection is out of bounds
+        setSelectedDevIdx(0);
       }
-
-      if (fetchedDevices.length === 0) {
-        newSelectedDevIdx = -1;
-      }
-
-      setSelectedDevIdx(newSelectedDevIdx);
+      // Otherwise, keep the current selectedDevIdx as it was already set in onSelect
     } catch (error) {
       console.error(`Error fetching devices for site ${site.siteId}:`, error);
       setSites((prevSites) =>
@@ -284,10 +293,15 @@ const SiteEndpointLayout: React.FC = () => {
     setShowAddDeviceForm(false);
 
     if (selectedSiteIdx !== siteIdx) {
+      // Switching to a different site
       setSelectedSiteIdx(siteIdx);
-      setSelectedDevIdx(devIdx);
+      if (devIdx !== -1) {
+        // If a device is selected, set it immediately
+        setSelectedDevIdx(devIdx);
+      }
       loadDevicesForSite(siteIdx, false, devIdx);
     } else if (selectedDevIdx !== devIdx) {
+      // Same site, different device
       setSelectedDevIdx(devIdx);
       if (devIdx !== -1) {
         refreshSelectedDeviceData();
@@ -398,92 +412,133 @@ const SiteEndpointLayout: React.FC = () => {
 
   return (
     <div className="main-container" data-active="true">
-      <RuxContainer className="site-endpoints">
-        <div
-          slot="header"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <span>Site Endpoints</span>
-        </div>
-        {!showAddSiteModal ? (
-          <>
-            <SiteEndpointsTree
-              sites={sites}
-              selectedSite={selectedSiteIdx}
-              selectedDevice={selectedDevIdx}
-              onSelect={onSelect}
-            />
-            <div slot="footer">
-              <RuxButton onClick={() => setShowAddSiteModal(true)}>
-                Add Site
-              </RuxButton>
-            </div>
-          </>
-        ) : (
-          <>
-            <AddSiteEndpointForm ref={addSiteFormRef} />
-            <div slot="footer">
-              <RuxButton
-                type="button"
-                secondary
-                onClick={() => {
-                  addSiteFormRef.current?.reset();
-                  setShowAddSiteModal(false);
-                }}
-              >
-                Cancel
-              </RuxButton>
-              <RuxButton
-                type="button"
-                onClick={() => {
-                  const data = addSiteFormRef.current?.getFormData();
-                  if (data) {
-                    handleSaveSite(data);
+      <ResizableGrid>
+        {/* Top Left - Site Endpoints */}
+        <RuxContainer className="site-endpoints">
+          <div
+            slot="header"
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span>Site Endpoints</span>
+          </div>
+          {!showAddSiteModal ? (
+            <>
+              <SiteEndpointsTree
+                sites={sites}
+                selectedSite={selectedSiteIdx}
+                selectedDevice={selectedDevIdx}
+                onSelect={onSelect}
+              />
+              <div slot="footer">
+                <RuxButton onClick={() => setShowAddSiteModal(true)}>
+                  Add Site
+                </RuxButton>
+              </div>
+            </>
+          ) : (
+            <>
+              <AddSiteEndpointForm ref={addSiteFormRef} />
+              <div slot="footer">
+                <RuxButton
+                  type="button"
+                  secondary
+                  onClick={() => {
                     addSiteFormRef.current?.reset();
-                  }
-                }}
-              >
-                Save
-              </RuxButton>
+                    setShowAddSiteModal(false);
+                  }}
+                >
+                  Cancel
+                </RuxButton>
+                <RuxButton
+                  type="button"
+                  onClick={() => {
+                    const data = addSiteFormRef.current?.getFormData();
+                    if (data) {
+                      handleSaveSite(data);
+                      addSiteFormRef.current?.reset();
+                    }
+                  }}
+                >
+                  Save
+                </RuxButton>
+              </div>
+            </>
+          )}
+        </RuxContainer>
+
+        {/* Top Right - Main Content */}
+        <div>
+          {showAddDeviceForm && selectedSiteObject && (
+            <DeviceForm
+              formId="addDeviceFormDetailed"
+              siteId={selectedSiteObject.siteId}
+              onCancel={() => setShowAddDeviceForm(false)}
+              onSaveSuccess={handleSaveDeviceSuccess}
+            />
+          )}
+
+          {showDeviceStatusDashboard && !showAddDeviceForm && (
+            <DeviceStatusDashboard />
+          )}
+
+          {!showAddDeviceForm && !showDeviceStatusDashboard && (
+            <MainContentDisplay
+              className="pass-plan"
+              selectedSite={selectedSiteObject}
+              selectedDevice={selectedDeviceObject}
+              pduData={pduData}
+              statuses={statuses}
+              handleOutletAction={handleOutletAction}
+              setShowAddDeviceForm={toggleAddDeviceForm}
+              isDeviceFormVisible={showAddDeviceForm}
+              isLoadingDevices={isLoadingDevices}
+              wattsData={wattsData}
+              ampsData={ampsData}
+            />
+          )}
+        </div>
+
+        {/* Bottom Left - Alerts */}
+        {!showAlerts ? (
+          <RuxContainer className="alerts">
+            <div slot="header">Alerts</div>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+              <p style={{ color: 'var(--color-text-secondary)' }}>Loading alerts...</p>
             </div>
-          </>
+          </RuxContainer>
+        ) : (
+          <Suspense 
+            fallback={
+              <RuxContainer className="alerts">
+                <div slot="header">Alerts</div>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                  <RuxIndeterminateProgress />
+                </div>
+              </RuxContainer>
+            }
+          >
+            <EnhancedAlertsPanel 
+              alerts={alerts} 
+              onAcknowledge={acknowledge}
+              onResolve={resolve}
+              onDelete={remove}
+              onBulkAcknowledge={bulkAcknowledge}
+              onBulkResolve={bulkResolve}
+              onBulkDelete={bulkDelete}
+              isLoading={false}
+              enableBulkOperations={true}
+              enableExport={true}
+            />
+          </Suspense>
         )}
-      </RuxContainer>
 
-      {showAddDeviceForm && selectedSiteObject && (
-        <DeviceForm
-          formId="addDeviceFormDetailed"
-          siteId={selectedSiteObject.siteId}
-          onCancel={() => setShowAddDeviceForm(false)}
-          onSaveSuccess={handleSaveDeviceSuccess}
-        />
-      )}
-
-      {showDeviceStatusDashboard && !showAddDeviceForm && (
+        {/* Bottom Right - Device Status */}
         <DeviceStatusDashboard />
-      )}
-
-      {!showAddDeviceForm && !showDeviceStatusDashboard && (
-        <MainContentDisplay
-          className="pass-plan"
-          selectedSite={selectedSiteObject}
-          selectedDevice={selectedDeviceObject}
-          pduData={pduData}
-          statuses={statuses}
-          handleOutletAction={handleOutletAction}
-          setShowAddDeviceForm={toggleAddDeviceForm}
-          isDeviceFormVisible={showAddDeviceForm}
-          isLoadingDevices={isLoadingDevices}
-          wattsData={wattsData}
-          ampsData={ampsData}
-        />
-      )}
-      <DeviceStatusDashboard />
-      <AlertsPanel alerts={alerts} onAcknowledge={acknowledge} />
+      </ResizableGrid>
     </div>
   );
 };

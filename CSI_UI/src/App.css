@@ -9,57 +9,18 @@ rux-container::part(container) {
   display: flex;
   flex-direction: column;
   height: calc(100% - 2px);
-  overflow-y: hidden;
+  overflow: hidden;
 }
 
 rux-container::part(body) {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: hidden;
+  overflow-y: auto;
   padding: 0;
 }
 
-rux-container.site-endpoints {
-  grid-area: site-endpoints;
-}
-rux-container.alerts rux-container.pass-plan {
-  grid-area: pass-plan;
-}
-rux-container.device-status {
-  grid-area: device-status;
-}
-.device-status {
-  grid-area: device-status;
-}
-
-.link-status {
-  grid-area: link-status;
-}
-
-.subsystems {
-  grid-area: subsystems;
-}
-
-.watcher rux-container {
-  grid-area: watcher;
-}
-
-rux-container.mnemonics {
-  grid-area: mnemonics;
-}
-
-rux-container.star-tracker {
-  grid-area: star-tracker;
-}
-
-rux-container.investigate-subsystem {
-  grid-area: investigate-subsystems;
-}
-
-rux-button.investigate-breadcrumb {
-  grid-area: breadcrumb;
-}
+/* Grid areas now handled by ResizableGrid component */
 
 /* GlOBAL TABLE STYLES */
 
@@ -160,15 +121,16 @@ rux-tree-node::part(node):focus {
   padding: var(--spacing-3);
   background-color: var(--color-background-base-default);
   color: var(--color-text-primary);
-  display: grid;
-  gap: var(--spacing-2);
-  grid-template-columns: calc(30% - 5px) calc(70% - 5px + var(--spacing-2));
-  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto auto;
-  grid-template-areas:
-    "site-endpoints pass-plan"
-    "alerts device-status"
-    "alerts     device-status";
+  overflow: hidden;
 }
+
+/* Ensure all grid items can scroll independently */
+.main-container[data-active="true"] > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Responsive layout handled by ResizableGrid component */
 .investigate__content {
   position: relative;
   overflow-x: hidden;

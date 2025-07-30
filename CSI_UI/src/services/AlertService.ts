@@ -35,3 +35,39 @@ export async function acknowledgeAlert(id: number): Promise<Alert> {
   });
   return resp.data;
 }
+
+export async function resolveAlert(id: number, reason?: string): Promise<Alert> {
+  const resp = await axios.put<Alert>(`${API_URL}/alerts/${id}`, {
+    isResolved: true,
+    resolvedAt: new Date().toISOString(),
+    resolutionReason: reason,
+  });
+  return resp.data;
+}
+
+export async function deleteAlert(id: number): Promise<void> {
+  await axios.delete(`${API_URL}/alerts/${id}`);
+}
+
+export async function bulkAcknowledgeAlerts(ids: number[]): Promise<Alert[]> {
+  const resp = await axios.put<Alert[]>(`${API_URL}/alerts/bulk/acknowledge`, {
+    alertIds: ids,
+    acknowledgedAt: new Date().toISOString(),
+  });
+  return resp.data;
+}
+
+export async function bulkResolveAlerts(ids: number[], reason?: string): Promise<Alert[]> {
+  const resp = await axios.put<Alert[]>(`${API_URL}/alerts/bulk/resolve`, {
+    alertIds: ids,
+    resolvedAt: new Date().toISOString(),
+    resolutionReason: reason,
+  });
+  return resp.data;
+}
+
+export async function bulkDeleteAlerts(ids: number[]): Promise<void> {
+  await axios.delete(`${API_URL}/alerts/bulk`, {
+    data: { alertIds: ids }
+  });
+}

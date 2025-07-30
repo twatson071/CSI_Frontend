@@ -8,8 +8,8 @@ export interface Device {
   type: string;
   serviceUrl: string | null;
   siteId: number;
-  parameters: Record<string, any> | null;
-  data: Record<string, any> | null;
+  parameters: Record<string, unknown> | null;
+  data: Record<string, unknown> | null;
   ipAddress: string | null;
   status: "off" | "standby" | "normal" | "caution" | "serious" | "critical";
   createdAt?: string;

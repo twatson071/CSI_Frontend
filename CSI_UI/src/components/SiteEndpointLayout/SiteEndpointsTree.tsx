@@ -90,12 +90,8 @@ const SiteEndpointsTree: React.FC<SiteEndpointsTreeProps> = ({
     if (deviceIndexStr !== undefined) {
       const devIdx = parseInt(deviceIndexStr, 10);
       if (isNaN(devIdx)) return;
-      if (siteIdx !== selectedSite) {
-        onSelect(siteIdx, -1);
-        setTimeout(() => onSelect(siteIdx, devIdx), 0);
-      } else {
-        onSelect(siteIdx, devIdx);
-      }
+      // Always select the device directly, regardless of current site
+      onSelect(siteIdx, devIdx);
     } else {
       onSelect(siteIdx, -1);
     }

@@ -1,6 +1,9 @@
 .site-endpoints-tree {
   font-family: Arial, sans-serif;
   color: var(--color-text-primary);
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .site-endpoints-tree h2 {

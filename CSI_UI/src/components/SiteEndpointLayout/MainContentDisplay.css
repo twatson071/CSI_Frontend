@@ -51,6 +51,7 @@ rux-select.pass-plan_header-select::part(label) {
 /* Content/Body Styles */
 
 rux-container.pass-plan::part(body) {
+  overflow-y: auto;
   overflow-x: hidden;
   background: var(--color-background-surface-default);
 }
@@ -182,10 +183,11 @@ rux-indeterminate-progress {
 /* Device Details Container */
 .device-details-container {
   display: flex;
-  overflow-y: scroll;
+  overflow-y: auto;
   flex-direction: column;
   gap: var(--spacing-2);
   padding: var(--spacing-2);
+  height: 100%;
 }
 
 .pdu-container {

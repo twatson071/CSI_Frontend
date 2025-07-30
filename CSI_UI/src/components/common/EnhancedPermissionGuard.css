@@ -1,0 +1,77 @@
+/* Permission Fallback Styles */
+.permission-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+  background: var(--color-background-surface-header);
+  border-radius: 8px;
+  border: 1px solid var(--color-background-surface-selected);
+}
+
+.permission-fallback rux-icon {
+  color: var(--color-text-secondary);
+  margin-bottom: 1rem;
+  opacity: 0.7;
+}
+
+.permission-fallback p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  max-width: 300px;
+}
+
+/* Specific fallback types */
+.permission-fallback.unauthorized {
+  border-color: var(--color-status-serious);
+}
+
+.permission-fallback.unauthorized rux-icon {
+  color: var(--color-status-serious);
+}
+
+.permission-fallback.insufficient-role {
+  border-color: var(--color-status-critical);
+}
+
+.permission-fallback.insufficient-role rux-icon {
+  color: var(--color-status-critical);
+}
+
+.permission-fallback.missing-permission {
+  border-color: var(--color-status-caution);
+}
+
+.permission-fallback.missing-permission rux-icon {
+  color: var(--color-status-caution);
+}
+
+/* Inline fallback for smaller contexts */
+.permission-fallback.inline {
+  padding: 1rem;
+  font-size: 0.75rem;
+}
+
+.permission-fallback.inline rux-icon {
+  margin-bottom: 0.5rem;
+}
+
+/* Minimal fallback for buttons or small UI elements */
+.permission-fallback.minimal {
+  padding: 0.5rem;
+  background: none;
+  border: none;
+}
+
+.permission-fallback.minimal rux-icon {
+  margin-bottom: 0;
+  opacity: 0.5;
+}
+
+.permission-fallback.minimal p {
+  display: none;
+}

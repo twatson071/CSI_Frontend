@@ -5,8 +5,14 @@ import type { Alert } from "../services/AlertService";
 import {
   getAlerts,
   acknowledgeAlert,
+  resolveAlert,
+  deleteAlert,
+  bulkAcknowledgeAlerts,
+  bulkResolveAlerts,
+  bulkDeleteAlerts,
   getAlertCount,
 } from "../services/AlertService";
+import { addAlertsToHistory } from "../utils/alertHistoryDB";
 
 export function useAlerts(serverUrl: string = "http://localhost:8081") {
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -21,6 +27,7 @@ export function useAlerts(serverUrl: string = "http://localhost:8081") {
       .then(([fetchedAlerts, count]) => {
         setAlerts(fetchedAlerts);
         setAlertCount(count);
+        addAlertsToHistory(fetchedAlerts); // Store in IndexedDB
       })
       .catch((err) => {
         console.error("Failed to fetch alerts or count", err);
@@ -40,12 +47,13 @@ export function useAlerts(serverUrl: string = "http://localhost:8081") {
         .then(([fetchedAlerts, count]) => {
           setAlerts(fetchedAlerts);
           setAlertCount(count);
+          addAlertsToHistory(fetchedAlerts); // Store in IndexedDB
         })
         .catch((err) => {
           console.error("Failed to refetch alerts after new alert", err);
         });
 
-      addToast(alert.message, false, 5000);
+      addToast(alert.message, false, 5000, "alerts");
     });
 
     // Listen for alert resolution/removal
@@ -70,15 +78,98 @@ export function useAlerts(serverUrl: string = "http://localhost:8081") {
     try {
       // Call the API to acknowledge the alert in the database
       await acknowledgeAlert(id);
-      // Remove the acknowledged alert from the local state
-      setAlerts((prev) => prev.filter((a) => a.id !== id));
-      setAlertCount((prev) => prev - 1);
-      addToast("Alert acknowledged", true, 3000);
+      // Update local state to mark alert as acknowledged
+      setAlerts((prev) => prev.map(alert => 
+        alert.id === id 
+          ? { ...alert, acknowledged: 1, acknowledgedAt: new Date().toISOString() }
+          : alert
+      ));
+      addToast("Alert acknowledged", true, 3000, "alerts");
     } catch (error) {
       console.error("Failed to acknowledge alert:", error);
-      addToast("Failed to acknowledge alert", false, 5000);
+      addToast("Failed to acknowledge alert", false, 5000, "alerts");
     }
   };
 
-  return { alerts, alertCount, acknowledge };
+  const resolve = async (id: number, reason?: string) => {
+    try {
+      await resolveAlert(id, reason);
+      setAlerts((prev) => prev.map(alert => 
+        alert.id === id 
+          ? { ...alert, isResolved: true, resolvedAt: new Date().toISOString(), resolutionReason: reason }
+          : alert
+      ));
+      addToast("Alert resolved", true, 3000, "alerts");
+    } catch (error) {
+      console.error("Failed to resolve alert:", error);
+      addToast("Failed to resolve alert", false, 5000, "alerts");
+    }
+  };
+
+  const remove = async (id: number) => {
+    try {
+      await deleteAlert(id);
+      setAlerts((prev) => prev.filter((a) => a.id !== id));
+      setAlertCount((prev) => prev - 1);
+      addToast("Alert deleted", true, 3000, "alerts");
+    } catch (error) {
+      console.error("Failed to delete alert:", error);
+      addToast("Failed to delete alert", false, 5000, "alerts");
+    }
+  };
+
+  const bulkAcknowledge = async (ids: number[]) => {
+    try {
+      await bulkAcknowledgeAlerts(ids);
+      const acknowledgedAt = new Date().toISOString();
+      setAlerts((prev) => prev.map(alert => 
+        ids.includes(alert.id) 
+          ? { ...alert, acknowledged: 1, acknowledgedAt }
+          : alert
+      ));
+      addToast(`${ids.length} alerts acknowledged`, true, 3000, "alerts");
+    } catch (error) {
+      console.error("Failed to bulk acknowledge alerts:", error);
+      addToast("Failed to acknowledge alerts", false, 5000, "alerts");
+    }
+  };
+
+  const bulkResolve = async (ids: number[], reason?: string) => {
+    try {
+      await bulkResolveAlerts(ids, reason);
+      const resolvedAt = new Date().toISOString();
+      setAlerts((prev) => prev.map(alert => 
+        ids.includes(alert.id) 
+          ? { ...alert, isResolved: true, resolvedAt, resolutionReason: reason }
+          : alert
+      ));
+      addToast(`${ids.length} alerts resolved`, true, 3000, "alerts");
+    } catch (error) {
+      console.error("Failed to bulk resolve alerts:", error);
+      addToast("Failed to resolve alerts", false, 5000, "alerts");
+    }
+  };
+
+  const bulkDelete = async (ids: number[]) => {
+    try {
+      await bulkDeleteAlerts(ids);
+      setAlerts((prev) => prev.filter((a) => !ids.includes(a.id)));
+      setAlertCount((prev) => prev - ids.length);
+      addToast(`${ids.length} alerts deleted`, true, 3000, "alerts");
+    } catch (error) {
+      console.error("Failed to bulk delete alerts:", error);
+      addToast("Failed to delete alerts", false, 5000, "alerts");
+    }
+  };
+
+  return { 
+    alerts, 
+    alertCount, 
+    acknowledge, 
+    resolve, 
+    remove, 
+    bulkAcknowledge, 
+    bulkResolve, 
+    bulkDelete 
+  };
 }

@@ -1,11 +1,6 @@
 import {
   RuxContainer,
-  RuxButton,
-  RuxSelect,
-  RuxOption,
-  RuxInput,
   RuxIcon,
-  RuxCheckbox,
 } from "@astrouxds/react";
 import { useState, useEffect, useMemo } from "react";
 import AlertsList from "./AlertsList";
@@ -32,13 +27,13 @@ const AlertsPanel = ({
   isLoading = false,
 }: AlertsPanelProps) => {
   const [severityFilter, setSeverityFilter] = useState<string>("ALL");
-  const [deviceTypeFilter, setDeviceTypeFilter] = useState<string>("ALL");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [deviceTypeFilter] = useState<string>("ALL");
+  const [searchTerm] = useState("");
   const [devices, setDevices] = useState<Device[]>([]);
   const [sites, setSites] = useState<SiteSummary[]>([]);
-  const [sortField, setSortField] = useState<SortField>("time");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
-  const [showAcknowledged, setShowAcknowledged] = useState(false);
+  const [sortField] = useState<SortField>("time");
+  const [sortDirection] = useState<SortDirection>("desc");
+  const [showAcknowledged] = useState(false);
 
   useEffect(() => {
     getDevices()
@@ -67,7 +62,7 @@ const AlertsPanel = ({
   }, [sites]);
 
   const filteredAlerts = useMemo(() => {
-    let filtered = alerts
+    const filtered = alerts
       .filter((a) => severityFilter === "ALL" || a.severity === severityFilter)
       .filter((a) => {
         if (deviceTypeFilter === "ALL") return true;
@@ -90,8 +85,8 @@ const AlertsPanel = ({
 
     // Apply sorting
     return filtered.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: string | number;
+      let bValue: string | number;
 
       const severityOrder = { CRITICAL: 4, SERIOUS: 3, CAUTION: 2, INFO: 1 };
 
@@ -134,15 +129,12 @@ const AlertsPanel = ({
     sortDirection,
   ]);
 
-  const uniqueDeviceTypes = useMemo(() => {
-    return Array.from(new Set(devices.map((d) => d.type)));
-  }, [devices]);
 
   // Get severity counts for better UX
   const severityCounts = useMemo(() => {
     const counts = { CRITICAL: 0, SERIOUS: 0, CAUTION: 0, INFO: 0 };
     filteredAlerts.forEach((alert) => {
-      if (counts.hasOwnProperty(alert.severity)) {
+      if (Object.prototype.hasOwnProperty.call(counts, alert.severity)) {
         counts[alert.severity as keyof typeof counts]++;
       }
     });
@@ -152,27 +144,14 @@ const AlertsPanel = ({
   const totalCounts = useMemo(() => {
     const counts = { CRITICAL: 0, SERIOUS: 0, CAUTION: 0, INFO: 0 };
     alerts.forEach((alert) => {
-      if (counts.hasOwnProperty(alert.severity)) {
+      if (Object.prototype.hasOwnProperty.call(counts, alert.severity)) {
         counts[alert.severity as keyof typeof counts]++;
       }
     });
     return counts;
   }, [alerts]);
 
-  const acknowledgeAll = () => {
-    if (onAcknowledge) {
-      filteredAlerts
-        .filter((a) => !a.acknowledged)
-        .forEach((a) => onAcknowledge(a.id));
-    }
-  };
 
-  const clearAllFilters = () => {
-    setSeverityFilter("ALL");
-    setDeviceTypeFilter("ALL");
-    setSearchTerm("");
-    setShowAcknowledged(false);
-  };
 
   const hasActiveFilters =
     severityFilter !== "ALL" ||
@@ -180,9 +159,6 @@ const AlertsPanel = ({
     searchTerm !== "" ||
     showAcknowledged;
 
-  const unacknowledgedCount = filteredAlerts.filter(
-    (a) => !a.acknowledged
-  ).length;
   const totalUnacknowledged = alerts.filter((a) => !a.acknowledged).length;
 
   return (
@@ -210,33 +186,7 @@ const AlertsPanel = ({
               </div>
             )}
           </div>
-          <div className="header-actions">
-            {unacknowledgedCount > 0 && onAcknowledge && (
-              <RuxButton
-                size="small"
-                className="acknowledge-all"
-                onClick={acknowledgeAll}
-                title={`Acknowledge all ${unacknowledgedCount} unacknowledged alerts`}
-                icon="check"
-              >
-                Acknowledge All ({unacknowledgedCount})
-              </RuxButton>
-            )}
-            {hasActiveFilters && (
-              <RuxButton
-                size="small"
-                secondary
-                className="clear-filters"
-                onClick={clearAllFilters}
-                title="Clear all active filters"
-                icon="clear"
-              >
-                Clear Filters
-              </RuxButton>
-            )}
-          </div>
         </div>
-
         <div className="severity-summary">
           <div
             className="severity-counts"
@@ -288,81 +238,7 @@ const AlertsPanel = ({
             })}
           </div>
         </div>
-
-        <div className="filter-controls">
-          <div className="search-and-sort">
-            <RuxInput
-              className="search-input"
-              type="search"
-              placeholder="Search alerts, devices, sites..."
-              value={searchTerm}
-              onRuxinput={(e) => setSearchTerm(e.target.value || "")}
-              aria-label="Search alerts"
-              label="Search"
-              hide-label
-            ></RuxInput>
-            <div className="sort-controls">
-              <RuxSelect
-                value={sortField}
-                onRuxchange={(e) => setSortField((e.target as any).value)}
-                size="small"
-                label="Sort by"
-              >
-                <RuxOption value="time" label="Time" />
-                <RuxOption value="severity" label="Severity" />
-                <RuxOption value="site" label="Site" />
-                <RuxOption value="device" label="Device" />
-              </RuxSelect>
-              <RuxButton
-                size="small"
-                secondary
-                iconOnly
-                onClick={() =>
-                  setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-                }
-                className="sort-direction"
-                title={`Sort ${
-                  sortDirection === "asc" ? "descending" : "ascending"
-                }`}
-                aria-label={`Current sort: ${
-                  sortDirection === "asc" ? "ascending" : "descending"
-                }. Click to toggle.`}
-                icon={
-                  sortDirection === "asc"
-                    ? "keyboard-arrow-up"
-                    : "keyboard-arrow-down"
-                }
-              />
-            </div>
-          </div>
-
-          <div className="filter-dropdowns">
-            <RuxSelect
-              id="device-select"
-              value={deviceTypeFilter}
-              onRuxchange={(e) =>
-                setDeviceTypeFilter((e.target as any).value || "ALL")
-              }
-              size="small"
-              label="Device Type"
-            >
-              <RuxOption value="ALL" label="All Device Types" />
-              {uniqueDeviceTypes.map((t) => (
-                <RuxOption key={t} value={t} label={t} />
-              ))}
-            </RuxSelect>
-            <RuxCheckbox
-              id="show-acknowledged"
-              checked={showAcknowledged}
-              onRuxchange={() => setShowAcknowledged(!showAcknowledged)}
-              aria-label="Show acknowledged alerts"
-            >
-              Show Acknowledged
-            </RuxCheckbox>
-          </div>
-        </div>
       </div>
-
       <div className="alerts-list-wrapper">
         {isLoading ? (
           <div className="loading-state" role="status" aria-live="polite">
@@ -379,13 +255,6 @@ const AlertsPanel = ({
                   Try adjusting your search criteria or clearing filters to see
                   more results.
                 </p>
-                <RuxButton
-                  onClick={clearAllFilters}
-                  aria-label="Clear all filters to show more alerts"
-                  icon="clear"
-                >
-                  Clear All Filters
-                </RuxButton>
               </>
             ) : (
               <>

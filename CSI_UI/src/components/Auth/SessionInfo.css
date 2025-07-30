@@ -1,0 +1,142 @@
+/* Session Info Card */
+.session-info-card {
+  width: 100%;
+  max-width: 400px;
+}
+
+.session-info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-background-surface-header);
+}
+
+.session-info-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.session-info-title h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  color: var(--color-text-primary);
+}
+
+.session-info-title rux-icon {
+  color: var(--color-palette-brightblue-400);
+}
+
+/* Session Info Content */
+.session-info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.session-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.session-label {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.session-value {
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+}
+
+.session-value.mono {
+  font-family: monospace;
+  font-size: 0.75rem;
+}
+
+/* Session Status */
+.session-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.session-status.active {
+  background: var(--color-palette-green-900);
+  color: var(--color-palette-green-400);
+}
+
+.session-status.expired {
+  background: var(--color-palette-red-900);
+  color: var(--color-palette-red-400);
+}
+
+/* Toggle Details Button */
+.session-toggle-details {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: none;
+  border: 1px solid var(--color-background-surface-header);
+  border-radius: 4px;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.session-toggle-details:hover {
+  background: var(--color-background-surface-header);
+  color: var(--color-text-primary);
+}
+
+.session-details {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-background-surface-header);
+}
+
+/* Compact View */
+.session-info-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--color-background-surface-header);
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.session-user-email {
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.session-time-remaining {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}
+
+/* Spinning animation for refresh */
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

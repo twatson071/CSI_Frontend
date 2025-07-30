@@ -14,6 +14,12 @@ import LoadHistoryChart from "./LoadHistoryChart";
 import { fetchDeviceMetrics } from "../../services/DeviceService";
 import { fetchServerData, ServerData } from "../../services/ServerService";
 import ServerDetails from "../Server/ServerDetails";
+import NetworkSwitchDetails from "../NetworkSwitch/NetworkSwitchDetails";
+import RFToFiberDetails from "../RFToFiber/RFToFiberDetails";
+import SpectrumAnalyzerDetails from "../SpectrumAnalyzer/SpectrumAnalyzerDetails";
+import RFEquipmentDetails from "../RFEquipment/RFEquipmentDetails";
+import StorageDetails from "../Storage/StorageDetails";
+import CameraDetails from "../Camera/CameraDetails";
 import "./MainContentDisplay.css";
 
 interface MainContentDisplayProps {
@@ -136,14 +142,41 @@ const MainContentDisplay: React.FC<MainContentDisplayProps> = ({
     }
   };
 
+  const renderDeviceLoadingState = (device: any) => {
+    return (
+      <div className="device-loading">
+        <h4>{device.name}</h4>
+        <p>Type: {device.type}</p>
+        <p>Status: {device.status || 'Initializing...'}</p>
+        <p>Waiting for device data...</p>
+        <RuxIndeterminateProgress />
+      </div>
+    );
+  };
+
   const renderDeviceDetails = () => {
     if (!selectedDevice) return null;
+    
+    console.log('renderDeviceDetails - selectedDevice:', selectedDevice);
+    console.log('renderDeviceDetails - pduData:', pduData);
 
     switch (selectedDevice.type) {
       case "PDU":
+      case "UPS":
         if (pduData) {
           return (
             <div className="pdu-container">
+              <div className="device-info">
+                <h3>{selectedDevice.name}</h3>
+                <p>Type: {selectedDevice.type}</p>
+                {selectedDevice.type === "UPS" && selectedDevice.data?.parameters && (
+                  <div className="ups-info">
+                    <p>Battery Status: {selectedDevice.data.parameters.battery_status || "Unknown"}</p>
+                    <p>Battery Charge: {selectedDevice.data.parameters.battery_charge || "N/A"}%</p>
+                    <p>Runtime: {selectedDevice.data.parameters.runtime_minutes || "N/A"} minutes</p>
+                  </div>
+                )}
+              </div>
               <PlugContainer
                 outlets={outletsForPlugContainer}
                 onOutletAction={handleOutletActionWrapper}
@@ -157,7 +190,22 @@ const MainContentDisplay: React.FC<MainContentDisplayProps> = ({
         } else {
           return (
             <div className="pass-plan_tree-wrapper">
-              <p>PDU data is being loaded or is not available.</p>
+              <h4>{selectedDevice.name}</h4>
+              <p>Type: {selectedDevice.type}</p>
+              <p>Status: {selectedDevice.status}</p>
+              {selectedDevice.data ? (
+                <div>
+                  <p>Device has data but PDU interface is not available.</p>
+                  <details>
+                    <summary>Debug: Raw device data</summary>
+                    <pre style={{ fontSize: '12px', overflow: 'auto' }}>
+                      {JSON.stringify(selectedDevice.data, null, 2)}
+                    </pre>
+                  </details>
+                </div>
+              ) : (
+                <p>Waiting for device data...</p>
+              )}
             </div>
           );
         }
@@ -169,18 +217,123 @@ const MainContentDisplay: React.FC<MainContentDisplayProps> = ({
               deviceId={selectedDevice.deviceId}
             />
           );
+        } else {
+          return (
+            <div className="device-loading">
+              <h4>{selectedDevice.name}</h4>
+              <p>Type: {selectedDevice.type}</p>
+              <p>Loading server data...</p>
+              {selectedDevice.data && (
+                <details>
+                  <summary>Debug: Raw device data</summary>
+                  <pre style={{ fontSize: '12px', overflow: 'auto' }}>
+                    {JSON.stringify(selectedDevice.data, null, 2)}
+                  </pre>
+                </details>
+              )}
+            </div>
+          );
         }
-      // fall through to default if no serverData
+        break;
+      
+      case "SWITCH":
+        if (selectedDevice && selectedDevice.data) {
+          return (
+            <NetworkSwitchDetails
+              deviceName={selectedDevice.name}
+              data={selectedDevice.data}
+            />
+          );
+        } else {
+          return renderDeviceLoadingState(selectedDevice);
+        }
+        break;
+      
+      case "RF_FIBER":
+        if (selectedDevice && selectedDevice.data) {
+          return (
+            <RFToFiberDetails
+              deviceName={selectedDevice.name}
+              data={selectedDevice.data}
+            />
+          );
+        }
+        break;
+      
+      case "SPECTRUM":
+        if (selectedDevice && selectedDevice.data) {
+          return (
+            <SpectrumAnalyzerDetails
+              deviceName={selectedDevice.name}
+              data={selectedDevice.data}
+            />
+          );
+        }
+        break;
+      
+      case "RF Equipment":
+        if (selectedDevice && selectedDevice.data) {
+          return (
+            <RFEquipmentDetails
+              deviceName={selectedDevice.name}
+              data={selectedDevice.data}
+            />
+          );
+        }
+        break;
+        
+      case "Storage":
+      case "NAS Storage":
+        if (selectedDevice && selectedDevice.data) {
+          return (
+            <StorageDetails
+              deviceName={selectedDevice.name}
+              data={selectedDevice.data}
+            />
+          );
+        }
+        break;
+        
+      case "Camera":
+        if (selectedDevice && selectedDevice.data) {
+          return (
+            <CameraDetails
+              deviceName={selectedDevice.name}
+              data={selectedDevice.data}
+            />
+          );
+        } else {
+          return renderDeviceLoadingState(selectedDevice);
+        }
+        break;
+        
       default:
         return (
           <div className="pass-plan_tree-wrapper">
-            <h4>Device Details:</h4>
-            <p>
-              Additional information for non-PDU devices can be displayed here.
-            </p>
+            <h4>Device Details: {selectedDevice.name}</h4>
+            <p>Type: {selectedDevice.type}</p>
+            <p>Status: {selectedDevice.status}</p>
+            <p>IP Address: {selectedDevice.ipAddress || 'N/A'}</p>
+            {selectedDevice.data ? (
+              <details open>
+                <summary>Device Data</summary>
+                <pre style={{ fontSize: '12px', overflow: 'auto', backgroundColor: '#f5f5f5', padding: '10px', borderRadius: '4px' }}>
+                  {JSON.stringify(selectedDevice.data, null, 2)}
+                </pre>
+              </details>
+            ) : (
+              <p>No data available yet. The device may still be initializing...</p>
+            )}
           </div>
         );
     }
+    
+    // Fallback if no data
+    return (
+      <div className="pass-plan_tree-wrapper">
+        <p>Device data is being loaded or is not available.</p>
+      </div>
+    );
   };
 
   return (

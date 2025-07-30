@@ -12,11 +12,15 @@ import {
   RuxToastStack,
 } from "@astrouxds/react";
 import type { Status } from "@astrouxds/mock-data";
-import { addToast } from "../../utils/toast";
+import { addToast, ToastType } from "../../utils/toast";
 import "./Navbar.css";
+import NotificationPreferences from "../common/NotificationPreferences";
+import { useAuth } from "../../contexts/AuthContext";
+import { LogoutDialog } from "../Auth/Logout";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [status1, setStatus1] = useState<Status>("normal");
   const [status2, setStatus2] = useState<Status>("off");
   const [status3, setStatus3] = useState<Status>("normal");
@@ -24,6 +28,8 @@ const Navbar = () => {
   const [notifications2, setNotifications2] = useState(2);
   const [notifications3, setNotifications3] = useState(4);
   const [lightTheme, setLightTheme] = useState(false);
+  const [showPrefs, setShowPrefs] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("theme");
@@ -36,24 +42,25 @@ const Navbar = () => {
   const statusValuesArr = ["caution", "normal", "serious", "off"];
   const notificationsArr = [12, 14, 23, 42, 6, 37, 25, 38, 9];
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const randomStatus = Math.floor(Math.random() * statusValuesArr.length);
-      const randomStatus2 = Math.floor(Math.random() * statusValuesArr.length);
-      const randomStatus3 = Math.floor(Math.random() * statusValuesArr.length);
-      setStatus1(statusValuesArr[randomStatus] as Status);
-      setStatus2(statusValuesArr[randomStatus2] as Status);
-      setStatus3(statusValuesArr[randomStatus3] as Status);
+  // Commented out demo random status updates to improve performance
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     const randomStatus = Math.floor(Math.random() * statusValuesArr.length);
+  //     const randomStatus2 = Math.floor(Math.random() * statusValuesArr.length);
+  //     const randomStatus3 = Math.floor(Math.random() * statusValuesArr.length);
+  //     setStatus1(statusValuesArr[randomStatus] as Status);
+  //     setStatus2(statusValuesArr[randomStatus2] as Status);
+  //     setStatus3(statusValuesArr[randomStatus3] as Status);
 
-      const randomNumber = Math.floor(Math.random() * notificationsArr.length);
-      const randomNumber2 = Math.floor(Math.random() * notificationsArr.length);
-      const randomNumber3 = Math.floor(Math.random() * notificationsArr.length);
-      setNotifications1(notificationsArr[randomNumber]);
-      setNotifications2(notificationsArr[randomNumber2]);
-      setNotifications3(notificationsArr[randomNumber3]);
-    }, 12000);
-    return () => clearInterval(interval);
-  });
+  //     const randomNumber = Math.floor(Math.random() * notificationsArr.length);
+  //     const randomNumber2 = Math.floor(Math.random() * notificationsArr.length);
+  //     const randomNumber3 = Math.floor(Math.random() * notificationsArr.length);
+  //     setNotifications1(notificationsArr[randomNumber]);
+  //     setNotifications2(notificationsArr[randomNumber2]);
+  //     setNotifications3(notificationsArr[randomNumber3]);
+  //   }, 12000);
+  //   return () => clearInterval(interval);
+  // });
 
   function menuSelect(e: CustomEvent) {
     const { detail } = e;
@@ -69,6 +76,12 @@ const Navbar = () => {
       case "Manage Devices":
         navigate("/manage-devices");
         break;
+      case "Device Backup":
+        navigate("/device-backup");
+        break;
+      case "Sign Out":
+        setShowLogoutDialog(true);
+        break;
       default:
         if (detail.value === "themeToggle") {
           const newTheme = !lightTheme;
@@ -77,17 +90,22 @@ const Navbar = () => {
           localStorage.setItem("theme", newTheme ? "light" : "dark");
           return;
         }
-        addToast("This feature has not been implemented", false, 3000);
+        addToast("This feature has not been implemented", false, 3000, "info");
     }
   }
 
   return (
     <>
       <RuxToastStack />
+      <LogoutDialog
+        open={showLogoutDialog}
+        onClose={() => setShowLogoutDialog(false)}
+        onConfirm={() => setShowLogoutDialog(false)}
+      />
       <RuxGlobalStatusBar
         appDomain="CSI"
         appName="MONITOR"
-        username="J. Smith"
+        username={user?.name || user?.email || "J. Smith"}
         app-state="Demo"
         app-state-color="tag1"
       >
@@ -107,11 +125,18 @@ const Navbar = () => {
             <RuxMenuItem>Manage Users</RuxMenuItem>
             <RuxMenuItem>Manage Sites</RuxMenuItem>
             <RuxMenuItem>Manage Devices</RuxMenuItem>
+            <RuxMenuItem>Device Backup</RuxMenuItem>
             <RuxMenuItemDivider />
             <RuxMenuItem value="themeToggle">
               {lightTheme ? "Dark" : "Light"} Theme
             </RuxMenuItem>
-            <RuxMenuItem>Preferences</RuxMenuItem>
+            <RuxMenuItem
+              onClick={() => {
+                navigate("/preferences");
+              }}
+            >
+              Preferences
+            </RuxMenuItem>
             <RuxMenuItem>Sign Out</RuxMenuItem>
           </RuxMenu>
         </RuxPopUp>
@@ -121,7 +146,12 @@ const Navbar = () => {
           <RuxPopUp placement="bottom" closeOnSelect>
             <RuxMenu
               onRuxmenuselected={() =>
-                addToast("This feature has not been implemented", false, 3000)
+                addToast(
+                  "This feature has not been implemented",
+                  false,
+                  3000,
+                  "info"
+                )
               }
             >
               <RuxMenuItem>Investigate</RuxMenuItem>
@@ -138,7 +168,12 @@ const Navbar = () => {
           <RuxPopUp placement="bottom" closeOnSelect>
             <RuxMenu
               onRuxmenuselected={() =>
-                addToast("This feature has not been implemented", false, 3000)
+                addToast(
+                  "This feature has not been implemented",
+                  false,
+                  3000,
+                  "info"
+                )
               }
             >
               <RuxMenuItem>Investigate</RuxMenuItem>
@@ -155,7 +190,12 @@ const Navbar = () => {
           <RuxPopUp placement="bottom" closeOnSelect>
             <RuxMenu
               onRuxmenuselected={() =>
-                addToast("This feature has not been implemented", false, 3000)
+                addToast(
+                  "This feature has not been implemented",
+                  false,
+                  3000,
+                  "info"
+                )
               }
             >
               <RuxMenuItem>Investigate</RuxMenuItem>

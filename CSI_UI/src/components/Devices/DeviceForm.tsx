@@ -61,7 +61,7 @@ const AddDeviceEndpointForm: React.FC<AddDeviceEndpointFormProps> = ({
     };
 
     createDevice(formDataForBackend)
-      .then((newDevice) => {
+      .then(() => {
         setDeviceName("");
         setType("");
         setSelectedServiceUrl(null);
@@ -83,13 +83,13 @@ const AddDeviceEndpointForm: React.FC<AddDeviceEndpointFormProps> = ({
         <RuxInput
           label="Device Name"
           value={deviceName}
-          onRuxinput={(e: any) => setDeviceName(e.target.value)}
+          onRuxinput={(e: CustomEvent<{value: string}>) => setDeviceName(e.detail.value)}
           required
         />
         <RuxSelect
           label="Device Type"
           value={deviceType}
-          onRuxchange={(e: any) => setType(e.target.value)}
+          onRuxchange={(e: any) => setType((e as CustomEvent<{value: string}>).detail.value)}
           required
         >
           <RuxOption label="Select a Device Type" value=""></RuxOption>

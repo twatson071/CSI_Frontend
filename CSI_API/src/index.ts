@@ -31,4 +31,7 @@ app.use("/auth/*", async (c) => {
   return auth.handler(c.req.raw);
 });
 
-export default app;
+export default {
+  port: process.env.PORT || 3001,
+  fetch: app.fetch,
+};

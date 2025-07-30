@@ -1,6 +1,7 @@
 import React from "react";
 import { RuxDialog, RuxStatus } from "@astrouxds/react";
 import type { Device } from "../../services/DeviceService";
+import { mapDeviceStatus } from "../../utils/deviceStatusUtils";
 
 interface DeviceDetailsDialogProps {
   device: Device | null;
@@ -15,14 +16,13 @@ const DeviceDetailsDialog: React.FC<DeviceDetailsDialogProps> = ({ device, onClo
       open
       onRuxdialogclosed={onClose}
       confirmText="Close"
-      hideCancel
       style={{ maxWidth: "400px" }}
     >
       <div slot="header">{device.name}</div>
       <div className="device-details-dialog-content">
         <p><strong>Type:</strong> {device.type}</p>
         <p>
-          <strong>Status:</strong> <RuxStatus status={device.status} />
+          <strong>Status:</strong> <RuxStatus status={mapDeviceStatus(device.status)} />
         </p>
         {device.ipAddress && <p><strong>IP:</strong> {device.ipAddress}</p>}
         {device.lastSeen && (

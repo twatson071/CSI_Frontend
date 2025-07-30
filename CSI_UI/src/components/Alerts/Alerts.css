@@ -74,12 +74,13 @@
   border-radius: var(--radius-base);
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  padding: var(--spacing-2);
+  flex: 1;
+  min-height: 0;
 }
 
 .alerts-table-header {
   display: grid;
-  grid-template-columns: 120px 1fr 160px;
+  grid-template-columns: 120px minmax(0, 1fr) 140px;
   padding: var(--spacing-4) var(--spacing-5);
   background: linear-gradient(
     135deg,
@@ -95,7 +96,7 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  gap: var(--spacing-3);
+  gap: var(--spacing-4);
 }
 
 .table-header-status,
@@ -110,28 +111,25 @@
   flex: 1;
   overflow-y: auto;
   scroll-behavior: smooth;
-  max-height: 80vh;
+  min-height: 0;
 }
 
 /* REDESIGNED ALERT ROWS */
 .alerts-table-row {
   display: grid;
-  grid-template-columns: 120px 1fr 160px;
+  grid-template-columns: 120px minmax(0, 1fr) 140px;
+  align-items: start;
   padding: var(--spacing-4) var(--spacing-5);
   border-bottom: 1px solid var(--color-border-interactive-muted);
-  align-items: stretch;
-  cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
-  gap: var(--spacing-3);
-  min-height: 80px;
+  gap: var(--spacing-4);
+  min-height: fit-content;
+  transition: opacity 0.2s, background 0.2s;
 }
-
-.alerts-table-row:hover {
-  background-color: var(--color-background-surface-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  border-left: 4px solid var(--color-border-interactive-hover);
+.alerts-table-row.acknowledged {
+  opacity: 0.5;
+  background: #23272f;
 }
 
 .alerts-table-row:focus-within {
@@ -185,34 +183,48 @@
 .table-cell-status {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
+  align-items: center;
+  justify-content: flex-start;
   gap: var(--spacing-1);
+  padding-top: var(--spacing-2);
 }
 
 .severity-indicator {
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: var(--spacing-2);
   padding: var(--spacing-1) var(--spacing-2);
   border-radius: var(--radius-base);
   background: var(--color-background-base-default);
+  text-decoration: none !important;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
-
+.acknowledged-icon {
+  font-size: 1.1rem;
+  vertical-align: middle;
+}
 .severity-text {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weights-bold);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-decoration: none !important;
 }
 
 /* CONTENT CELL */
 .table-cell-content {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: var(--spacing-2);
+  justify-content: flex-start;
   min-width: 0;
+  max-width: 100%;
+  flex: 1;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;
 }
 
 .alert-header {
@@ -221,6 +233,8 @@
   align-items: flex-start;
   gap: var(--spacing-3);
   flex-wrap: wrap;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .alert-location {
@@ -230,6 +244,10 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   font-weight: var(--font-weights-medium);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .site-name {
@@ -270,7 +288,9 @@
   color: var(--color-text-primary);
   line-height: 1.4;
   word-break: break-word;
-  margin: var(--spacing-1) 0;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  white-space: normal;
 }
 
 .alert-acknowledged {
@@ -292,15 +312,23 @@
 .table-cell-actions {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
+  align-items: center;
+  justify-content: flex-start;
   gap: var(--spacing-2);
+  width: 100%;
+  max-width: 140px;
+  padding-top: var(--spacing-2);
 }
 
 .acknowledge-btn {
   border: none;
   transition: all 0.2s ease;
   white-space: nowrap;
+  text-decoration: none !important;
+  width: 100%;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .acknowledge-btn:hover {
@@ -318,6 +346,32 @@
   transform: scale(1.2);
 }
 
+.severity-indicator,
+.acknowledge-btn {
+  text-decoration: none !important;
+}
+
+.acknowledge-btn.critical {
+  --rux-button-background-color: #e53935;
+  --rux-button-color: #fff;
+}
+.acknowledge-btn.serious {
+  --rux-button-background-color: #fbc02d;
+  --rux-button-color: #222;
+}
+.acknowledge-btn.caution {
+  --rux-button-background-color: #ffb300;
+  --rux-button-color: #222;
+}
+.acknowledge-btn.normal {
+  --rux-button-background-color: #43a047;
+  --rux-button-color: #fff;
+}
+.acknowledge-btn[disabled] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 /* EMPTY STATE */
 .empty-alerts-body {
   padding: var(--spacing-8);
@@ -331,12 +385,81 @@
   font-style: italic;
 }
 
+/* ASTRO UX TABLE OVERRIDES */
+rux-table.alerts-table {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  flex: 1 !important;
+}
+
+rux-table-header {
+  flex-shrink: 0 !important;
+}
+
+rux-table-body.alerts-table-body {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  display: block !important;
+}
+
+rux-table-header-row.alerts-table-header {
+  display: grid !important;
+  grid-template-columns: 120px minmax(0, 1fr) 140px !important;
+  gap: var(--spacing-4) !important;
+}
+
+rux-table-row.alerts-table-row {
+  display: grid !important;
+  grid-template-columns: 120px minmax(0, 1fr) 140px !important;
+  gap: var(--spacing-4) !important;
+}
+
+/* Remove any unwanted text decorations from table cells */
+rux-table-cell {
+  text-decoration: none !important;
+}
+
+rux-table-cell * {
+  text-decoration: none !important;
+}
+
+/* Ensure proper spacing and prevent overlap */
+rux-table-cell:first-child {
+  min-width: 120px;
+  max-width: 120px;
+}
+
+rux-table-cell:last-child {
+  min-width: 140px;
+  max-width: 140px;
+}
+
+/* Remove any default link styling from status components */
+rux-status {
+  text-decoration: none !important;
+}
+
+rux-button {
+  text-decoration: none !important;
+}
+
 /* RESPONSIVE DESIGN */
 @media (max-width: 1024px) {
   .alerts-table-header,
   .alerts-table-row {
-    grid-template-columns: 100px 1fr 140px;
+    grid-template-columns: 100px minmax(0, 1fr) 120px;
     gap: var(--spacing-2);
+  }
+
+  rux-table-header-row.alerts-table-header {
+    grid-template-columns: 100px minmax(0, 1fr) 120px !important;
+    gap: var(--spacing-2) !important;
+  }
+
+  rux-table-row.alerts-table-row {
+    grid-template-columns: 100px minmax(0, 1fr) 120px !important;
+    gap: var(--spacing-2) !important;
   }
 
   .alert-header {
@@ -348,6 +471,15 @@
   .alert-time {
     align-items: flex-start;
   }
+
+  .table-cell-actions {
+    max-width: 120px;
+  }
+
+  .acknowledge-btn {
+    max-width: 100px;
+    font-size: var(--font-size-xs);
+  }
 }
 
 @media (max-width: 768px) {
@@ -357,6 +489,39 @@
     gap: var(--spacing-3);
   }
 
+  .alerts-table-header,
+  .alerts-table-row {
+    grid-template-columns: 80px minmax(0, 1fr) 100px;
+    gap: var(--spacing-1);
+    padding: var(--spacing-3);
+  }
+
+  rux-table-header-row.alerts-table-header {
+    grid-template-columns: 80px minmax(0, 1fr) 100px !important;
+    gap: var(--spacing-1) !important;
+  }
+
+  rux-table-row.alerts-table-row {
+    grid-template-columns: 80px minmax(0, 1fr) 100px !important;
+    gap: var(--spacing-1) !important;
+  }
+
+  .severity-text {
+    display: none; /* Hide text on mobile, just show icon */
+  }
+
+  .acknowledge-btn {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-1) var(--spacing-2);
+    max-width: 80px;
+  }
+
+  .alert-time .exact-time {
+    display: none; /* Hide exact time on mobile */
+  }
+}
+
+@media (max-width: 768px) {
   .filter-controls {
     flex-direction: column;
     gap: var(--spacing-3);
@@ -378,7 +543,7 @@
 
   .alerts-table-header,
   .alerts-table-row {
-    grid-template-columns: 80px 1fr 100px;
+    grid-template-columns: 80px minmax(0, 1fr) 100px;
     padding: var(--spacing-3);
     gap: var(--spacing-2);
   }

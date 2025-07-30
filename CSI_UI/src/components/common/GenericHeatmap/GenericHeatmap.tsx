@@ -19,7 +19,7 @@ interface HeatmapDataPoint {
 }
 
 interface HeatmapSeries {
-  id: string | number;
+  id: string;
   data: HeatmapDataPoint[];
 }
 
@@ -129,7 +129,7 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
       <ResponsiveHeatMap
         data={data}
         margin={margin}
-        colors={(cell) => {
+        colors={(cell: any) => {
           return colorScale(cell.value as number);
         }}
         axisTop={null}
@@ -238,7 +238,7 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
         fill={[
           // Apply gradients based on value ranges
           {
-            match: (cell) => {
+            match: (cell: any) => {
               if (!thresholds) return false;
               const value = cell.value as number;
               return higherIsBetter
@@ -248,7 +248,7 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
             id: `${gradientId}-critical`,
           },
           {
-            match: (cell) => {
+            match: (cell: any) => {
               if (!thresholds) return false;
               const value = cell.value as number;
               return higherIsBetter
@@ -258,7 +258,7 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
             id: `${gradientId}-serious`,
           },
           {
-            match: (cell) => {
+            match: (cell: any) => {
               if (!thresholds) return false;
               const value = cell.value as number;
               return higherIsBetter
@@ -268,7 +268,7 @@ const GenericHeatmap: React.FC<GenericHeatmapProps> = ({
             id: `${gradientId}-caution`,
           },
           {
-            match: (cell) => {
+            match: (cell: any) => {
               if (!thresholds) return true;
               const value = cell.value as number;
               return higherIsBetter

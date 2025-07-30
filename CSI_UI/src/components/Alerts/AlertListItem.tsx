@@ -1,12 +1,9 @@
 import {
   RuxStatus,
   RuxButton,
-  RuxIcon,
   RuxTableRow,
   RuxTableCell,
-  RuxTableHeader,
-  RuxTableHeaderRow,
-  RuxTableHeaderCell,
+  RuxIcon,
 } from "@astrouxds/react";
 import type { Alert } from "../../services/AlertService";
 import { formatDateTime } from "../../utils/FormatUtils";
@@ -40,6 +37,21 @@ const AlertListItem = ({
     }
   };
 
+  const getSeverityColor = (severity: string) => {
+    switch (severity.toUpperCase()) {
+      case "CRITICAL":
+        return "#e53935";
+      case "SERIOUS":
+        return "#fbc02d";
+      case "CAUTION":
+        return "#ffb300";
+      case "INFO":
+        return "#43a047";
+      default:
+        return "#757575";
+    }
+  };
+
   const getTimeAgo = (dateString: string) => {
     const now = new Date();
     const alertTime = new Date(dateString);
@@ -54,6 +66,8 @@ const AlertListItem = ({
     return `${diffDays}d ago`;
   };
 
+  const severityColor = getSeverityColor(alertItem.severity);
+
   // Use RuxTableRow for consistent styling
   return (
     <RuxTableRow
@@ -62,17 +76,30 @@ const AlertListItem = ({
       )}${alertItem.acknowledged ? " acknowledged" : ""}`}
       tabIndex={0}
       aria-label={`${alertItem.severity} alert: ${alertItem.message}`}
+      style={{
+        borderLeft: `6px solid ${severityColor}`,
+        opacity: alertItem.acknowledged ? 0.5 : 1,
+        background: alertItem.acknowledged ? "#23272f" : undefined,
+        transition: "opacity 0.2s, background 0.2s",
+      }}
     >
       <RuxTableCell className="table-cell-status">
         <div className="severity-indicator">
           <RuxStatus status={getSeverityStatus(alertItem.severity)} />
           <span className="severity-text">{alertItem.severity}</span>
+          {alertItem.acknowledged && (
+            <RuxIcon
+              icon="check-circle"
+              className="acknowledged-icon"
+              style={{ color: "#43a047", marginLeft: 6 }}
+              title="Acknowledged"
+            />
+          )}
         </div>
       </RuxTableCell>
       <RuxTableCell className="table-cell-content">
         <div className="alert-header">
           <div className="alert-location">
-            <RuxIcon icon="place" size="small" />
             <span className="site-name">{siteName}</span>
             <span className="separator">•</span>
             <span className="device-name">{deviceName}</span>
@@ -85,45 +112,25 @@ const AlertListItem = ({
           </div>
         </div>
         <div className="alert-message">{alertItem.message}</div>
-        {alertItem.acknowledged && (
-          <div className="alert-acknowledged">
-            <RuxIcon icon="check" size="small" />
-            <span>
-              Acknowledged
-              {alertItem.acknowledgedAt && (
-                <span className="ack-time">
-                  {" "}
-                  on {formatDateTime(alertItem.acknowledgedAt)}
-                </span>
-              )}
-            </span>
-          </div>
-        )}
       </RuxTableCell>
       <RuxTableCell className="table-cell-actions">
         <RuxButton
-          className="acknowledge-btn"
+          className={`acknowledge-btn ${getSeverityStatus(alertItem.severity)}`}
           onClick={() => onAcknowledge && onAcknowledge(alertItem.id)}
           aria-label={alertItem.acknowledged ? "Unacknowledge" : "Acknowledge"}
           size="small"
-          color={alertItem.acknowledged ? "standby" : "normal"}
+          color={
+            alertItem.acknowledged
+              ? "standby"
+              : getSeverityStatus(alertItem.severity)
+          }
+          disabled={!!alertItem.acknowledged}
         >
-          {alertItem.acknowledged ? "Unacknowledge" : "Acknowledge"}
+          {alertItem.acknowledged ? "Acknowledged" : "Acknowledge"}
         </RuxButton>
       </RuxTableCell>
     </RuxTableRow>
   );
 };
-
-// New AlertsListHeader component
-export const AlertsListHeader = () => (
-  <RuxTableHeader className="alerts-table-header">
-    <RuxTableHeaderRow>
-      <RuxTableHeaderCell>Severity</RuxTableHeaderCell>
-      <RuxTableHeaderCell>Alert Details</RuxTableHeaderCell>
-      <RuxTableHeaderCell>Actions</RuxTableHeaderCell>
-    </RuxTableHeaderRow>
-  </RuxTableHeader>
-);
 
 export default AlertListItem;

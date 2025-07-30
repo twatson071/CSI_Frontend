@@ -34,9 +34,9 @@
   flex: 1 1 0%;
   min-height: 0;
   overflow-y: auto;
-  /* Ensure the list can scroll independently of the header */
   min-width: 320px;
-  min-height: 120px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Make sure alerts-table and alerts-table-body fill available space */
@@ -46,14 +46,13 @@
   height: 100%;
   min-height: 0;
   min-width: 320px;
+  flex: 1;
 }
 
 .alerts-table-body {
   flex: 1 1 0%;
   overflow-y: auto;
   min-height: 0;
-  /* Remove max-height so it fills container */
-  max-height: none;
   min-width: 320px;
 }
 
@@ -61,7 +60,7 @@
 .alerts-panel div[slot="header"] {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-6);
+  gap: var(--spacing-4);
   padding: var(--spacing-6);
   background: linear-gradient(
     135deg,
@@ -232,20 +231,22 @@
 .filter-controls {
   background: var(--color-background-surface-default);
   border-radius: var(--radius-base);
-  padding: var(--spacing-4);
+  padding: var(--spacing-2); /* reduced from var(--spacing-4) */
   border: 1px solid var(--color-border-interactive-muted);
+  margin-bottom: var(--spacing-2); /* add a little space below */
 }
 
 .search-and-sort {
   display: flex;
-  gap: var(--spacing-4);
-  margin-bottom: var(--spacing-4);
+  gap: var(--spacing-2); /* reduced from var(--spacing-4) */
+  margin-bottom: var(--spacing-2); /* reduced from var(--spacing-4) */
   align-items: flex-end;
 }
 
 .search-input {
   flex: 1;
   min-width: 0;
+  font-size: var(--font-size-sm); /* smaller font */
 }
 
 .search-input rux_input {
@@ -254,7 +255,7 @@
 
 .sort-controls {
   display: flex;
-  gap: var(--spacing-2);
+  gap: var(--spacing-1); /* reduced from var(--spacing-2) */
   align-items: flex-end;
 }
 
@@ -265,8 +266,8 @@
 
 .filter-dropdowns {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--spacing-4);
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* smaller min width */
+  gap: var(--spacing-2); /* reduced from var(--spacing-4) */
   align-items: end;
 }
 
@@ -277,7 +278,7 @@
 }
 
 .filter-dropdown label {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs); /* smaller label */
   font-weight: var(--font-weights-medium);
   color: var(--color-text-secondary);
   text-transform: uppercase;
@@ -286,8 +287,9 @@
 
 .filter-dropdown rux-select {
   width: 100%;
-  min-height: 44px;
+  min-height: 32px; /* reduced from 44px */
   --select-border-radius: var(--radius-base);
+  font-size: var(--font-size-sm);
 }
 
 .toggle-active {
@@ -480,7 +482,7 @@
   font-weight: var(--font-weights-medium);
   word-break: break-word;
   line-height: 1.5;
-  max-width: 100%;
+  max-width: 80%;
   margin-bottom: 0;
 }
 
@@ -590,7 +592,9 @@
   }
   .alerts-panel div[slot="header"] {
     /* Allow the header to scroll if it overflows vertically */
-    max-height: 60vh;
+    max-height: 120px;
+    padding: var(--spacing-2);
+    gap: var(--spacing-1);
     overflow-y: auto;
     position: sticky;
     top: 0;
@@ -602,28 +606,14 @@
     z-index: 10;
   }
   .alerts-list-wrapper {
-    max-height: 40vh;
-    min-height: 0;
-    overflow-y: auto;
-  }
-  .alerts-panel div[slot="header"] {
-    gap: var(--spacing-3) !important;
-    max-height: 40vh;
-    overflow-y: auto;
-  }
-  .header-top {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-2);
+    max-height: calc(100vh - 130px);
   }
   .filter-controls {
     padding: var(--spacing-1);
   }
   .search-and-sort {
-    flex-direction: column;
     gap: var(--spacing-1);
     margin-bottom: var(--spacing-1);
-    align-items: stretch;
   }
   .sort-controls {
     flex-direction: row;
@@ -632,11 +622,10 @@
     justify-content: flex-start;
   }
   .filter-dropdowns {
-    grid-template-columns: 1fr;
     gap: var(--spacing-1);
   }
   .alerts-list-wrapper {
-    min-width: 0;
+    min-width: 100%;
     overflow-x: auto;
     padding: 0;
   }
@@ -654,9 +643,9 @@
 
 @media (max-width: 480px) {
   .alerts-panel div[slot="header"] {
+    max-height: 80px;
     padding: var(--spacing-1) !important;
-    gap: var(--spacing-2) !important;
-    max-height: 35vh;
+    gap: var(--spacing-1) !important;
   }
   .alert-list-label {
     gap: 2px;

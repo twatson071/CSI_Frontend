@@ -10,6 +10,9 @@ export const users = sqliteTable("users", {
   roleId: int().references(() => roles.id), // Foreign key to roles table
   createdAt: text().default(sql`(current_timestamp)`),
   updatedAt: text().default(sql`(current_timestamp)`),
+  notificationPreferences: text("notification_preferences", { mode: "json" })
+    .$type<Record<string, boolean>>()
+    .default(sql`'{}'`),
 });
 
 export const usersRelations = relations(users, ({ many, one }) => ({

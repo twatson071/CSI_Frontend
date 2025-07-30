@@ -1,0 +1,448 @@
+/* Enhanced Device Management */
+.enhanced-device-management {
+  height: 100%;
+  width: 100%;
+}
+
+.management-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0;
+}
+
+.management-header h2 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.management-content {
+  padding: 1.5rem;
+  height: calc(100% - 60px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Controls */
+.management-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--color-background-surface-header);
+  border-radius: 8px;
+}
+
+.search-and-filters {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  align-items: end;
+}
+
+.search-input {
+  min-width: 300px;
+}
+
+.view-and-bulk {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.view-controls {
+  display: flex;
+  gap: 0.25rem;
+}
+
+/* Devices Container */
+.devices-container {
+  flex: 1;
+  background: var(--color-background-surface-default);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Table View */
+.devices-table {
+  width: 100%;
+  margin: 1rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--color-background-surface-default);
+}
+
+.devices-table rux-table-header-cell,
+.devices-table rux-table-cell {
+  padding: 1rem 0.75rem;
+  vertical-align: middle;
+}
+
+.devices-table rux-table-header-row {
+  background: var(--color-background-surface-header);
+  border-bottom: 1px solid var(--color-background-surface-selected);
+}
+
+.devices-table rux-table-row {
+  border-bottom: 1px solid var(--color-background-surface-selected);
+  transition: background-color 0.2s ease;
+}
+
+.devices-table rux-table-row:hover {
+  background: var(--color-background-surface-hover);
+}
+
+.devices-table rux-table-row.selected {
+  background: var(--color-palette-brightblue-900);
+  border-left: 4px solid var(--color-palette-brightblue-400);
+}
+
+.devices-table rux-table-row:last-child {
+  border-bottom: none;
+}
+
+.checkbox-column {
+  width: 50px;
+  text-align: center;
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sort-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.device-name strong {
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+}
+
+.device-description {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-top: 0.25rem;
+}
+
+.device-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Cards View */
+.devices-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.device-card {
+  border: 2px solid var(--color-background-surface-selected);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.device-card:hover {
+  border-color: var(--color-palette-brightblue-400);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.device-card.selected {
+  border-color: var(--color-palette-brightblue-400);
+  background: var(--color-palette-brightblue-900);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-background-surface-selected);
+}
+
+.device-info {
+  flex: 1;
+}
+
+.device-info h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.device-meta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.card-content {
+  padding: 1rem;
+}
+
+.device-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.detail-item .label {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--color-background-surface-selected);
+}
+
+/* States */
+.loading-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+  height: 400px;
+}
+
+.loading-state .spinning,
+.empty-state rux-icon {
+  color: var(--color-text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-text-primary);
+  font-size: 1.25rem;
+}
+
+.empty-state p {
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+  max-width: 400px;
+}
+
+.empty-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Bulk Progress */
+.bulk-progress {
+  padding: 1rem 0;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .devices-cards {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+  
+  .search-and-filters {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  
+  .search-input {
+    min-width: 250px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .management-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .search-and-filters {
+    grid-template-columns: 1fr 1fr;
+    display: grid;
+    gap: 0.75rem;
+  }
+  
+  .search-input {
+    min-width: auto;
+    grid-column: 1 / -1;
+  }
+  
+  .view-and-bulk {
+    justify-content: space-between;
+  }
+  
+  .devices-table {
+    font-size: 0.875rem;
+  }
+  
+  .devices-table rux-table-header-cell,
+  .devices-table rux-table-cell {
+    padding: 0.75rem 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .management-content {
+    padding: 1rem;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .management-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .devices-cards {
+    grid-template-columns: 1fr;
+    padding: 0.75rem;
+  }
+  
+  .search-and-filters {
+    grid-template-columns: 1fr;
+  }
+  
+  .view-controls {
+    order: -1;
+  }
+  
+  .view-and-bulk {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+  
+  .device-actions {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .detail-item {
+    font-size: 0.75rem;
+  }
+  
+  /* Hide less important table columns on mobile */
+  .devices-table rux-table-header-cell:nth-child(n+6),
+  .devices-table rux-table-cell:nth-child(n+6) {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-header {
+    padding: 0.75rem;
+  }
+  
+  .card-content,
+  .card-actions {
+    padding: 0.75rem;
+  }
+  
+  .device-info h4 {
+    font-size: 0.875rem;
+  }
+  
+  .device-meta {
+    gap: 0.25rem;
+  }
+  
+  .empty-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .management-controls {
+    padding: 0.75rem;
+  }
+}
+
+/* Animation for view transitions */
+.devices-view {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom scrollbars */
+.devices-cards::-webkit-scrollbar,
+.management-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.devices-cards::-webkit-scrollbar-track,
+.management-content::-webkit-scrollbar-track {
+  background: var(--color-background-surface-default);
+}
+
+.devices-cards::-webkit-scrollbar-thumb,
+.management-content::-webkit-scrollbar-thumb {
+  background: var(--color-background-surface-selected);
+  border-radius: 4px;
+}
+
+.devices-cards::-webkit-scrollbar-thumb:hover,
+.management-content::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
