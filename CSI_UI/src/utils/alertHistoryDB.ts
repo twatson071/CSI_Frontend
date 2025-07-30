@@ -6,7 +6,7 @@ const STORE_NAME = "alerts";
 const SETTINGS_STORE = "settings";
 const DB_VERSION = 2;
 
-interface AlertHistorySettings {
+export interface AlertHistorySettings {
   id: string;
   maxStorageSize: number; // in MB
   retentionDays: number;

@@ -22,7 +22,7 @@ const DEFAULT_RETRY_CONFIG: Required<RetryConfig> = {
     const axiosError = error as { response?: { status?: number }; status?: number };
     if (!axiosError.response) return true; // Network error
     const status = axiosError.response?.status || axiosError.status;
-    return status >= 500 || status === 0;
+    return typeof status === 'number' && (status >= 500 || status === 0);
   },
   onRetry: (error, attempt) => {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -104,11 +104,18 @@ export async function withRetry<T>(
 /**
  * Axios interceptor for automatic retry
  */
+interface AxiosError {
+  config?: any;
+  response?: { status?: number };
+  status?: number;
+}
+
 export function createAxiosRetryInterceptor(axios: { interceptors: { response: { use: (onFulfilled: (response: unknown) => unknown, onRejected: (error: unknown) => Promise<unknown>) => void } } }, config: RetryConfig = {}) {
   axios.interceptors.response.use(
     (response: unknown) => response,
     async (error: unknown) => {
-      const originalRequest = error.config;
+      const axiosError = error as AxiosError;
+      const originalRequest = axiosError.config;
       
       // Prevent infinite loops
       if (!originalRequest || originalRequest._retry) {
@@ -146,7 +153,7 @@ export function createAxiosRetryInterceptor(axios: { interceptors: { response: {
       
       // Wait and retry
       await sleep(delay);
-      return axios(originalRequest);
+      return (axios as any)(originalRequest);
     }
   );
 }

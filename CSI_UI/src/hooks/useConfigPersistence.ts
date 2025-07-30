@@ -193,11 +193,6 @@ export function useUIConfig() {
 
 // Hook for managing all configurations
 export function useAllConfigs() {
-  const [, setAllConfigs] = useLocalStorage<Record<string, unknown>>(
-    'csi-config:all',
-    {}
-  );
-
   const exportAllConfigs = useCallback((): string => {
     const configs: Record<string, unknown> = {};
     

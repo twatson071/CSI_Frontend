@@ -19,7 +19,7 @@ import { usePermissions } from "../../hooks/usePermissions";
 import type { Alert } from "../../services/AlertService";
 import "./EnhancedAlertsList.css";
 
-type SortField = "severity" | "timestamp" | "site" | "device";
+type SortField = "severity" | "timestamp" | "site" | "device" | "status";
 type SortDirection = "asc" | "desc";
 type ViewMode = "list" | "grid" | "timeline";
 

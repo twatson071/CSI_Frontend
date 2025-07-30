@@ -111,7 +111,7 @@ const UniversalDeviceDiscovery: React.FC<UniversalDeviceDiscoveryProps> = ({
   const loadSites = async () => {
     try {
       const siteSummaries = await fetchSiteSummaries();
-      setSites(siteSummaries.map(s => ({ id: s.siteId, name: s.name })));
+      setSites(siteSummaries.map(s => ({ id: s.siteId, name: s.siteName })));
       if (!selectedSite && siteSummaries.length > 0) {
         setSelectedSite(siteSummaries[0].siteId);
       }
@@ -339,7 +339,7 @@ const UniversalDeviceDiscovery: React.FC<UniversalDeviceDiscoveryProps> = ({
             onRuxchange={(e: any) => setSelectedSite(parseInt(e.target.value))}
           >
             {sites.map(site => (
-              <RuxOption key={site.id} value={site.id.toString()}>
+              <RuxOption key={site.id} value={site.id.toString()} label={site.name}>
                 {site.name}
               </RuxOption>
             ))}
@@ -521,9 +521,9 @@ const UniversalDeviceDiscovery: React.FC<UniversalDeviceDiscoveryProps> = ({
                     onRuxchange={(e: any) => setManualDevice(prev => ({ ...prev, serviceUrl: e.target.value }))}
                     required
                   >
-                    <RuxOption value="">Select service endpoint</RuxOption>
+                    <RuxOption value="" label="Select service endpoint">Select service endpoint</RuxOption>
                     {discoveryTargets.map(target => (
-                      <RuxOption key={target.id} value={target.serviceUrl}>
+                      <RuxOption key={target.id} value={target.serviceUrl} label={`${target.name} (${target.type})`}>
                         {target.name} ({target.type})
                       </RuxOption>
                     ))}

@@ -100,10 +100,10 @@ export function usePermissions() {
 
   // Legacy support functions
   const canManageAll = () => permissions.canManageAll;
-  const canManageOwn = (resourceOwnerId: string) =>
-    permissions.canManageOwn && user?.id === resourceOwnerId;
-  const canReadGranted = (resource: { grantedUsers?: string[] }) =>
-    permissions.canReadGranted && resource?.grantedUsers?.includes(user?.id);
+  const canManageOwn = (resourceOwnerId: string | number) =>
+    permissions.canManageOwn && user?.id?.toString() === resourceOwnerId.toString();
+  const canReadGranted = (resource: { grantedUsers?: (string | number)[] }) =>
+    permissions.canReadGranted && resource?.grantedUsers?.some(id => id.toString() === user?.id?.toString());
 
   // Role hierarchy checker
   const isRoleHigherThan = (requiredRole: string) => 
@@ -129,7 +129,7 @@ export function usePermissions() {
     can,
     
     // Permission checkers
-    hasPermission: (resource: string, action: string, context?: unknown) => 
+    hasPermission: (resource: string, action: string, context?: { isOwner?: boolean; isGranted?: boolean }) => 
       hasPermission(roleKey, resource, action, context),
     hasAnyPermission,
     hasAllPermissions,

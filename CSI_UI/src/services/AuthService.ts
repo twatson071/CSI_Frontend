@@ -47,7 +47,7 @@ export const AuthService = {
       const result = await authClient.signUp.email({
         email: data.email,
         password: data.password,
-        name: data.name,
+        name: data.name || '',
       });
 
       if (result.error) {

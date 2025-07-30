@@ -2,7 +2,6 @@ import React from "react";
 import {
   STATUS_COLORS,
   StatusType,
-  getAllStatusColors,
 } from "../../utils/statusColors";
 
 // Export StatusBadge component

@@ -7,6 +7,9 @@ export interface User {
   name: string;
   email: string;
   roleId: number;
+  emailVerified?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreateUserPayload {

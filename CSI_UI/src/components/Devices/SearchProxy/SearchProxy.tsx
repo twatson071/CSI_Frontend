@@ -22,7 +22,7 @@ type PropTypes = {
   pass?: string;
 };
 
-const SearchProxy = ({ proxies, setproxy, proxy }: PropTypes) => {
+const SearchProxy = ({ proxies, setproxy }: PropTypes) => {
   const [inputValue, setInputValue] = useState<string>("");
   const [currentProxy, setCurrentProxy] = useState<string | null>(null);
 

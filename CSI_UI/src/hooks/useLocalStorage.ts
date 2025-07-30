@@ -91,22 +91,24 @@ export function useLocalStorage<T>(
   }, []);
 
   useEffect(() => {
-    const handleStorageChange = (e: StorageEvent | CustomEvent) => {
-      if ((e as StorageEvent).key && (e as StorageEvent).key !== key) {
-        return;
+    const handleStorageChange = (e: Event) => {
+      if (e instanceof StorageEvent) {
+        if (e.key && e.key !== key) {
+          return;
+        }
       }
       setStoredValue(readValue());
     };
 
     // this only works for other documents, not the current one
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('storage', handleStorageChange as EventListener);
 
     // this is a custom event, triggered in writeValueToLocalStorage
-    window.addEventListener('local-storage', handleStorageChange);
+    window.addEventListener('local-storage', handleStorageChange as EventListener);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('local-storage', handleStorageChange);
+      window.removeEventListener('storage', handleStorageChange as EventListener);
+      window.removeEventListener('local-storage', handleStorageChange as EventListener);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);

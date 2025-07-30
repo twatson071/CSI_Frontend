@@ -47,6 +47,7 @@ export const dummySites: Site[] = [
 
 // Comprehensive dummy device data
 export const dummyDevices: Device[] = [
+  // PDU Devices
   {
     id: 1001,
     name: 'PDU 1 AP7921B',
@@ -56,8 +57,17 @@ export const dummyDevices: Device[] = [
     ipAddress: '192.168.1.101',
     data: { 
       temperature: 24.5,
-      outletCount: 24,
-      currentLoad: 8.5
+      configuration: {
+        outletCount: 24,
+        maxCurrent: 16,
+        voltageRating: 230,
+        phaseType: 'Single Phase',
+        ratedPower: 3680,
+        switchable: true,
+        monitored: true,
+        currentLoad: 8.5,
+        loadPercentage: 53
+      }
     }
   },
   {
@@ -69,10 +79,21 @@ export const dummyDevices: Device[] = [
     ipAddress: '192.168.1.102',
     data: {
       temperature: 25.1,
+    ,
+      configuration: {
       outletCount: 36,
-      currentLoad: 15.2
+      maxCurrent: 32,
+      voltageRating: 230,
+      phaseType: 'Three Phase',
+      ratedPower: 11040,
+      switchable: true,
+      monitored: true,
+      currentLoad: 15.2,
+      loadPercentage: 47
     }
   },
+
+  // UPS Device
   {
     id: 2001,
     name: 'UPS 1 SMX3000RMHV2U',
@@ -82,10 +103,22 @@ export const dummyDevices: Device[] = [
     ipAddress: '192.168.1.103',
     data: {
       temperature: 28.3,
+    ,
+      configuration: {
       capacity: 3000,
-      batteryCapacity: 100
+      batteryCapacity: 100,
+      inputVoltage: 230,
+      outputVoltage: 230,
+      frequency: 50,
+      batteryRuntime: 8.5,
+      loadPercentage: 85,
+      batteryHealth: 'Good',
+      lastBatteryTest: new Date(Date.now() - 604800000).toISOString(), // 1 week ago
+      nextBatteryTest: new Date(Date.now() + 2592000000).toISOString() // 1 month
     }
   },
+
+  // Network Switches
   {
     id: 3001,
     name: 'Switch 1 C9300-24T',
@@ -95,8 +128,17 @@ export const dummyDevices: Device[] = [
     ipAddress: '192.168.1.201',
     data: {
       temperature: 32.1,
+    ,
+      configuration: {
       portCount: 24,
-      activePortCount: 18
+      portSpeed: '1000',
+      stackable: true,
+      poeEnabled: true,
+      poePower: 370,
+      vlanCount: 15,
+      activePortCount: 18,
+      managementProtocol: 'SNMP',
+      uptime: 2847600 // seconds
     }
   },
   {
@@ -108,10 +150,21 @@ export const dummyDevices: Device[] = [
     ipAddress: '192.168.1.202',
     data: {
       temperature: 33.4,
+    ,
+      configuration: {
       portCount: 48,
-      activePortCount: 42
+      portSpeed: '1000',
+      stackable: true,
+      poeEnabled: true,
+      poePower: 740,
+      vlanCount: 22,
+      activePortCount: 42,
+      managementProtocol: 'SNMP',
+      uptime: 2847600
     }
   },
+
+  // Server Devices
   {
     id: 4001,
     name: 'Server 1 RAX XS4-11E3',
@@ -121,8 +174,18 @@ export const dummyDevices: Device[] = [
     ipAddress: '192.168.1.301',
     data: {
       temperature: 45.2,
+    ,
+      configuration: {
       cpuCores: 16,
-      ramGB: 64
+      ramGB: 64,
+      storageGB: 2000,
+      cpuUsage: 35,
+      ramUsage: 68,
+      diskUsage: 42,
+      networkInterfaces: 4,
+      operatingSystem: 'Ubuntu Server 22.04',
+      uptime: 1234567,
+      services: ['web-server', 'database', 'monitoring']
     }
   },
   {
@@ -134,8 +197,18 @@ export const dummyDevices: Device[] = [
     ipAddress: '192.168.1.302',
     data: {
       temperature: 41.8,
+    ,
+      configuration: {
       cpuCores: 8,
-      ramGB: 32
+      ramGB: 32,
+      storageGB: 1000,
+      cpuUsage: 22,
+      ramUsage: 45,
+      diskUsage: 38,
+      networkInterfaces: 2,
+      operatingSystem: 'Windows Server 2022',
+      uptime: 987654,
+      services: ['file-server', 'backup']
     }
   },
   {
@@ -147,8 +220,18 @@ export const dummyDevices: Device[] = [
     ipAddress: '192.168.3.301',
     data: {
       temperature: 38.5,
+    ,
+      configuration: {
       cpuCores: 24,
-      ramGB: 128
+      ramGB: 128,
+      storageGB: 4000,
+      cpuUsage: 55,
+      ramUsage: 72,
+      diskUsage: 28,
+      networkInterfaces: 6,
+      operatingSystem: 'CentOS 8',
+      uptime: 2345678,
+      services: ['signal-processing', 'data-analysis', 'communications']
     }
   },
   {
@@ -160,10 +243,19 @@ export const dummyDevices: Device[] = [
     ipAddress: '192.168.2.401',
     data: {
       temperature: 35.2,
+    ,
+      configuration: {
       ntpServers: ['pool.ntp.org', 'time.google.com'],
-      syncStatus: 'synchronized'
+      accuracy: '±1ms',
+      syncStatus: 'synchronized',
+      stratum: 2,
+      lastSync: new Date(Date.now() - 300).toISOString(),
+      clientCount: 85,
+      precision: -18
     }
   },
+
+  // RF Equipment
   {
     id: 5001,
     name: 'RF Matrix Switch',
@@ -173,8 +265,16 @@ export const dummyDevices: Device[] = [
     ipAddress: '192.168.3.501',
     data: {
       temperature: 42.1,
+    ,
+      configuration: {
       inputPorts: 32,
-      outputPorts: 16
+      outputPorts: 16,
+      frequencyRange: '1-6000 MHz',
+      insertionLoss: '< 3dB',
+      isolation: '> 80dB',
+      switchingSpeed: '< 10ms',
+      activeConnections: 12,
+      controlProtocol: 'Ethernet'
     }
   },
   {
@@ -186,8 +286,15 @@ export const dummyDevices: Device[] = [
     ipAddress: '192.168.3.502',
     data: {
       temperature: 38.9,
+    ,
+      configuration: {
       frequencyRange: '100 kHz - 20 GHz',
-      currentFrequency: '2.4 GHz'
+      outputPower: '+20 dBm',
+      phaseNoise: '< -110 dBc/Hz',
+      modulation: ['AM', 'FM', 'PM', 'PSK', 'QAM'],
+      outputEnabled: true,
+      currentFrequency: '2.4 GHz',
+      currentPower: '-10 dBm'
     }
   },
   {
@@ -199,10 +306,20 @@ export const dummyDevices: Device[] = [
     ipAddress: '192.168.3.503',
     data: {
       temperature: 44.3,
+    ,
+      configuration: {
       channels: 16,
-      activeChannels: 8
+      bandwidth: '100 MHz',
+      frequencyRange: '70 MHz - 6 GHz',
+      adcBits: 14,
+      sampleRate: '250 MSPS',
+      activeChannels: 8,
+      processingMode: 'Real-time',
+      dataFormat: 'IQ'
     }
   },
+
+  // Spectrum Analyzer
   {
     id: 5004,
     name: 'Spectrum Analyzer 9010B',
@@ -212,10 +329,20 @@ export const dummyDevices: Device[] = [
     ipAddress: '192.168.3.601',
     data: {
       temperature: 36.7,
+    ,
+      configuration: {
       frequencyRange: '9 kHz - 26.5 GHz',
-      currentSpan: '1 GHz'
+      dynamicRange: '165 dB',
+      phaseNoise: '< -110 dBc/Hz',
+      sweepTime: '1 ms',
+      rbw: '1 Hz - 8 MHz',
+      currentSpan: '1 GHz',
+      centerFrequency: '2.4 GHz',
+      measurementMode: 'Swept'
     }
   },
+
+  // Storage Device
   {
     id: 6001,
     name: 'NAS Storage ME5012',
@@ -225,10 +352,22 @@ export const dummyDevices: Device[] = [
     ipAddress: '192.168.1.701',
     data: {
       temperature: 35.8,
-      capacity: 48000,
-      usedSpace: 32000
+    ,
+      configuration: {
+      capacity: 48000, // GB
+      usedSpace: 32000,
+      availableSpace: 16000,
+      raidLevel: 'RAID 6',
+      diskCount: 24,
+      diskType: 'SAS',
+      diskSize: 2000,
+      performanceMode: 'Balanced',
+      replicationEnabled: true,
+      snapshotCount: 156
     }
   },
+
+  // Security Cameras
   {
     id: 7001,
     name: 'Security Camera 1',
@@ -238,8 +377,17 @@ export const dummyDevices: Device[] = [
     ipAddress: '192.168.4.801',
     data: {
       temperature: 28.5,
+    ,
+      configuration: {
       resolution: '3840x2160',
-      frameRate: 30
+      frameRate: 30,
+      compressionFormat: 'H.265',
+      nightVision: true,
+      motionDetection: true,
+      audioRecording: true,
+      ptzCapable: false,
+      recordingEnabled: true,
+      streamUrl: 'rtsp://192.168.4.801:554/stream1'
     }
   },
   {
@@ -251,8 +399,20 @@ export const dummyDevices: Device[] = [
     ipAddress: '192.168.1.802',
     data: {
       temperature: 29.1,
+    ,
+      configuration: {
       resolution: '1920x1080',
-      frameRate: 60
+      frameRate: 60,
+      compressionFormat: 'H.264',
+      nightVision: true,
+      motionDetection: true,
+      audioRecording: false,
+      ptzCapable: true,
+      panRange: 360,
+      tiltRange: 180,
+      zoomRange: '20X',
+      recordingEnabled: true,
+      streamUrl: 'rtsp://192.168.1.802:554/stream1'
     }
   }
 ];
@@ -268,7 +428,7 @@ export const getDevicesByType = (type: string): Device[] => {
   return dummyDevices.filter(device => device.type === type);
 };
 
-// Helper function to get device stats
+// Helper function to get device statistics
 export const getDeviceStats = () => {
   const stats = {
     total: dummyDevices.length,

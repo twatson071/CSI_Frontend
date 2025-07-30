@@ -16,7 +16,6 @@ const DeviceDetailsDialog: React.FC<DeviceDetailsDialogProps> = ({ device, onClo
       open
       onRuxdialogclosed={onClose}
       confirmText="Close"
-      hideCancel
       style={{ maxWidth: "400px" }}
     >
       <div slot="header">{device.name}</div>

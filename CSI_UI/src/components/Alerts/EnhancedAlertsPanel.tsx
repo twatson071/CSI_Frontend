@@ -4,7 +4,6 @@ import {
   RuxButton,
   RuxInput,
   RuxIcon,
-  RuxSegmentedButton,
   RuxCard,
   RuxPopUp,
   RuxMenu,
@@ -188,8 +187,8 @@ const EnhancedAlertsPanel: React.FC<EnhancedAlertsPanelProps> = ({
           bValue = b.deviceId ? deviceMap[b.deviceId]?.name || "" : "";
           break;
         case "status":
-          aValue = alert.acknowledged ? 1 : 0;
-          bValue = alert.acknowledged ? 1 : 0;
+          aValue = a.acknowledged ? 1 : 0;
+          bValue = b.acknowledged ? 1 : 0;
           break;
         default:
           return 0;
@@ -360,29 +359,32 @@ const EnhancedAlertsPanel: React.FC<EnhancedAlertsPanelProps> = ({
           
           <div className="alerts-actions">
             <div className="view-controls">
-              <RuxSegmentedButton>
-                <rux-segmented-button-item
-                  selected={viewMode === "list"}
+              <div className="view-mode-buttons">
+                <RuxButton 
+                  size="small"
+                  secondary={viewMode !== "list"}
                   onClick={() => setViewMode("list")}
                 >
-                  <RuxIcon icon="list" slot="start" />
+                  <RuxIcon icon="list" size="small" />
                   List
-                </rux-segmented-button-item>
-                <rux-segmented-button-item
-                  selected={viewMode === "grid"}
+                </RuxButton>
+                <RuxButton 
+                  size="small"
+                  secondary={viewMode !== "grid"}
                   onClick={() => setViewMode("grid")}
                 >
-                  <RuxIcon icon="grid-view" slot="start" />
+                  <RuxIcon icon="grid-view" size="small" />
                   Grid
-                </rux-segmented-button-item>
-                <rux-segmented-button-item
-                  selected={viewMode === "timeline"}
+                </RuxButton>
+                <RuxButton 
+                  size="small"
+                  secondary={viewMode !== "timeline"}
                   onClick={() => setViewMode("timeline")}
                 >
-                  <RuxIcon icon="timeline" slot="start" />
+                  <RuxIcon icon="timeline" size="small" />
                   Timeline
-                </rux-segmented-button-item>
-              </RuxSegmentedButton>
+                </RuxButton>
+              </div>
             </div>
 
             {selectedAlerts.size > 0 && enableBulkOperations && (
@@ -610,12 +612,16 @@ const EnhancedAlertsPanel: React.FC<EnhancedAlertsPanelProps> = ({
 
       <RuxDialog
         open={showBulkDialog}
-        onRuxdialogclosed={() => setShowBulkDialog(false)}
-        header={`Bulk ${bulkAction}`}
+        onRuxdialogclosed={(e: CustomEvent) => {
+          if (e.detail === 'confirm') {
+            handleBulkOperation(bulkAction);
+          }
+          setShowBulkDialog(false);
+        }}
         confirmText={bulkAction === "delete" ? "Delete" : "Confirm"}
         denyText="Cancel"
-        onRuxdialogconfirmed={() => handleBulkOperation(bulkAction)}
       >
+        <div slot="header">Bulk {bulkAction}</div>
         <p>
           Are you sure you want to {bulkAction} {selectedAlerts.size} selected alert{selectedAlerts.size > 1 ? "s" : ""}?
           {bulkAction === "delete" && " This action cannot be undone."}

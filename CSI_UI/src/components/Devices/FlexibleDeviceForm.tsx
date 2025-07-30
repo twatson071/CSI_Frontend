@@ -473,7 +473,7 @@ const FlexibleDeviceForm: React.FC<FlexibleDeviceFormProps> = ({
   const loadSites = async () => {
     try {
       const siteSummaries = await fetchSiteSummaries();
-      setSites(siteSummaries.map(s => ({ id: s.siteId, name: s.name })));
+      setSites(siteSummaries.map(s => ({ id: s.siteId, name: s.siteName })));
       if (!formData.siteId && siteSummaries.length > 0) {
         setFormData(prev => ({ ...prev, siteId: siteSummaries[0].siteId }));
       }
@@ -635,9 +635,9 @@ const FlexibleDeviceForm: React.FC<FlexibleDeviceFormProps> = ({
             helpText={hasError ? validationErrors[field.key] : field.description}
             required={field.required}
           >
-            <RuxOption value="">Select {field.label}</RuxOption>
+            <RuxOption value="" label={`Select ${field.label}`}>Select {field.label}</RuxOption>
             {field.options?.map(option => (
-              <RuxOption key={option.value} value={option.value}>
+              <RuxOption key={option.value} value={option.value} label={option.label}>
                 {option.label}
               </RuxOption>
             ))}
@@ -683,8 +683,8 @@ const FlexibleDeviceForm: React.FC<FlexibleDeviceFormProps> = ({
             invalid={hasError}
             helpText={hasError ? validationErrors[field.key] : field.description}
             required={field.required}
-            min={field.validation?.min}
-            max={field.validation?.max}
+            min={field.validation?.min?.toString()}
+            max={field.validation?.max?.toString()}
           />
         );
     }
@@ -780,9 +780,9 @@ const FlexibleDeviceForm: React.FC<FlexibleDeviceFormProps> = ({
                   helpText={validationErrors.siteId}
                   required
                 >
-                  <RuxOption value="">Select Site</RuxOption>
+                  <RuxOption value="" label="Select Site">Select Site</RuxOption>
                   {sites.map(site => (
-                    <RuxOption key={site.id} value={site.id.toString()}>
+                    <RuxOption key={site.id} value={site.id.toString()} label={site.name}>
                       {site.name}
                     </RuxOption>
                   ))}
@@ -796,9 +796,9 @@ const FlexibleDeviceForm: React.FC<FlexibleDeviceFormProps> = ({
                   helpText={validationErrors.serviceUrl}
                   required
                 >
-                  <RuxOption value="">Select Service</RuxOption>
+                  <RuxOption value="" label="Select Service">Select Service</RuxOption>
                   {serviceUrls.map(url => (
-                    <RuxOption key={url} value={url}>
+                    <RuxOption key={url} value={url} label={url.replace(/^https?:\/\//, '')}>
                       {url.replace(/^https?:\/\//, '')}
                     </RuxOption>
                   ))}

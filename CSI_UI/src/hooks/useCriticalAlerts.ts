@@ -11,9 +11,9 @@ export interface CriticalAlert {
   type: string;
   message: string;
   severity: "CRITICAL";
-  deviceId: number;
+  deviceId: number | null;
   deviceName?: string;
-  siteId?: number;
+  siteId?: number | null;
   siteName?: string;
   metricType: string;
   metricValue: number;
@@ -50,14 +50,12 @@ export function useCriticalAlerts(
             (alert: Alert) =>
               alert.severity === "CRITICAL" &&
               !alert.acknowledged &&
-              // Note: isResolved might not be in the Alert interface yet,
-              // you may need to add it to the AlertService interface
-              !('isResolved' in alert && alert.isResolved)
+              !alert.isResolved
           )
           .map((alert: Alert) => ({
             ...alert,
             severity: "CRITICAL" as const,
-            deviceName: alert.deviceId?.toString(), // You might want to fetch device name
+            deviceName: alert.deviceId ? alert.deviceId.toString() : undefined, // You might want to fetch device name
             metricType: "", // These fields might need to be added to the Alert interface
             metricValue: 0,
             threshold: 0,
@@ -142,12 +140,12 @@ export function useCriticalAlerts(
     });
 
     // Listen for alert resolution events
-    socket.on("alert", (notification: { type?: string; data?: { id?: number } }) => {
-      if (notification.type === "alert_resolved") {
+    socket.on("alert", (notification: { type?: string; data?: { id?: number }; id?: number }) => {
+      if (notification.type === "alert_resolved" && notification.data?.id) {
         console.log("Alert resolved:", notification);
         // Remove resolved alert from local state
         setAlerts((prev) =>
-          prev.filter((alert) => alert.id !== notification.id)
+          prev.filter((alert) => alert.id !== notification.data!.id)
         );
       }
     });

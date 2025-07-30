@@ -41,8 +41,8 @@ const ResizableGrid: React.FC<ResizableGridProps> = ({
         const parsed = JSON.parse(savedSizes);
         setColumnWidth(parsed.columnWidth);
         setRowHeight(parsed.rowHeight);
-      } catch (e) {
-        console.error('Failed to parse saved grid sizes', e);
+      } catch (error) {
+        console.error('Failed to parse saved grid sizes', error);
       }
     }
     
@@ -51,8 +51,8 @@ const ResizableGrid: React.FC<ResizableGridProps> = ({
       try {
         const parsed = JSON.parse(savedLayout);
         setLayout(parsed);
-      } catch (e) {
-        console.error('Failed to parse saved grid layout', e);
+      } catch (error) {
+        console.error('Failed to parse saved grid layout', error);
       }
     }
   }, []);
@@ -105,7 +105,7 @@ const ResizableGrid: React.FC<ResizableGridProps> = ({
     e.dataTransfer.dropEffect = 'move';
   }, [allowRearrange]);
   
-  const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>, index: number) => {
+  const handleDragEnter = useCallback((_e: React.DragEvent<HTMLDivElement>, index: number) => {
     if (!allowRearrange || draggedItem === null) return;
     setDragOverItem(index);
   }, [allowRearrange, draggedItem]);

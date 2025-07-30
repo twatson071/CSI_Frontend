@@ -22,7 +22,14 @@ export const SessionInfo: React.FC<SessionInfoProps> = ({ compact = false }) => 
     const fetchSessionDetails = async () => {
       try {
         const session = await authClient.getSession();
-        setSessionDetails(session);
+        if (session && typeof session === 'object') {
+          const sessionData = (session as any).session || session;
+          setSessionDetails({
+            id: sessionData?.id,
+            createdAt: sessionData?.createdAt?.toString(),
+            expiresAt: sessionData?.expiresAt?.toString()
+          });
+        }
       } catch (error) {
         console.error("Failed to fetch session details:", error);
       }
@@ -38,7 +45,14 @@ export const SessionInfo: React.FC<SessionInfoProps> = ({ compact = false }) => 
     try {
       await refreshSession();
       const session = await authClient.getSession();
-      setSessionDetails(session);
+      if (session && typeof session === 'object') {
+        const sessionData = (session as any).session || session;
+        setSessionDetails({
+          id: sessionData?.id,
+          createdAt: sessionData?.createdAt?.toString(),
+          expiresAt: sessionData?.expiresAt?.toString()
+        });
+      }
     } catch (error) {
       console.error("Failed to refresh session:", error);
     } finally {
@@ -95,7 +109,7 @@ export const SessionInfo: React.FC<SessionInfoProps> = ({ compact = false }) => 
         </div>
         <RuxButton
           size="small"
-          variant="secondary"
+          secondary
           icon={isRefreshing ? "refresh" : "refresh"}
           className={isRefreshing ? "spinning" : ""}
           onClick={handleRefresh}

@@ -103,7 +103,7 @@ const DeviceConfigBackup: React.FC<DeviceConfigBackupProps> = ({
   const loadSites = async () => {
     try {
       const siteSummaries = await fetchSiteSummaries();
-      setSites(siteSummaries.map(s => ({ id: s.siteId, name: s.name })));
+      setSites(siteSummaries.map(s => ({ id: s.siteId, name: s.siteName })));
     } catch (error) {
       console.error("Failed to load sites:", error);
     }
@@ -384,11 +384,11 @@ const DeviceConfigBackup: React.FC<DeviceConfigBackupProps> = ({
           
           <RuxSelect
             value={filterSite.toString()}
-            onRuxchange={(e: CustomEvent<{value: string}>) => setFilterSite(parseInt(e.detail.value) || 0)}
+            onRuxchange={(e: any) => setFilterSite(parseInt((e as CustomEvent<{value: string}>).detail.value) || 0)}
           >
-            <RuxOption value="0">All Sites</RuxOption>
+            <RuxOption value="0" label="All Sites">All Sites</RuxOption>
             {sites.map(site => (
-              <RuxOption key={site.id} value={site.id.toString()}>
+              <RuxOption key={site.id} value={site.id.toString()} label={site.name}>
                 {site.name}
               </RuxOption>
             ))}
@@ -396,11 +396,11 @@ const DeviceConfigBackup: React.FC<DeviceConfigBackupProps> = ({
           
           <RuxSelect
             value={filterType}
-            onRuxchange={(e: CustomEvent<{value: string}>) => setFilterType(e.detail.value)}
+            onRuxchange={(e: any) => setFilterType((e as CustomEvent<{value: string}>).detail.value)}
           >
-            <RuxOption value="ALL">All Types</RuxOption>
+            <RuxOption value="ALL" label="All Types">All Types</RuxOption>
             {deviceTypes.map(type => (
-              <RuxOption key={type} value={type}>
+              <RuxOption key={type} value={type} label={type}>
                 {type}
               </RuxOption>
             ))}
@@ -435,8 +435,8 @@ const DeviceConfigBackup: React.FC<DeviceConfigBackupProps> = ({
                     <RuxCheckbox
                       checked={selectedDeviceIds.size === filteredDevices.length && filteredDevices.length > 0}
                       indeterminate={selectedDeviceIds.size > 0 && selectedDeviceIds.size < filteredDevices.length}
-                      onRuxchange={(e: CustomEvent<{checked: boolean}>) => {
-                        if (e.detail.checked) {
+                      onRuxchange={(e: any) => {
+                        if ((e as CustomEvent<{checked: boolean}>).detail.checked) {
                           setSelectedDeviceIds(new Set(filteredDevices.map(d => d.id)));
                         } else {
                           setSelectedDeviceIds(new Set());
@@ -564,8 +564,8 @@ const DeviceConfigBackup: React.FC<DeviceConfigBackupProps> = ({
                   <RuxCheckbox
                     checked={selectedBackups.size === filteredBackups.length && filteredBackups.length > 0}
                     indeterminate={selectedBackups.size > 0 && selectedBackups.size < filteredBackups.length}
-                    onRuxchange={(e: CustomEvent<{checked: boolean}>) => {
-                      if (e.detail.checked) {
+                    onRuxchange={(e: any) => {
+                      if ((e as CustomEvent<{checked: boolean}>).detail.checked) {
                         setSelectedBackups(new Set(filteredBackups.map(b => b.id)));
                       } else {
                         setSelectedBackups(new Set());
@@ -690,8 +690,8 @@ const DeviceConfigBackup: React.FC<DeviceConfigBackupProps> = ({
           message="Are you sure you want to restore this configuration? The current device configuration will be backed up automatically before the restore."
           confirmText={isRestoring ? "Restoring..." : "Restore"}
           denyText="Cancel"
-          onRuxdialogclosed={() => {
-            if (e.detail.confirmed && !isRestoring) {
+          onRuxdialogclosed={(e: any) => {
+            if ((e as CustomEvent<{confirmed: boolean}>).detail.confirmed && !isRestoring) {
               const backup = filteredBackups.find(b => b.deviceId === restoreTarget);
               if (backup) {
                 performRestore(backup.id, restoreTarget);
@@ -719,8 +719,8 @@ const DeviceConfigBackup: React.FC<DeviceConfigBackupProps> = ({
           message={`Are you sure you want to delete ${selectedBackups.size} backup${selectedBackups.size !== 1 ? 's' : ''}? This action cannot be undone.`}
           confirmText="Delete"
           denyText="Cancel"
-          onRuxdialogclosed={() => {
-            if (e.detail.confirmed) {
+          onRuxdialogclosed={(e: any) => {
+            if ((e as CustomEvent<{confirmed: boolean}>).detail.confirmed) {
               deleteBackups(Array.from(selectedBackups));
             } else {
               setShowDeleteConfirm(false);

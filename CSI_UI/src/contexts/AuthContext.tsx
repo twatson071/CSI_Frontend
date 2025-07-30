@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { authClient, useSession } from "../lib/auth-client";
 
 export interface User {
-  id: number;
+  id: number | string;
   email: string;
   name?: string;
   roleId?: number;
@@ -98,7 +98,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const result = await authClient.signUp.email({
         email,
         password,
-        name,
+        name: name || '',
       });
       if (result.error) {
         return { success: false, error: result.error.message };
@@ -143,7 +143,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Use local user if in local login mode
   const value: AuthContextType = {
-    user: isLocalLogin ? localUser : session?.user || null,
+    user: isLocalLogin ? localUser : session?.user ? {
+      id: session.user.id,
+      email: session.user.email,
+      name: session.user.name,
+      emailVerified: session.user.emailVerified,
+      createdAt: session.user.createdAt,
+      updatedAt: session.user.updatedAt
+    } : null,
     isAuthenticated: isLocalLogin ? !!localUser : !!session?.user,
     isLoading: isLoading || isPending,
     signIn: handleSignIn,

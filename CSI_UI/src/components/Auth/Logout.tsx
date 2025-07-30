@@ -6,7 +6,7 @@ import "./Logout.css";
 
 interface LogoutButtonProps {
   className?: string;
-  variant?: "text" | "outlined" | "contained";
+  secondary?: boolean;
   onLogout?: () => void;
   showIcon?: boolean;
   fullWidth?: boolean;
@@ -14,7 +14,7 @@ interface LogoutButtonProps {
 
 export const LogoutButton: React.FC<LogoutButtonProps> = ({
   className,
-  variant = "text",
+  secondary = false,
   onLogout,
   showIcon = true,
   fullWidth = false,
@@ -40,7 +40,7 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
       className={className}
       onClick={handleLogout}
       disabled={isLoading}
-      variant={variant}
+      secondary={secondary}
       style={{ width: fullWidth ? "100%" : "auto" }}
     >
       {isLoading ? "Signing out..." : "Sign Out"}
@@ -86,11 +86,10 @@ export const LogoutDialog: React.FC<LogoutDialogProps> = ({
         </div>
         <p>Are you sure you want to sign out? Any unsaved changes will be lost.</p>
         <div className="dialog-actions">
-          <RuxButton variant="secondary" onClick={onClose} disabled={isLoading}>
+          <RuxButton secondary onClick={onClose} disabled={isLoading}>
             Cancel
           </RuxButton>
           <RuxButton
-            variant="primary"
             onClick={handleConfirmLogout}
             disabled={isLoading}
           >

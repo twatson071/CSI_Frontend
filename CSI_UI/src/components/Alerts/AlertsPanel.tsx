@@ -27,13 +27,13 @@ const AlertsPanel = ({
   isLoading = false,
 }: AlertsPanelProps) => {
   const [severityFilter, setSeverityFilter] = useState<string>("ALL");
-  const [deviceTypeFilter, setDeviceTypeFilter] = useState<string>("ALL");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [deviceTypeFilter] = useState<string>("ALL");
+  const [searchTerm] = useState("");
   const [devices, setDevices] = useState<Device[]>([]);
   const [sites, setSites] = useState<SiteSummary[]>([]);
   const [sortField] = useState<SortField>("time");
   const [sortDirection] = useState<SortDirection>("desc");
-  const [showAcknowledged, setShowAcknowledged] = useState(false);
+  const [showAcknowledged] = useState(false);
 
   useEffect(() => {
     getDevices()

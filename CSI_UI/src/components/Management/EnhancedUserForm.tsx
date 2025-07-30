@@ -4,7 +4,6 @@ import {
   RuxInput,
   RuxCard,
   RuxIcon,
-  RuxSegmentedButton,
   RuxCheckbox,
   RuxDialog,
 } from "@astrouxds/react";

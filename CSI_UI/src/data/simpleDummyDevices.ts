@@ -1,51 +1,5 @@
-/**
- * Dummy Device Data
- * Comprehensive dummy data for all device types in the inventory
- */
-
 import { Device } from '../types/device';
 
-// Site definitions
-export interface Site {
-  id: number;
-  name: string;
-  location: string;
-  description: string;
-  coordinates?: { lat: number; lng: number };
-}
-
-export const dummySites: Site[] = [
-  {
-    id: 1,
-    name: 'Primary Data Center',
-    location: 'New York, NY',
-    description: 'Main data center hosting critical infrastructure',
-    coordinates: { lat: 40.7128, lng: -74.0060 }
-  },
-  {
-    id: 2,
-    name: 'Secondary Operations Center',
-    location: 'Manhattan, NY',
-    description: 'Backup operations center with redundant systems',
-    coordinates: { lat: 40.7580, lng: -73.9855 }
-  },
-  {
-    id: 3,
-    name: 'RF Communication Hub',
-    location: 'Brooklyn, NY',
-    description: 'Radio frequency equipment and communication systems',
-    coordinates: { lat: 40.7505, lng: -73.9934 }
-  },
-  {
-    id: 4,
-    name: 'Security Operations Center',
-    location: 'Queens, NY',
-    description: 'Security monitoring and surveillance center',
-    coordinates: { lat: 40.7614, lng: -73.9776 }
-  }
-];
-
-// Comprehensive dummy device data
 export const dummyDevices: Device[] = [
   {
     id: 1001,
@@ -256,41 +210,3 @@ export const dummyDevices: Device[] = [
     }
   }
 ];
-
-// Helper function to get devices by site
-export const getDevicesBySite = (siteId: string | number): Device[] => {
-  const siteid = typeof siteId === 'string' ? parseInt(siteId) : siteId;
-  return dummyDevices.filter(device => device.siteId === siteid);
-};
-
-// Helper function to get devices by type
-export const getDevicesByType = (type: string): Device[] => {
-  return dummyDevices.filter(device => device.type === type);
-};
-
-// Helper function to get device stats
-export const getDeviceStats = () => {
-  const stats = {
-    total: dummyDevices.length,
-    online: dummyDevices.filter(d => d.status === 'normal' || d.status === 'online').length,
-    offline: dummyDevices.filter(d => d.status === 'off' || d.status === 'offline').length,
-    warning: dummyDevices.filter(d => d.status === 'caution' || d.status === 'warning').length,
-    critical: dummyDevices.filter(d => d.status === 'critical' || d.status === 'error').length,
-    byType: {} as Record<string, number>,
-    bySite: {} as Record<string, number>
-  };
-
-  // Count by type
-  dummyDevices.forEach(device => {
-    stats.byType[device.type] = (stats.byType[device.type] || 0) + 1;
-  });
-
-  // Count by site
-  dummyDevices.forEach(device => {
-    if (device.siteId) {
-      stats.bySite[device.siteId] = (stats.bySite[device.siteId] || 0) + 1;
-    }
-  });
-
-  return stats;
-};

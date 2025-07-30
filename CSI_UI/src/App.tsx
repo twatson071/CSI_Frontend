@@ -26,7 +26,7 @@ const App: React.FC = () => {
   // Only render preferences if user is logged in
   return (
     <ErrorBoundary level="page">
-      <PreferencesProvider userId={user?.id || 0}>
+      <PreferencesProvider userId={typeof user?.id === 'string' ? parseInt(user.id) || 0 : user?.id || 0}>
         <Router>
           <div className="app-container">
             <GlobalStatusBar />

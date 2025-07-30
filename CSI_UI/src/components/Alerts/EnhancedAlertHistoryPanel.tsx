@@ -7,6 +7,7 @@ import {
   RuxPopUp,
   RuxMenu,
   RuxMenuItem,
+  RuxMenuItemDivider,
   RuxDialog,
   RuxProgress,
   RuxStatus,
@@ -23,6 +24,7 @@ import {
   performCleanup,
   getAlertHistorySettings,
   type AlertHistoryFilter,
+  type AlertHistorySettings,
 } from "../../utils/alertHistoryDB";
 import { getDevices, type Device } from "../../services/DeviceService";
 import { fetchSiteSummaries, type SiteSummary } from "../../services/SiteService";
@@ -43,11 +45,15 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
   const [devices, setDevices] = useState<Device[]>([]);
   const [sites, setSites] = useState<SiteSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<Record<string, unknown> | null>(null);
+  const [stats, setStats] = useState<{
+    total: number;
+    storageSize: number;
+    oldestAlert?: string;
+    bySeverity: Record<string, number>;
+  } | null>(null);
   const [selectedAlerts, setSelectedAlerts] = useState<Set<number>>(new Set());
   
   // Filter states
-  const [filter] = useState<AlertHistoryFilter>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [severityFilter, setSeverityFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -56,27 +62,18 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
   // UI states
   const [showBulkDialog, setShowBulkDialog] = useState(false);
   const [showCleanupDialog, setShowCleanupDialog] = useState(false);
-  const [showSettingsDialog] = useState(false);
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [bulkAction, setBulkAction] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(50);
   
   // Settings
-  const [settings, setSettings] = useState<Record<string, unknown> | null>(null);
+  const [settings, setSettings] = useState<AlertHistorySettings | null>(null);
   const [cleanupProgress, setCleanupProgress] = useState<{
     inProgress: boolean;
     deleted: number;
     freedSpace: number;
   }>({ inProgress: false, deleted: 0, freedSpace: 0 });
-
-  useEffect(() => {
-    loadData();
-    loadSettings();
-  }, [loadData]);
-
-  useEffect(() => {
-    applyFilters();
-  }, [applyFilters]);
 
   const loadData = useCallback(async () => {
     try {
@@ -99,20 +96,10 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
     }
   }, [pageSize, currentPage]);
 
-  const loadSettings = async () => {
-    try {
-      const settingsData = await getAlertHistorySettings();
-      setSettings(settingsData);
-    } catch (error) {
-      console.error("Failed to load settings:", error);
-    }
-  };
-
   const applyFilters = useCallback(async () => {
     try {
       setLoading(true);
       const appliedFilter: AlertHistoryFilter = {
-        ...filter,
         search: searchTerm || undefined,
         severity: severityFilter.length > 0 ? severityFilter : undefined,
         acknowledged: statusFilter === "ACKNOWLEDGED" ? true : statusFilter === "UNACKNOWLEDGED" ? false : undefined,
@@ -130,7 +117,25 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [filter, searchTerm, severityFilter, statusFilter, dateRange, pageSize, currentPage]);
+  }, [searchTerm, severityFilter, statusFilter, dateRange, pageSize, currentPage]);
+
+  const loadSettings = async () => {
+    try {
+      const settingsData = await getAlertHistorySettings();
+      setSettings(settingsData);
+    } catch (error) {
+      console.error("Failed to load settings:", error);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+    loadSettings();
+  }, [loadData]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
 
   const deviceMap = useMemo(() => {
     return devices.reduce<Record<number, { name: string; type: string }>>(
@@ -293,17 +298,17 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
             {stats && (
               <div className="history-stats">
                 <div className="stat-item">
-                  <span className="stat-number">{stats.total}</span>
+                  <span className="stat-number">{stats!.total}</span>
                   <span className="stat-label">Total Alerts</span>
                 </div>
                 <div className="stat-item">
-                  <span className="stat-number">{formatStorageSize(stats.storageSize)}</span>
+                  <span className="stat-number">{formatStorageSize(stats!.storageSize)}</span>
                   <span className="stat-label">Storage Used</span>
                 </div>
-                {stats.oldestAlert && (
+                {stats!.oldestAlert && (
                   <div className="stat-item">
                     <span className="stat-number">
-                      {Math.floor((new Date().getTime() - new Date(stats.oldestAlert).getTime()) / (1000 * 60 * 60 * 24))}d
+                      {Math.floor((new Date().getTime() - new Date(stats!.oldestAlert).getTime()) / (1000 * 60 * 60 * 24))}d
                     </span>
                     <span className="stat-label">Oldest Record</span>
                   </div>
@@ -397,7 +402,7 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
         {stats && (
           <div className="severity-summary">
             <div className="severity-counts">
-              {Object.entries(stats.bySeverity).map(([severity, count]) => (
+              {Object.entries(stats!.bySeverity).map(([severity, count]) => (
                 <div
                   key={severity}
                   className={`severity-chip severity-${severity.toLowerCase()} ${
@@ -406,7 +411,7 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
                   onClick={() => toggleSeverityFilter(severity)}
                 >
                   <span className="severity-label">{severity}</span>
-                  <span className="severity-count">{count}</span>
+                  <span className="severity-count">{count as number}</span>
                 </div>
               ))}
             </div>
@@ -527,12 +532,16 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
       {/* Bulk Action Dialog */}
       <RuxDialog
         open={showBulkDialog}
-        onRuxdialogclosed={() => setShowBulkDialog(false)}
-        header={`Bulk ${bulkAction}`}
+        onRuxdialogclosed={(e: CustomEvent) => {
+          if (e.detail === 'confirm') {
+            handleBulkOperation(bulkAction);
+          }
+          setShowBulkDialog(false);
+        }}
         confirmText="Confirm"
         denyText="Cancel"
-        onRuxdialogconfirmed={() => handleBulkOperation(bulkAction)}
       >
+        <div slot="header">Bulk {bulkAction}</div>
         <p>
           Are you sure you want to {bulkAction} {selectedAlerts.size} selected alert{selectedAlerts.size > 1 ? "s" : ""}?
           {bulkAction === "delete" && " This action cannot be undone."}
@@ -542,12 +551,16 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
       {/* Cleanup Dialog */}
       <RuxDialog
         open={showCleanupDialog}
-        onRuxdialogclosed={() => setShowCleanupDialog(false)}
-        header="Cleanup Old Alerts"
+        onRuxdialogclosed={(e: CustomEvent) => {
+          if (e.detail === 'confirm') {
+            handleCleanup();
+          }
+          setShowCleanupDialog(false);
+        }}
         confirmText="Start Cleanup"
         denyText="Cancel"
-        onRuxdialogconfirmed={handleCleanup}
       >
+        <div slot="header">Cleanup Old Alerts</div>
         <div className="cleanup-dialog-content">
           {cleanupProgress.inProgress ? (
             <div className="cleanup-progress">
@@ -565,6 +578,28 @@ const EnhancedAlertHistoryPanel: React.FC<EnhancedAlertHistoryPanelProps> = ({
               <p>This will remove alerts older than {settings?.retentionDays || 90} days.</p>
               <p>This action cannot be undone.</p>
             </div>
+          )}
+        </div>
+      </RuxDialog>
+
+      {/* Settings Dialog - TODO: Implement settings functionality */}
+      <RuxDialog
+        open={showSettingsDialog}
+        onRuxdialogclosed={() => setShowSettingsDialog(false)}
+        confirmText="Close"
+        denyText=""
+      >
+        <div slot="header">History Settings</div>
+        <div className="settings-dialog-content">
+          {settings && (
+            <>
+              <p><strong>Retention Days:</strong> {settings.retentionDays}</p>
+              <p><strong>Max Storage Size:</strong> {settings.maxStorageSize} MB</p>
+              <p><strong>Auto Cleanup:</strong> {settings.autoCleanup ? 'Enabled' : 'Disabled'}</p>
+              {settings.lastCleanup && (
+                <p><strong>Last Cleanup:</strong> {new Date(settings.lastCleanup).toLocaleDateString()}</p>
+              )}
+            </>
           )}
         </div>
       </RuxDialog>

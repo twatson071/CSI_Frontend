@@ -28,7 +28,7 @@ import { fetchSiteSummaries } from "../../services/SiteService";
 import UniversalDeviceDiscovery from "./UniversalDeviceDiscovery";
 import FlexibleDeviceForm from "./FlexibleDeviceForm";
 import { mapDeviceStatus } from "../../utils/deviceStatusUtils";
-import { useDummyData } from "../../hooks/useDummyData";
+// import { useDummyData } from "../../hooks/useDummyData"; // Unused import
 import "./EnhancedDeviceManagement.css";
 
 interface EnhancedDeviceManagementProps {
@@ -74,17 +74,6 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
   const [bulkProgress, setBulkProgress] = useState(0);
   const [bulkStatus, setBulkStatus] = useState<string>("");
 
-  // Load data
-  useEffect(() => {
-    loadDevices();
-    loadSites();
-  }, []);
-
-  // Filter and sort devices
-  useEffect(() => {
-    filterAndSortDevices();
-  }, [filterAndSortDevices]);
-
   const loadDevices = async () => {
     try {
       setLoading(true);
@@ -100,7 +89,7 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
   const loadSites = async () => {
     try {
       const siteSummaries = await fetchSiteSummaries();
-      setSites(siteSummaries.map(s => ({ id: s.siteId, name: s.name })));
+      setSites(siteSummaries.map(s => ({ id: s.siteId, name: s.siteName })));
     } catch (error) {
       console.error("Failed to load sites:", error);
     }
@@ -122,8 +111,8 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
 
     // Sort devices
     filtered.sort((a, b) => {
-      let aValue: string | number | null | undefined = a[sortField as keyof Device];
-      let bValue: string | number | null | undefined = b[sortField as keyof Device];
+      let aValue: any = a[sortField as keyof Device];
+      let bValue: any = b[sortField as keyof Device];
       
       if (sortField === "lastSeen") {
         aValue = new Date(a.updatedAt || a.createdAt || 0).getTime();
@@ -145,7 +134,18 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
     });
 
     setFilteredDevices(filtered);
-  }, [devices, searchTerm, filterSite, filterType, filterStatus, sortField, sortDirection]);
+  }, [devices, searchTerm, filterSite, filterType, filterStatus, sortField, sortDirection, sites]);
+
+  // Load data
+  useEffect(() => {
+    loadDevices();
+    loadSites();
+  }, []);
+
+  // Filter and sort devices
+  useEffect(() => {
+    filterAndSortDevices();
+  }, [filterAndSortDevices]);
 
   const deviceTypes = useMemo(() => {
     return Array.from(new Set(devices.map(d => d.type)));
@@ -306,8 +306,8 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
               <RuxTableCell>
                 <div className="device-name">
                   <strong>{device.name}</strong>
-                  {device.parameters?.description && (
-                    <div className="device-description">{device.parameters.description}</div>
+                  {device.data?.description && (
+                    <div className="device-description">{String(device.data.description)}</div>
                   )}
                 </div>
               </RuxTableCell>
@@ -447,11 +447,15 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
             
             <RuxSelect
               value={filterSite.toString()}
-              onRuxchange={(e: CustomEvent<{value: string}>) => setFilterSite(parseInt(e.detail.value) || 0)}
+              onRuxchange={(e: any) => {
+                const target = e.target as HTMLRuxSelectElement;
+                const value = Array.isArray(target.value) ? target.value[0] : target.value || '0';
+                setFilterSite(parseInt(value) || 0);
+              }}
             >
-              <RuxOption value="0">All Sites</RuxOption>
+              <RuxOption value="0" label="All Sites">All Sites</RuxOption>
               {sites.map(site => (
-                <RuxOption key={site.id} value={site.id.toString()}>
+                <RuxOption key={site.id} value={site.id.toString()} label={site.name}>
                   {site.name}
                 </RuxOption>
               ))}
@@ -459,11 +463,15 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
             
             <RuxSelect
               value={filterType}
-              onRuxchange={(e: CustomEvent<{value: string}>) => setFilterType(e.detail.value)}
+              onRuxchange={(e: any) => {
+                const target = e.target as HTMLRuxSelectElement;
+                const value = Array.isArray(target.value) ? target.value[0] : target.value || 'ALL';
+                setFilterType(value);
+              }}
             >
-              <RuxOption value="ALL">All Types</RuxOption>
+              <RuxOption value="ALL" label="All Types">All Types</RuxOption>
               {deviceTypes.map(type => (
-                <RuxOption key={type} value={type}>
+                <RuxOption key={type} value={type} label={type}>
                   {type}
                 </RuxOption>
               ))}
@@ -471,11 +479,15 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
             
             <RuxSelect
               value={filterStatus}
-              onRuxchange={(e: CustomEvent<{value: string}>) => setFilterStatus(e.detail.value)}
+              onRuxchange={(e: any) => {
+                const target = e.target as HTMLRuxSelectElement;
+                const value = Array.isArray(target.value) ? target.value[0] : target.value || 'ALL';
+                setFilterStatus(value);
+              }}
             >
-              <RuxOption value="ALL">All Status</RuxOption>
+              <RuxOption value="ALL" label="All Status">All Status</RuxOption>
               {statusTypes.map(status => (
-                <RuxOption key={status} value={status}>
+                <RuxOption key={status} value={status} label={status}>
                   {status}
                 </RuxOption>
               ))}
@@ -503,7 +515,7 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
             {selectedDevices.size > 0 && (canUpdateDevices || canDeleteDevices) && (
               <RuxPopUp 
                 open={showBulkActions}
-                onRuxtoggle={(e: CustomEvent<boolean>) => setShowBulkActions(e.detail)}
+                onToggle={(e: any) => setShowBulkActions(e.detail)}
                 placement="bottom-start"
               >
                 <RuxButton slot="trigger">
@@ -626,8 +638,8 @@ const EnhancedDeviceManagement: React.FC<EnhancedDeviceManagementProps> = ({
           message={`Are you sure you want to delete ${selectedDevices.size} selected device${selectedDevices.size !== 1 ? 's' : ''}? This action cannot be undone.`}
           confirmText="Delete"
           denyText="Cancel"
-          onRuxdialogclosed={() => {
-            if (e.detail.confirmed) {
+          onRuxdialogclosed={(e: any) => {
+            if (e.detail === true) {
               executeBulkOperation('delete');
             }
             setShowDeleteConfirm(false);

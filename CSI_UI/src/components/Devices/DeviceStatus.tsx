@@ -73,7 +73,6 @@ const DeviceStatus: React.FC = () => {
           onRuxdialogclosed={() => setInvestigateTarget(null)}
           message={`Investigating device "${investigateTarget.name}" (Type: ${investigateTarget.type})`}
           confirmText="Close"
-          hideCancelBtn
         />
       )}
     </>

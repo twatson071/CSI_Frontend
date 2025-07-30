@@ -20,7 +20,7 @@ interface State {
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  private resetTimeoutId: NodeJS.Timeout | null = null;
+  private resetTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private previousResetKeys: Array<string | number> = [];
 
   constructor(props: Props) {
@@ -60,7 +60,7 @@ export class ErrorBoundary extends Component<Props, State> {
     }));
 
     // Log to monitoring service in production
-    if (process.env.NODE_ENV === 'production') {
+    if (!import.meta.env.DEV) {
       this.logErrorToService(error, errorInfo);
     }
   }
@@ -169,7 +169,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </h2>
             <p>Something went wrong in this {level}.</p>
             
-            {process.env.NODE_ENV === 'development' && (
+            {import.meta.env.DEV && (
               <details className="error-details">
                 <summary>Error Details</summary>
                 <pre className="error-stack">

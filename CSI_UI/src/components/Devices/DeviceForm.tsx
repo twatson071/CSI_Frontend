@@ -89,7 +89,7 @@ const AddDeviceEndpointForm: React.FC<AddDeviceEndpointFormProps> = ({
         <RuxSelect
           label="Device Type"
           value={deviceType}
-          onRuxchange={(e: CustomEvent<{value: string}>) => setType(e.detail.value)}
+          onRuxchange={(e: any) => setType((e as CustomEvent<{value: string}>).detail.value)}
           required
         >
           <RuxOption label="Select a Device Type" value=""></RuxOption>

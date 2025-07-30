@@ -29,6 +29,16 @@ export function useDummyData(): UseDummyDataReturn {
   const [sites, setSites] = useState<Site[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
+  const loadDummyData = useCallback(() => {
+    setDevices([...dummyDevices]);
+    setSites([...dummySites]);
+    setIsLoaded(true);
+    
+    // Also save to localStorage
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dummyDevices));
+    localStorage.setItem(SITES_STORAGE_KEY, JSON.stringify(dummySites));
+  }, []);
+
   // Load data from localStorage or use dummy data
   useEffect(() => {
     const storedDevices = localStorage.getItem(STORAGE_KEY);
@@ -62,16 +72,6 @@ export function useDummyData(): UseDummyDataReturn {
     }
   }, [sites]);
 
-  const loadDummyData = useCallback(() => {
-    setDevices([...dummyDevices]);
-    setSites([...dummySites]);
-    setIsLoaded(true);
-    
-    // Also save to localStorage
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dummyDevices));
-    localStorage.setItem(SITES_STORAGE_KEY, JSON.stringify(dummySites));
-  }, []);
-
   const clearData = useCallback(() => {
     setDevices([]);
     setSites([]);
@@ -84,18 +84,21 @@ export function useDummyData(): UseDummyDataReturn {
     setDevices(prev => [...prev, device]);
   }, []);
 
-  const updateDevice = useCallback((id: string, updates: Partial<Device>) => {
+  const updateDevice = useCallback((id: string | number, updates: Partial<Device>) => {
+    const deviceId = typeof id === 'string' ? parseInt(id) : id;
     setDevices(prev => prev.map(device => 
-      device.id === id ? { ...device, ...updates } : device
+      device.id === deviceId ? { ...device, ...updates } : device
     ));
   }, []);
 
-  const removeDevice = useCallback((id: string) => {
-    setDevices(prev => prev.filter(device => device.id !== id));
+  const removeDevice = useCallback((id: string | number) => {
+    const deviceId = typeof id === 'string' ? parseInt(id) : id;
+    setDevices(prev => prev.filter(device => device.id !== deviceId));
   }, []);
 
-  const getDevicesBySiteCallback = useCallback((siteId: string) => {
-    return devices.filter(device => device.siteId === siteId);
+  const getDevicesBySiteCallback = useCallback((siteId: string | number) => {
+    const siteid = typeof siteId === 'string' ? parseInt(siteId) : siteId;
+    return devices.filter(device => device.siteId === siteid);
   }, [devices]);
 
   const getDevicesByTypeCallback = useCallback((type: string) => {
