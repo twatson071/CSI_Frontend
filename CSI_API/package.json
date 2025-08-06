@@ -5,9 +5,14 @@
     "mock-service": "bun run scripts/mock-external-service.ts",
     "seed": "bun run scripts/seed-dummy-data.ts",
     "seed:force": "bun run scripts/seed-dummy-data.ts --force",
-    "verify": "bun run scripts/verify-data.ts"
+    "verify": "bun run scripts/verify-data.ts",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage"
   },
   "dependencies": {
+    "@hono/swagger-ui": "^0.5.2",
+    "@hono/zod-openapi": "^1.0.2",
     "@hono/zod-validator": "^0.7.0",
     "better-auth": "^1.2.7",
     "drizzle-orm": "^0.43.1",
