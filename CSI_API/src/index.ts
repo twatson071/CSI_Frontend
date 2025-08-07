@@ -19,6 +19,11 @@ initializeAlertNotificationService(8081);
 const app = new Hono();
 app.use("*", cors({ origin: "*" })); // Enable CORS for all routes
 
+// Health check endpoint
+app.get("/health", (c) => {
+  return c.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 app.route("/pdu", pdu);
 app.route("/sites", sites);
 app.route("/devices", devices);

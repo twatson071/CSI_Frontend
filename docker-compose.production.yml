@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  csi-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: csi-production
+    ports:
+      - "8080:80"  # Map host port 8080 to container port 80
+    volumes:
+      # Persistent volume for SQLite database
+      - csi-data:/app/data
+      # Optional: mount for logs
+      - csi-logs:/var/log/supervisor
+    environment:
+      # Override any environment variables here
+      - NODE_ENV=production
+      - DATABASE_URL=/app/data/production.db
+      - BETTER_AUTH_URL=http://localhost:3001
+      - BETTER_AUTH_SECRET=your-secret-key-change-this-in-production
+      # Add any other environment variables your app needs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - csi-network
+
+volumes:
+  csi-data:
+    driver: local
+  csi-logs:
+    driver: local
+
+networks:
+  csi-network:
+    driver: bridge
