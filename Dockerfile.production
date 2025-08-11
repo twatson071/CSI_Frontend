@@ -7,14 +7,19 @@ FROM node:20-alpine AS frontend-builder
 WORKDIR /app/frontend
 
 # Copy frontend package files
-COPY CSI_UI/package.json ./
-RUN npm install --legacy-peer-deps
+COPY CSI_UI/package.json CSI_UI/package-lock.json* ./
+# Install all dependencies including devDependencies for building
+RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
 # Copy frontend source
 COPY CSI_UI/ ./
 
+# Verify vite installation and build frontend
+RUN ls -la node_modules/.bin/ | grep vite || true
+RUN which npx && npx --version
 # Build frontend (skip TypeScript checking for production)
-RUN npx vite build
+# Use the direct node command to avoid npx resolution issues
+RUN node node_modules/vite/bin/vite.js build --mode production
 
 # Stage 2: Build backend
 FROM oven/bun:1-alpine AS backend-builder
