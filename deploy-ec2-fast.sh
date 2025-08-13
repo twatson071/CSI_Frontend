@@ -36,7 +36,7 @@ echo "📦 Building production bundle locally..."
 echo "  Building frontend..."
 cd CSI_UI
 npm ci --legacy-peer-deps --silent
-npm run build --silent
+npm run build
 cd ..
 
 # 2. Prepare minimal deployment
