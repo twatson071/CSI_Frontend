@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  csi-demo:
+    build:
+      context: .
+      dockerfile: Dockerfile.demo
+    container_name: csi-demo
+    ports:
+      - "80:80"     # Web interface
+      - "3001:3001" # API (if needed for debugging)
+    volumes:
+      # Persistent volume for SQLite database
+      - demo-data:/app/data
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=/app/data/demo.db
+      - DB_FILE_NAME=/app/data/demo.db
+      - BETTER_AUTH_URL=http://localhost:3001
+      - BETTER_AUTH_SECRET=demo-secret-key-change-in-production
+      - DEMO_MODE=true
+      - DEMO_USER=demo@csi.mil
+      - DEMO_PASSWORD=DemoPass123!
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - demo-network
+
+volumes:
+  demo-data:
+    driver: local
+
+networks:
+  demo-network:
+    driver: bridge
