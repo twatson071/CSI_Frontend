@@ -78,6 +78,9 @@ const SiteEndpointsTree: React.FC<SiteEndpointsTreeProps> = ({
   selectedDevice,
 }) => {
   const handleNodeSelected = (e: any) => {
+    e.stopPropagation();
+    e.preventDefault();
+
     const el = e.currentTarget as HTMLElement | null;
     if (!el) return;
 
@@ -87,14 +90,17 @@ const SiteEndpointsTree: React.FC<SiteEndpointsTreeProps> = ({
     if (siteIdxStr === undefined) return;
     const siteIdx = parseInt(siteIdxStr, 10);
     if (isNaN(siteIdx)) return;
+
     if (deviceIndexStr !== undefined) {
       const devIdx = parseInt(deviceIndexStr, 10);
-      if (isNaN(devIdx)) return;
-      // Always select the device directly, regardless of current site
-      onSelect(siteIdx, devIdx);
-    } else {
-      onSelect(siteIdx, -1);
+      if (!isNaN(devIdx)) {
+        // Device selected
+        onSelect(siteIdx, devIdx);
+        return;
+      }
     }
+    // Site selected
+    onSelect(siteIdx, -1);
   };
 
   return (

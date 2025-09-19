@@ -511,11 +511,25 @@ async function seedDatabase() {
   console.log('🌱 Starting database seeding...');
 
   try {
+    // First check if tables exist
+    const tableCheck = sqlite.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();
+    const tableNames = tableCheck.map((t: any) => t.name);
+    console.log(`Found ${tableNames.length} tables: ${tableNames.join(', ')}`);
+
+    if (!tableNames.includes('users') || !tableNames.includes('sites') || !tableNames.includes('devices')) {
+      console.error('❌ Required tables are missing! Please run: bun x drizzle-kit push');
+      process.exit(1);
+    }
+
     // Clear existing data (optional - remove if you want to keep existing data)
     console.log('🧹 Clearing existing dummy data...');
-    
-    // Clear user-site relationships first (foreign key constraint)
-    await db.delete(schema.userSites);
+
+    // Clear user-site relationships first (foreign key constraint) - only if table exists
+    if (tableNames.includes('user_sites')) {
+      await db.delete(schema.userSites);
+    } else {
+      console.log('⚠️ user_sites table not found, skipping...');
+    }
     await db.delete(schema.devices).where(like(schema.devices.name, '%PDU%'));
     await db.delete(schema.devices).where(like(schema.devices.name, '%UPS%'));
     await db.delete(schema.devices).where(like(schema.devices.name, '%Switch%'));
@@ -706,9 +720,15 @@ async function seedDatabase() {
       userId: defaultUser.id,
       siteId: site.id
     }));
-    
-    await db.insert(schema.userSites).values(userSiteData);
-    console.log(`✅ Associated user ${defaultUser.name} with ${userSiteData.length} sites`);
+
+    // Only insert if user_sites table exists
+    const tableCheck2 = sqlite.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='user_sites'").all();
+    if (tableCheck2.length > 0) {
+      await db.insert(schema.userSites).values(userSiteData);
+      console.log(`✅ Associated user ${defaultUser.name} with ${userSiteData.length} sites`);
+    } else {
+      console.log('⚠️ Skipping user-site associations (user_sites table not found)');
+    }
 
     console.log('🎉 Database seeding completed successfully!');
     console.log('\n📋 Summary:');

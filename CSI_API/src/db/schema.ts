@@ -239,6 +239,23 @@ export const metricThresholdsRelations = relations(
   })
 );
 
+// System Settings Table
+export const systemSettings = sqliteTable("system_settings", {
+  id: int().primaryKey({ autoIncrement: true }),
+  key: text().notNull().unique(),
+  value: text().notNull(),
+  description: text(),
+  updatedBy: int().references(() => users.id),
+  updatedAt: text().default(sql`(current_timestamp)`),
+});
+
+export const systemSettingsRelations = relations(systemSettings, ({ one }) => ({
+  updatedByUser: one(users, {
+    fields: [systemSettings.updatedBy],
+    references: [users.id],
+  }),
+}));
+
 // User-Sites Join Table
 export const userSites = sqliteTable("user_sites", {
   userId: int().references(() => users.id),

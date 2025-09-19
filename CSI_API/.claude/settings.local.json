@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//mnt/c/Users/twats/CSI_Frontend/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

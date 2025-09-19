@@ -1,6 +1,21 @@
 import axios from "axios";
+import { authClient } from "../lib/auth-client";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+// Helper function to get current user ID
+async function getUserId(): Promise<string> {
+  try {
+    const session = await authClient.getSession();
+    if (session?.user?.id) {
+      return String(session.user.id);
+    }
+  } catch (error) {
+    console.warn("Could not get user session:", error);
+  }
+  // Default to 1 for local development
+  return "1";
+}
 
 export interface DeviceResponse {
   deviceId: number;
@@ -28,12 +43,22 @@ export interface SiteWithOptionalDevices extends SiteSummary {
 }
 
 export async function createSite(siteData: SiteCreateData) {
-  const resp = await axios.post<SiteSummary>(`${BASE_URL}/sites`, siteData);
+  const userId = await getUserId();
+  const resp = await axios.post<SiteSummary>(`${BASE_URL}/sites`, siteData, {
+    headers: {
+      "x-user-id": userId,
+    },
+  });
   return resp.data;
 }
 
 export async function fetchSiteSummaries(): Promise<SiteSummary[]> {
-  const resp = await axios.get<SiteSummary[]>(`${BASE_URL}/sites`);
+  const userId = await getUserId();
+  const resp = await axios.get<SiteSummary[]>(`${BASE_URL}/sites`, {
+    headers: {
+      "x-user-id": userId,
+    },
+  });
   return resp.data;
 }
 
@@ -41,17 +66,33 @@ export async function fetchSiteSummaries(): Promise<SiteSummary[]> {
 export async function fetchDevicesForSite(
   siteId: number
 ): Promise<DeviceResponse[]> {
+  const userId = await getUserId();
   const resp = await axios.get<DeviceResponse[]>(
-    `${BASE_URL}/sites/${siteId}/devices`
+    `${BASE_URL}/sites/${siteId}/devices`,
+    {
+      headers: {
+        "x-user-id": userId,
+      },
+    }
   );
   return resp.data;
 }
 
 export async function updateSite(siteId: number, data: SiteCreateData): Promise<SiteSummary> {
-  const resp = await axios.put<SiteSummary>(`${BASE_URL}/sites/${siteId}`, data);
+  const userId = await getUserId();
+  const resp = await axios.put<SiteSummary>(`${BASE_URL}/sites/${siteId}`, data, {
+    headers: {
+      "x-user-id": userId,
+    },
+  });
   return resp.data;
 }
 
 export async function deleteSite(siteId: number): Promise<void> {
-  await axios.delete(`${BASE_URL}/sites/${siteId}`);
+  const userId = await getUserId();
+  await axios.delete(`${BASE_URL}/sites/${siteId}`, {
+    headers: {
+      "x-user-id": userId,
+    },
+  });
 }

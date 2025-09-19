@@ -43,7 +43,7 @@ app.get("/:id", async (c: Context) => {
     return c.json({ error: "Invalid user ID" }, 400);
   }
   try {
-    const user = await db.query.users.findFirst({
+    const user = await db.select().from(users).where({
       where: eq(users.id, id),
     });
     if (!user) {
@@ -83,7 +83,7 @@ app.post("/", async (c: Context) => {
   const { name, email, passwordHash, roleId } = validation.data;
 
   try {
-    const existingUser = await db.query.users.findFirst({
+    const existingUser = await db.select().from(users).where({
       where: eq(users.email, email),
     });
     if (existingUser) {
@@ -145,14 +145,14 @@ app.put("/:id", async (c: Context) => {
   const dataToUpdate = validation.data;
 
   if (dataToUpdate.email) {
-    const currentUser = await db.query.users.findFirst({
+    const currentUser = await db.select().from(users).where({
       where: eq(users.id, id),
     });
     if (!currentUser) {
       return c.json({ error: "User not found" }, 404);
     }
     if (currentUser.email !== dataToUpdate.email) {
-      const existingUserWithEmail = await db.query.users.findFirst({
+      const existingUserWithEmail = await db.select().from(users).where({
         where: eq(users.email, dataToUpdate.email),
       });
       if (existingUserWithEmail) {
@@ -235,7 +235,7 @@ app.get("/:id/preferences", async (c: Context) => {
     return c.json({ error: "Invalid user ID" }, 400);
   }
   try {
-    const user = await db.query.users.findFirst({ where: eq(users.id, id) });
+    const user = await db.select().from(users).where({ where: eq(users.id, id) });
     if (!user) {
       return c.json({ error: "User not found" }, 404);
     }

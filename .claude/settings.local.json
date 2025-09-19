@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(for:*)",
+      "Bash(do sed -i 's/\\r$//' \"$script\")",
+      "Bash(done)",
+      "Bash(sudo docker-compose:*)",
+      "Bash(sudo docker logs:*)",
+      "Bash(chmod:*)",
+      "Bash(sed:*)",
+      "Bash(./check-backend-errors.sh:*)",
+      "Bash(curl:*)",
+      "Bash(./fix-db-queries.sh:*)",
+      "Bash(bun run:*)",
+      "Bash(bun x tsc:*)",
+      "Bash(./configure-mock-mode.sh:*)",
+      "Read(//mnt/c/Users/twats/**)",
+      "Bash(./start-alert-service.sh:*)",
+      "Read(//tmp/**)",
+      "Bash(sudo docker exec:*)",
+      "Bash(awk:*)",
+      "Bash(bun x drizzle-kit push:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

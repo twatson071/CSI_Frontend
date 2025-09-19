@@ -14,7 +14,8 @@ RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 COPY CSI_UI/ ./
 
 # Build frontend with demo configuration
-ENV VITE_API_BASE_URL=/api
+ENV VITE_BASE_URL=/api
+ENV VITE_ALERT_SERVICE_URL=/socket.io
 ENV VITE_DEMO_MODE=true
 RUN node node_modules/vite/bin/vite.js build --mode production
 
@@ -48,8 +49,12 @@ WORKDIR /app
 COPY --from=backend-builder /app/backend/dist ./backend/dist
 COPY --from=backend-builder /app/backend/node_modules ./backend/node_modules
 COPY --from=backend-builder /app/backend/package.json ./backend/
+# Copy source files needed for scripts and database setup
+COPY CSI_API/src ./backend/src
 COPY CSI_API/drizzle ./backend/drizzle
 COPY CSI_API/scripts ./backend/scripts
+COPY CSI_API/drizzle.config.ts ./backend/
+COPY CSI_API/tsconfig.json ./backend/
 
 # Copy frontend build
 COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
@@ -57,22 +62,29 @@ COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
 # Copy nginx config
 COPY nginx.production.conf /etc/nginx/http.d/default.conf
 
-# Copy supervisor config
-COPY supervisord.conf /etc/supervisord.conf
+# Copy supervisor config for demo
+COPY supervisord.demo.conf /etc/supervisord.conf
+
+# Create directories for logs and data
+RUN mkdir -p /var/log/supervisor /app/data
 
 # Copy demo setup scripts
-COPY --chmod=755 demo-scripts/init-demo.sh /app/init-demo.sh
-COPY --chmod=755 demo-scripts/start-demo.sh /app/start-demo.sh
+COPY demo-scripts/init-demo.sh /app/init-demo.sh
+COPY demo-scripts/start-demo.sh /app/start-demo.sh
+RUN chmod +x /app/init-demo.sh /app/start-demo.sh
 
 # Environment variables for demo mode
 ENV NODE_ENV=production
 ENV DATABASE_URL=/app/data/demo.db
 ENV DB_FILE_NAME=/app/data/demo.db
-ENV PORT=3001
-ENV BETTER_AUTH_URL=http://localhost:3001
+ENV PORT=4000
+ENV BETTER_AUTH_URL=http://localhost:4000
 ENV BETTER_AUTH_SECRET=demo-secret-key-for-testing-only
 ENV DEMO_MODE=true
 ENV ALLOW_DEMO_LOGIN=true
+ENV EXTERNAL_BASE_URL=http://localhost:4000/mock
+ENV SYSTEM_OPERATOR_KEY=demo-key
+ENV HUB_KEY=demo-hub-key
 
 # Expose port
 EXPOSE 80

@@ -26,13 +26,12 @@ async function evaluateThresholds(
   await checkAndResolveAlerts(deviceId, metricType, value);
 
   // Get active thresholds for this device and metric type
-  const thresholds = await db.query.metricThresholds.findMany({
-    where: and(
+  const thresholds = await db.select().from(metricThresholds)
+    .where(and(
       eq(metricThresholds.deviceId, deviceId),
       eq(metricThresholds.metricType, metricType),
       eq(metricThresholds.isActive, 1)
-    ),
-  });
+    ));
 
   for (const threshold of thresholds) {
     const { criticalThreshold, seriousThreshold, cautionThreshold, operator } =
@@ -58,7 +57,7 @@ async function evaluateThresholds(
 
       if (exceedsCritical) {
         // Check if we already have a recent critical alert for this metric to avoid spam
-        const recentAlert = await db.query.alerts.findFirst({
+        const recentAlert = await db.select().from(alerts).where({
           where: and(
             eq(alerts.deviceId, deviceId),
             eq(alerts.metricId, metricId),
@@ -70,7 +69,7 @@ async function evaluateThresholds(
 
         if (!recentAlert) {
           // Get device details for the alert message
-          const device = await db.query.devices.findFirst({
+          const device = await db.select().from(devices).where({
             where: eq(devices.id, deviceId),
           });
 
@@ -94,7 +93,7 @@ async function evaluateThresholds(
           // Broadcast critical alert via WebSocket
           if (alertResult[0]) {
             const site = device?.siteId
-              ? await db.query.sites.findFirst({
+              ? await db.select().from(sites).where({
                   where: eq(sites.id, device.siteId),
                 })
               : null;
@@ -149,7 +148,7 @@ async function evaluateThresholds(
 
       if (exceedsSerious) {
         // Check if we already have a recent serious alert for this metric
-        const recentAlert = await db.query.alerts.findFirst({
+        const recentAlert = await db.select().from(alerts).where({
           where: and(
             eq(alerts.deviceId, deviceId),
             eq(alerts.metricId, metricId),
@@ -162,7 +161,7 @@ async function evaluateThresholds(
 
         if (!recentAlert) {
           // Get device details for the alert message
-          const device = await db.query.devices.findFirst({
+          const device = await db.select().from(devices).where({
             where: eq(devices.id, deviceId),
           });
 
@@ -185,7 +184,7 @@ async function evaluateThresholds(
 
           if (seriousResult[0]) {
             const site = device?.siteId
-              ? await db.query.sites.findFirst({
+              ? await db.select().from(sites).where({
                   where: eq(sites.id, device.siteId),
                 })
               : null;
@@ -237,7 +236,7 @@ async function evaluateThresholds(
 
       if (exceedsCaution) {
         // Check if we already have a recent caution alert for this metric
-        const recentAlert = await db.query.alerts.findFirst({
+        const recentAlert = await db.select().from(alerts).where({
           where: and(
             eq(alerts.deviceId, deviceId),
             eq(alerts.metricId, metricId),
@@ -250,7 +249,7 @@ async function evaluateThresholds(
 
         if (!recentAlert) {
           // Get device details for the alert message
-          const device = await db.query.devices.findFirst({
+          const device = await db.select().from(devices).where({
             where: eq(devices.id, deviceId),
           });
 
@@ -273,7 +272,7 @@ async function evaluateThresholds(
 
           if (cautionResult[0]) {
             const site = device?.siteId
-              ? await db.query.sites.findFirst({
+              ? await db.select().from(sites).where({
                   where: eq(sites.id, device.siteId),
                 })
               : null;
@@ -305,10 +304,10 @@ async function evaluateThresholds(
 }
 
 async function pollDevicesAndStore() {
-  const allDevices = await db.query.devices.findMany();
+  const allDevices = await db.select().from(devices);
   for (const device of allDevices) {
     try {
-      const externalData = await fetchExternalDeviceDetails(device.serviceUrl);
+      const externalData = await fetchExternalDeviceDetails(device.serviceUrl, device.type);
 
       if (device.type === "PDU") {
         if (externalData && externalData.sensors) {
@@ -629,14 +628,13 @@ async function checkAndResolveAlerts(
   currentValue: number
 ) {
   // Get all unresolved alerts for this device and metric type
-  const unresolvedAlerts = await db.query.alerts.findMany({
-    where: and(
+  const unresolvedAlerts = await db.select().from(alerts)
+    .where(and(
       eq(alerts.deviceId, deviceId),
       eq(alerts.type, "threshold_exceeded"),
       eq(alerts.acknowledged, 0),
       eq(alerts.isResolved, false)
-    ),
-  });
+    ));
 
   console.log(
     `Checking ${unresolvedAlerts.length} unresolved alerts for device ${deviceId}, metric ${metricType}`
@@ -644,7 +642,7 @@ async function checkAndResolveAlerts(
 
   for (const alert of unresolvedAlerts) {
     // Get the threshold information separately if relation isn't working
-    const threshold = await db.query.metricThresholds.findFirst({
+    const threshold = await db.select().from(metricThresholds).where({
       where: eq(metricThresholds.id, alert.thresholdId!),
     });
 
@@ -740,14 +738,13 @@ function exceedsThreshold(
 async function updateDeviceStatusFromAlerts(deviceId: number) {
   try {
     // Get all unacknowledged AND unresolved alerts for this device
-    const deviceAlerts = await db.query.alerts.findMany({
-      where: and(
+    const deviceAlerts = await db.select().from(alerts)
+      .where(and(
         eq(alerts.deviceId, deviceId),
         eq(alerts.acknowledged, 0),
         eq(alerts.isResolved, false) // Only consider unresolved alerts
-      ),
-      orderBy: (a, { desc }) => desc(a.createdAt),
-    });
+      ))
+      .orderBy(alerts.createdAt);
 
     let newStatus:
       | "off"

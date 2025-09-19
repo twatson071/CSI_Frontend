@@ -1,6 +1,7 @@
 import React from "react";
-import { RuxContainer, RuxStatus } from "@astrouxds/react";
+import { RuxStatus } from "@astrouxds/react";
 import "./CameraDetails.css";
+import "../common/DeviceDetailsScrollFix.css";
 
 interface CameraData {
   parameters?: {
@@ -83,14 +84,8 @@ const CameraDetails: React.FC<CameraDetailsProps> = ({ deviceName, data }) => {
   };
 
   return (
-    <div className="camera-container">
-      <RuxContainer>
-        <div slot="header">
-          <h3>{deviceName}</h3>
-          <p className="device-model">{data.parameters?.model || data.video_settings?.codec || "IP Camera"}</p>
-        </div>
-        
-        <div className="camera-info-grid">
+    <div className="camera-details">
+      <div className="camera-info-grid device-details-scroll-content">
           {data.parameters && (
             <div className="info-section">
               <h4>System Information</h4>
@@ -252,7 +247,6 @@ const CameraDetails: React.FC<CameraDetailsProps> = ({ deviceName, data }) => {
               </div>
             </div>
           )}
-        </div>
 
         {data.rtsp_streams && data.rtsp_streams.length > 0 && (
           <div className="streams-section">
@@ -283,11 +277,11 @@ const CameraDetails: React.FC<CameraDetailsProps> = ({ deviceName, data }) => {
             </div>
           </div>
         )}
+      </div>
 
-        <div className="camera-placeholder">
-          <p>Live camera feed would appear here</p>
-        </div>
-      </RuxContainer>
+      <div className="camera-placeholder">
+        <p>Live camera feed would appear here</p>
+      </div>
     </div>
   );
 };

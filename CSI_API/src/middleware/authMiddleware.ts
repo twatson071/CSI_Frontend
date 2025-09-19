@@ -7,7 +7,7 @@ import { users } from "../db/schema";
 type UserWithRole = Awaited<ReturnType<typeof getUserWithRole>>;
 
 async function getUserWithRole(userId: number) {
-  const user = await db.query.users.findFirst({
+  const user = await db.select().from(users).findFirst({
     where: eq(users.id, userId),
     with: {
       role: true,

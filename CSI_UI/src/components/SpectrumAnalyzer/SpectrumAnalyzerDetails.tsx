@@ -1,5 +1,5 @@
 import React from "react";
-import { RuxContainer } from "@astrouxds/react";
+
 import "./SpectrumAnalyzerDetails.css";
 
 interface SpectrumAnalyzerData {
@@ -49,12 +49,6 @@ const SpectrumAnalyzerDetails: React.FC<SpectrumAnalyzerDetailsProps> = ({
 
   return (
     <div className="spectrum-analyzer-container">
-      <RuxContainer>
-        <div slot="header">
-          <h3>{deviceName}</h3>
-          <p className="device-model">{parameters.model}</p>
-        </div>
-        
         <div className="spectrum-info-grid">
           <div className="info-section">
             <h4>System Information</h4>
@@ -194,7 +188,6 @@ const SpectrumAnalyzerDetails: React.FC<SpectrumAnalyzerDetailsProps> = ({
         <div className="spectrum-placeholder">
           <p>Spectrum visualization would appear here</p>
         </div>
-      </RuxContainer>
     </div>
   );
 };

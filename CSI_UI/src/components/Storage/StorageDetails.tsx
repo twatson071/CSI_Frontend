@@ -1,5 +1,5 @@
 import React from "react";
-import { RuxContainer } from "@astrouxds/react";
+
 import "./StorageDetails.css";
 
 interface StorageDetailsProps {
@@ -47,11 +47,6 @@ const StorageDetails: React.FC<StorageDetailsProps> = ({ deviceName, data }) => 
 
   return (
     <div className="storage-details">
-      <RuxContainer>
-        <div slot="header">
-          <h3>{deviceName} - Storage Details</h3>
-        </div>
-        
         <div className="storage-content">
           <div className="storage-info">
             <div className="info-section">
@@ -224,7 +219,6 @@ const StorageDetails: React.FC<StorageDetailsProps> = ({ deviceName, data }) => 
             </div>
           </div>
         </div>
-      </RuxContainer>
     </div>
   );
 };

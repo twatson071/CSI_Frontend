@@ -24,7 +24,7 @@ async function fetchAllPdus(c: Context, method: "GET" | "POST") {
     return c.text("Missing serviceUrl parameter", 400);
   }
 
-  const pduDevices = await db.query.devices.findMany({
+  const pduDevices = await db.select().from(devices).where({
     where: (devices, { eq }) => eq(devices.serviceUrl, serviceUrl),
   });
 

@@ -19,7 +19,7 @@ async function getSiteById(c: Context) {
     return c.json({ error: "Invalid Site ID format" }, 400);
   }
   try {
-    const site = await db.query.sites.findFirst({
+    const site = await db.select().from(sites).where({
       where: (s, { eq }) => eq(s.id, siteId),
       with: {
         userSites: {
@@ -71,12 +71,15 @@ async function fetchSitesWithDevices(c: Context) {
   }
 
   try {
-    const userSiteRows = await db.query.userSites.findMany({
-      where: (us, { eq }) => eq(us.userId, userId),
-      with: {
-        site: true,
-      },
-    });
+    const userSiteRows = await db
+      .select({
+        userId: userSites.userId,
+        siteId: userSites.siteId,
+        site: sites
+      })
+      .from(userSites)
+      .leftJoin(sites, eq(userSites.siteId, sites.id))
+      .where(eq(userSites.userId, userId));
 
     const results = await Promise.all(
       userSiteRows.map(async (userSite) => {
@@ -88,9 +91,10 @@ async function fetchSitesWithDevices(c: Context) {
         }
         const site = userSite.site;
 
-        const devRows = await db.query.devices.findMany({
-          where: (d, { eq }) => eq(d.siteId, site.id),
-        });
+        const devRows = await db
+          .select()
+          .from(devices)
+          .where(eq(devices.siteId, site.id));
 
         const devicesData = await Promise.all(
           devRows.map(async (dev) => {
@@ -303,9 +307,11 @@ async function createSite(c: Context) {
 }
 
 async function fetchDevicesForSite(c: Context) {
-  const EXTERNAL_BASE_URL = process.env.EXTERNAL_BASE_URL!;
-  const SYSTEM_OPERATOR_KEY = process.env.SYSTEM_OPERATOR_KEY!;
-  const HUB_KEY = process.env.HUB_KEY!;
+  const EXTERNAL_BASE_URL = process.env.EXTERNAL_BASE_URL;
+  const SYSTEM_OPERATOR_KEY = process.env.SYSTEM_OPERATOR_KEY;
+  const HUB_KEY = process.env.HUB_KEY;
+  const DEMO_MODE = process.env.DEMO_MODE === "true";
+  const APP_BASE_URL = process.env.APP_BASE_URL || `http://localhost:${process.env.PORT || 4000}`;
 
   const siteIdParam = c.req.param("siteId");
   const siteId = parseInt(siteIdParam);
@@ -315,9 +321,10 @@ async function fetchDevicesForSite(c: Context) {
   }
 
   try {
-    const devRows = await db.query.devices.findMany({
-      where: (d, { eq }) => eq(d.siteId, siteId),
-    });
+    const devRows = await db
+      .select()
+      .from(devices)
+      .where(eq(devices.siteId, siteId));
 
     if (!devRows || devRows.length === 0) {
       return c.json([]);
@@ -325,14 +332,35 @@ async function fetchDevicesForSite(c: Context) {
 
     const devicesData = await Promise.all(
       devRows.map(async (dev) => {
-        const url = `${EXTERNAL_BASE_URL}/service/${dev.serviceUrl}`;
-        const init: RequestInit = {
-          method: "GET",
-          headers: {
-            "X-API-Key-CSI-Maestro-SystemOperator": SYSTEM_OPERATOR_KEY,
-            "X-API-Key-CSI-Maestro-Hub": HUB_KEY,
-          },
-        };
+        let url: string;
+        let init: RequestInit = { method: "GET", headers: {} };
+
+        if (DEMO_MODE || EXTERNAL_BASE_URL?.includes('/mock')) {
+          // Map device type to mock endpoint
+          const typeToEndpoint: Record<string, string> = {
+            'PDU': 'pdu',
+            'UPS': 'ups',
+            'SWITCH': 'switch',
+            'RF_FIBER': 'rf-fiber',
+            'SPECTRUM': 'spectrum',
+            'RF Equipment': 'rf-equipment',
+            'Storage': 'storage',
+            'NAS Storage': 'storage',
+            'Camera': 'camera',
+            'Server': 'server'
+          };
+          const endpoint = typeToEndpoint[dev.type || ''] || 'server';
+          url = `${APP_BASE_URL}/mock/${endpoint}`;
+          init.headers = {
+            'Accept': 'application/json'
+          };
+        } else {
+          url = `${EXTERNAL_BASE_URL}/service/${dev.serviceUrl}`;
+          init.headers = {
+            "X-API-Key-CSI-Maestro-SystemOperator": SYSTEM_OPERATOR_KEY!,
+            "X-API-Key-CSI-Maestro-Hub": HUB_KEY!,
+          };
+        }
 
         try {
           const res = await fetch(url, init);
@@ -349,29 +377,35 @@ async function fetchDevicesForSite(c: Context) {
             }
           }
 
+          // If we have data from the database, use it as fallback
+          const mergedData = externalData || dev.data;
+
           return {
             deviceId: dev.id,
             name: dev.name ?? "Unnamed Device",
             type: dev.type ?? "unknown",
             serviceUrl: dev.serviceUrl ?? "",
+            ipAddress: dev.ipAddress,
             status:
               res.ok && externalData !== null
-                ? externalData.status || dev.status || "READY"
-                : "critical", // Default to critical if fetch fails
-            data: externalData,
+                ? externalData.status || dev.status || "normal"
+                : dev.status || "critical",
+            data: mergedData,
           };
         } catch (fetchError) {
           console.error(
             `Error fetching data for device ${dev.id} from ${url}:`,
             fetchError
           );
+          // Return device with data from database if fetch fails
           return {
             deviceId: dev.id,
             name: dev.name ?? "Unnamed Device",
-            status: "error",
-            data: null,
             type: dev.type ?? "unknown",
             serviceUrl: dev.serviceUrl ?? "",
+            ipAddress: dev.ipAddress,
+            status: dev.status || "error",
+            data: dev.data || null,
           };
         }
       })

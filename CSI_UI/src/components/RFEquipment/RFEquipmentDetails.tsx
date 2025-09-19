@@ -1,6 +1,6 @@
 import React from "react";
-import { RuxContainer, RuxStatus } from "@astrouxds/react";
 import "./RFEquipmentDetails.css";
+import "../common/DeviceDetailsScrollFix.css";
 
 interface RFEquipmentData {
   parameters: Record<string, any>;
@@ -98,14 +98,7 @@ const RFEquipmentDetails: React.FC<RFEquipmentDetailsProps> = ({
   );
 
   return (
-    <div className="rf-equipment-container">
-      <RuxContainer>
-        <div slot="header">
-          <h3>{deviceName}</h3>
-          <p className="device-model">{model}</p>
-        </div>
-        
-        <div className="rf-equipment-content">
+    <div className="rf-equipment-content device-details-scroll-content">
           <div className="info-section">
             <h4>System Information</h4>
             <div className="info-item">
@@ -174,8 +167,6 @@ const RFEquipmentDetails: React.FC<RFEquipmentDetailsProps> = ({
               </div>
             );
           })}
-        </div>
-      </RuxContainer>
     </div>
   );
 };

@@ -2,14 +2,19 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .rf-equipment-container rux-container {
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .rf-equipment-container rux-container::part(body) {
   overflow-y: auto;
+  overflow-x: hidden;
+  max-height: calc(100vh - 250px);
 }
 
 .device-model {
@@ -20,6 +25,9 @@
 
 .rf-equipment-content {
   padding: var(--spacing-3);
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .info-section {

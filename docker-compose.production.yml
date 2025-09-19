@@ -17,8 +17,10 @@ services:
       # Override any environment variables here
       - NODE_ENV=production
       - DATABASE_URL=/app/data/production.db
+      - DB_FILE_NAME=/app/data/production.db
       - BETTER_AUTH_URL=http://localhost:3001
       - BETTER_AUTH_SECRET=your-secret-key-change-this-in-production
+      - DEMO_MODE=false
       # Add any other environment variables your app needs
     restart: unless-stopped
     healthcheck:

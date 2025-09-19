@@ -196,7 +196,7 @@ const SiteEndpointLayout: React.FC = () => {
         console.error(`Error refreshing device data:`, error);
       }
     },
-    [selectedSiteIdx, selectedDevIdx, sites]
+    [selectedSiteIdx, selectedDevIdx]  // Removed 'sites' from dependencies to prevent unnecessary recreations
   );
 
   useEffect(() => {
@@ -292,19 +292,24 @@ const SiteEndpointLayout: React.FC = () => {
   const onSelect = (siteIdx: number, devIdx: number) => {
     setShowAddDeviceForm(false);
 
-    if (selectedSiteIdx !== siteIdx) {
-      // Switching to a different site
+    if (devIdx === -1) {
+      // Site selection
       setSelectedSiteIdx(siteIdx);
-      if (devIdx !== -1) {
-        // If a device is selected, set it immediately
-        setSelectedDevIdx(devIdx);
+      setSelectedDevIdx(-1);
+      if (siteIdx !== selectedSiteIdx) {
+        loadDevicesForSite(siteIdx, false, -1);
       }
-      loadDevicesForSite(siteIdx, false, devIdx);
-    } else if (selectedDevIdx !== devIdx) {
-      // Same site, different device
-      setSelectedDevIdx(devIdx);
-      if (devIdx !== -1) {
-        refreshSelectedDeviceData();
+    } else {
+      // Device selection
+      if (siteIdx !== selectedSiteIdx) {
+        // Different site, need to load devices
+        setSelectedSiteIdx(siteIdx);
+        setSelectedDevIdx(devIdx);
+        loadDevicesForSite(siteIdx, false, devIdx);
+      } else {
+        // Same site, just update device
+        setSelectedDevIdx(devIdx);
+        updatePduDisplayCallback(siteIdx, devIdx);
       }
     }
   };

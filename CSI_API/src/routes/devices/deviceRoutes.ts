@@ -2,7 +2,7 @@ import { Hono, Context } from "hono";
 import { eq } from "drizzle-orm";
 import "dotenv/config";
 import { db } from "../../db";
-import { devices, metrics, metricThresholds } from "../../db/schema";
+import { devices, metrics, metricThresholds, sites, systemSettings } from "../../db/schema";
 import {
   CreateDeviceClientPayloadSchema,
   UpdateDeviceSchema,
@@ -15,7 +15,7 @@ const app = new Hono();
 const FAKE_SERVER_URL = "mock/server";
 
 async function getDevice(c: Context) {
-  const allDevices = await db.query.devices.findMany();
+  const allDevices = await db.select().from(devices);
   return c.json(allDevices);
 }
 async function getServiceList(c: Context, method: "GET") {
@@ -128,19 +128,50 @@ async function updateDevice(c: Context) {
   }
 }
 
-export async function fetchExternalDeviceDetails(serviceUrl: string) {
+export async function fetchExternalDeviceDetails(serviceUrl: string, deviceType?: string) {
+  // Check if mock mode is enabled
+  const [mockModeSetting] = await db
+    .select()
+    .from(systemSettings)
+    .where(eq(systemSettings.key, "mockMode"))
+    .limit(1);
+
+  const isMockMode = mockModeSetting?.value === "true";
+
   let fullExternalUrl: string;
   let fetchOptions: RequestInit = { method: "GET" };
 
-  const APP_BASE_URL = `http://localhost:${process.env.PORT || 3000}`;
+  const APP_BASE_URL = process.env.APP_BASE_URL || `http://localhost:${process.env.PORT || 4000}`;
+  const DEMO_MODE = process.env.DEMO_MODE === "true";
+  const EXTERNAL_BASE_URL = isMockMode ? "http://localhost:3001" : process.env.EXTERNAL_BASE_URL;
 
-  if (serviceUrl === FAKE_SERVER_URL) {
-    fullExternalUrl = `${APP_BASE_URL}/${serviceUrl}`;
+  // In mock mode, demo mode or when EXTERNAL_BASE_URL points to mock, use mock endpoints
+  if (serviceUrl === FAKE_SERVER_URL || DEMO_MODE || isMockMode || EXTERNAL_BASE_URL?.includes('/mock')) {
+    // Map device type to mock endpoint
+    if (deviceType) {
+      const typeToEndpoint: Record<string, string> = {
+        'PDU': 'pdu',
+        'UPS': 'ups',
+        'SWITCH': 'switch',
+        'Server': 'server',
+        'RF Equipment': 'rf-equipment',
+        'RF_FIBER': 'rf-fiber',
+        'SPECTRUM': 'spectrum',
+        'Storage': 'storage',
+        'Camera': 'camera',
+      };
+      const endpoint = typeToEndpoint[deviceType] || 'server';
+      fullExternalUrl = `${APP_BASE_URL}/mock/${endpoint}`;
+    } else if (serviceUrl === FAKE_SERVER_URL) {
+      fullExternalUrl = `${APP_BASE_URL}/${serviceUrl}`;
+    } else {
+      // Default to server mock if no type specified
+      fullExternalUrl = `${APP_BASE_URL}/mock/server`;
+    }
     fetchOptions.headers = {
       Accept: "application/json",
     };
   } else {
-    const EXTERNAL_BASE_URL = process.env.EXTERNAL_BASE_URL;
     const SYSTEM_OPERATOR_KEY = process.env.SYSTEM_OPERATOR_KEY;
     const HUB_KEY = process.env.HUB_KEY;
 
@@ -181,9 +212,12 @@ export async function fetchExternalDeviceDetails(serviceUrl: string) {
   // Attempt to find and update an existing device with this serviceUrl
   if (externalData) {
     try {
-      const existingDevice = await db.query.devices.findFirst({
-        where: eq(devices.serviceUrl, serviceUrl),
-      });
+      const existingDeviceResult = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.serviceUrl, serviceUrl))
+        .limit(1);
+      const existingDevice = existingDeviceResult[0];
 
       if (existingDevice) {
         let dbParameters: any = {};
@@ -269,7 +303,7 @@ async function createDevice(c: Context) {
   const { name, type, serviceUrl, siteId } = clientValidation.data;
 
   try {
-    const externalDetails = await fetchExternalDeviceDetails(serviceUrl);
+    const externalDetails = await fetchExternalDeviceDetails(serviceUrl, type);
 
     let dbParameters: any = {};
     let dbData: any = {};
@@ -378,14 +412,17 @@ const getDeviceById = async (c: Context) => {
   if (isNaN(deviceId)) {
     return c.json({ error: "Invalid device ID" }, 400);
   }
-  const device = await db.query.devices.findFirst({
-    where: eq(devices.id, deviceId),
-  });
+  const deviceResult = await db
+    .select()
+    .from(devices)
+    .where(eq(devices.id, deviceId))
+    .limit(1);
+  const device = deviceResult[0];
 
   if (!device) {
     return c.json({ error: "Device not found" }, 404);
   } else if (device.serviceUrl) {
-    const externalDetails = await fetchExternalDeviceDetails(device.serviceUrl);
+    const externalDetails = await fetchExternalDeviceDetails(device.serviceUrl, device.type);
     if (externalDetails) {
       updateDevice(c);
       return c.json({ ...device, externalDetails });
@@ -400,12 +437,12 @@ app.get("/:id/metrics", async (c: Context) => {
     return c.json({ error: "Invalid device ID" }, 400);
   }
   // Example: fetch last 100 metrics for the device
-  const metrics = await db.query.metrics.findMany({
-    where: (m, { eq }) => eq(m.deviceId, deviceId),
-    orderBy: (m, { desc }) => desc(m.createdAt),
-    limit: 100,
-  });
-  return c.json(metrics);
+  const metricsData = await db
+    .select()
+    .from(metrics)
+    .where(eq(metrics.deviceId, deviceId))
+    .limit(100);
+  return c.json(metricsData);
 });
 
 app.get("/:id/metric-types", async (c: Context) => {
@@ -424,22 +461,19 @@ app.get("/:id/sites", async (c: Context) => {
   if (isNaN(deviceId)) {
     return c.json({ error: "Invalid device ID" }, 400);
   }
-  const deviceSiteId = await db.query.devices.findFirst({
-    where: eq(devices.id, deviceId),
-    columns: {
-      siteId: true,
-    },
-  });
+  const deviceSiteIdResult = await db
+    .select({ siteId: devices.siteId })
+    .from(devices)
+    .where(eq(devices.id, deviceId))
+    .limit(1);
+  const deviceSiteId = deviceSiteIdResult[0];
   if (!deviceSiteId || !deviceSiteId.siteId) {
     return c.json({ error: "Device not found or has no associated site" }, 404);
   }
-  const relatedSites = await db.query.sites.findMany({
-    where: (s, { eq }) => eq(s.id, deviceSiteId.siteId as number),
-    columns: {
-      id: true,
-      name: true,
-    },
-  });
+  const relatedSites = await db
+    .select({ id: sites.id, name: sites.name })
+    .from(sites)
+    .where(eq(sites.id, deviceSiteId.siteId as number));
   return c.json(relatedSites);
 });
 
@@ -484,10 +518,12 @@ app.put("/:id/thresholds", async (c: Context) => {
   }
 
   for (const t of validation.data.thresholds) {
-    const existing = await db.query.metricThresholds.findFirst({
-      where: (mt, { eq }) =>
-        eq(mt.deviceId, deviceId) && eq(mt.metricType, t.metricType),
-    });
+    const existingResult = await db
+      .select()
+      .from(metricThresholds)
+      .where(eq(metricThresholds.deviceId, deviceId))
+      .limit(1);
+    const existing = existingResult[0];
     if (existing) {
       await db
         .update(metricThresholds)

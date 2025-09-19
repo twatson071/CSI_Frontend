@@ -10,93 +10,89 @@
   overflow-y: auto;
 }
 
-/* Header Styles */
+/* Header Styles - Simplified */
 .alerts-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  padding: 0.75rem 1rem;
-  background: var(--color-background-surface-header);
-  border-radius: 8px;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-2);
 }
 
 .alerts-summary {
-  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
 }
 
 .summary-stats {
   display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  align-items: center;
 }
 
 .stat-card {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 0.5rem 0.75rem;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-2);
   background: var(--color-background-surface-default);
-  border-radius: 6px;
-  min-width: 80px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border-interactive-muted);
 }
 
 .stat-card.total {
-  border-left: 4px solid var(--color-palette-brightblue-400);
+  border-color: var(--color-palette-brightblue-400);
 }
 
 .stat-card.active {
-  border-left: 4px solid var(--color-palette-yellow-400);
+  border-color: var(--color-palette-yellow-400);
 }
 
 .stat-card.critical {
-  border-left: 4px solid var(--color-status-critical);
+  border-color: var(--color-status-critical);
 }
 
 .stat-number {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weights-bold);
   color: var(--color-text-primary);
-  line-height: 1;
 }
 
 .stat-label {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  text-align: center;
-  margin-top: 0.25rem;
 }
 
 .alerts-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--spacing-2);
 }
 
 .view-controls {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--spacing-1);
 }
 
 .bulk-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: var(--color-palette-brightblue-900);
-  border: 1px solid var(--color-palette-brightblue-400);
-  border-radius: 8px;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-2);
+  background: var(--color-background-surface-default);
+  border: 1px solid var(--color-border-interactive-muted);
+  border-radius: 4px;
 }
 
-/* Severity Summary */
+/* Severity Summary - Simplified */
 .severity-summary {
-  margin-top: 1rem;
+  margin-top: var(--spacing-2);
 }
 
 .severity-counts {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--spacing-1);
   flex-wrap: wrap;
 }
 

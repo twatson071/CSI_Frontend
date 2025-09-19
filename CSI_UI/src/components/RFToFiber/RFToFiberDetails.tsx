@@ -1,5 +1,5 @@
 import React from "react";
-import { RuxContainer, RuxStatus } from "@astrouxds/react";
+import { RuxStatus } from "@astrouxds/react";
 import "./RFToFiberDetails.css";
 
 interface ChannelStatus {
@@ -55,12 +55,6 @@ const RFToFiberDetails: React.FC<RFToFiberDetailsProps> = ({
 
   return (
     <div className="rf-to-fiber-container">
-      <RuxContainer>
-        <div slot="header">
-          <h3>{deviceName}</h3>
-          <p className="device-model">{parameters.model}</p>
-        </div>
-        
         <div className="rf-info-grid">
           <div className="info-section">
             <h4>System Information</h4>
@@ -176,7 +170,6 @@ const RFToFiberDetails: React.FC<RFToFiberDetailsProps> = ({
             ))}
           </div>
         </div>
-      </RuxContainer>
     </div>
   );
 };

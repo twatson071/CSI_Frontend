@@ -34,3 +34,4 @@ CSI_UI_API/package.json
 CSI_API/local.db
 .rules
 csi-demo-key.pem
+CLAUDE.md

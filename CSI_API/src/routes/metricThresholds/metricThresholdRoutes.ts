@@ -17,7 +17,7 @@ app.get("/", async (c: Context) => {
 app.get("/device/:deviceId", async (c: Context) => {
   const deviceId = parseInt(c.req.param("deviceId"));
   if (isNaN(deviceId)) return c.json({ error: "Invalid device ID" }, 400);
-  const rows = await db.query.metricThresholds.findMany({
+  const rows = await db.select().from(metricThresholds).findMany({
     where: eq(metricThresholds.deviceId, deviceId),
   });
   return c.json(rows);
@@ -26,7 +26,7 @@ app.get("/device/:deviceId", async (c: Context) => {
 app.get("/:id", async (c: Context) => {
   const id = parseInt(c.req.param("id"));
   if (isNaN(id)) return c.json({ error: "Invalid id" }, 400);
-  const row = await db.query.metricThresholds.findFirst({
+  const row = await db.select().from(metricThresholds).findFirst({
     where: eq(metricThresholds.id, id),
   });
   if (!row) return c.json({ error: "Metric threshold not found" }, 404);

@@ -340,7 +340,10 @@ const MainContentDisplay: React.FC<MainContentDisplayProps> = ({
     <div className={`${className || "pass-plan"} main-content-wrapper`}>
       <RuxContainer>
         <div slot="header" className="main-content-header">
-          <span>{selectedSite.siteName}</span>
+          <span>
+            {selectedSite.siteName}
+            {selectedDevice && ` > ${selectedDevice.name}`}
+          </span>
         </div>
         {!selectedDevice &&
           selectedSite.devices &&

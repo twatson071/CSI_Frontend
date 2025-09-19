@@ -1,5 +1,5 @@
 import React from "react";
-import { RuxContainer, RuxStatus } from "@astrouxds/react";
+import { RuxStatus } from "@astrouxds/react";
 import "./NetworkSwitchDetails.css";
 
 interface PortInfo {
@@ -63,14 +63,8 @@ const NetworkSwitchDetails: React.FC<NetworkSwitchDetailsProps> = ({
   };
 
   return (
-    <div className="network-switch-container">
-      <RuxContainer>
-        <div slot="header">
-          <h3>{deviceName}</h3>
-          <p className="device-model">{parameters.model}</p>
-        </div>
-        
-        <div className="switch-info-grid">
+    <div className="network-switch-content">
+      <div className="switch-info-grid">
           <div className="info-section">
             <h4>System Information</h4>
             <div className="info-item">
@@ -155,9 +149,8 @@ const NetworkSwitchDetails: React.FC<NetworkSwitchDetailsProps> = ({
                 </div>
               </div>
             ))}
-          </div>
         </div>
-      </RuxContainer>
+      </div>
     </div>
   );
 };

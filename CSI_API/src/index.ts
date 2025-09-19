@@ -9,6 +9,7 @@ import alerts from "./routes/alerts/alertsRoutes";
 import mock from "./routes/mock/mockRoutes";
 import roles from "./routes/roles/rolesRoutes";
 import users from "./routes/users/userRoutes";
+import settings from "./routes/settings/settingsRoutes";
 import { initializeAlertNotificationService } from "./services/alertNotificationService";
 import "./poller/pollDevices";
 import { auth } from "./auth";
@@ -17,7 +18,15 @@ import { auth } from "./auth";
 initializeAlertNotificationService(8081);
 
 const app = new Hono();
-app.use("*", cors({ origin: "*" })); // Enable CORS for all routes
+
+// Configure CORS properly for production and demo deployments
+// Simple CORS configuration that allows all origins
+app.use("*", cors({
+  origin: '*',
+  credentials: true,
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-user-id', 'X-User-Id'],
+}));
 
 // Health check endpoint
 app.get("/health", (c) => {
@@ -32,11 +41,12 @@ app.route("/alerts", alerts);
 app.route("/mock", mock);
 app.route("/roles", roles);
 app.route("/users", users);
+app.route("/settings", settings);
 app.use("/auth/*", async (c) => {
   return auth.handler(c.req.raw);
 });
 
 export default {
-  port: process.env.PORT || 3001,
+  port: process.env.PORT || 4000,
   fetch: app.fetch,
 };

@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { getMockDataForDevice } from "./mockDeviceData";
 
 const baseServerData = {
   device: {
@@ -480,7 +481,38 @@ function generateMockServerData() {
 
 const app = new Hono();
 
-// Simple endpoint to return randomized mock server data
+// Server endpoint with full mock data (existing)
 app.get("/server", (c) => c.json(generateMockServerData()));
+
+// PDU endpoint
+app.get("/pdu", (c) => c.json(getMockDataForDevice("PDU")));
+
+// UPS endpoint
+app.get("/ups", (c) => c.json(getMockDataForDevice("UPS")));
+
+// Switch endpoint
+app.get("/switch", (c) => c.json(getMockDataForDevice("SWITCH")));
+
+// RF Equipment endpoint
+app.get("/rf-equipment", (c) => c.json(getMockDataForDevice("RF Equipment")));
+
+// RF to Fiber endpoint
+app.get("/rf-fiber", (c) => c.json(getMockDataForDevice("RF_FIBER")));
+
+// Spectrum Analyzer endpoint
+app.get("/spectrum", (c) => c.json(getMockDataForDevice("SPECTRUM")));
+
+// Storage endpoint
+app.get("/storage", (c) => c.json(getMockDataForDevice("Storage")));
+
+// Camera endpoint
+app.get("/camera", (c) => c.json(getMockDataForDevice("Camera")));
+
+// Generic endpoint that accepts device type as parameter
+app.get("/:deviceType", (c) => {
+  const deviceType = c.req.param("deviceType");
+  const data = getMockDataForDevice(deviceType);
+  return c.json(data);
+});
 
 export default app;

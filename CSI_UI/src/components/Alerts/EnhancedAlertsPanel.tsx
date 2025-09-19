@@ -339,223 +339,97 @@ const EnhancedAlertsPanel: React.FC<EnhancedAlertsPanelProps> = ({
       <div slot="header">
         <div className="alerts-header">
           <div className="alerts-summary">
+            <span style={{ fontSize: 'var(--font-size-lg)', fontWeight: 'var(--font-weights-medium)' }}>Alerts</span>
             <div className="summary-stats">
               <div className="stat-card total">
                 <span className="stat-number">{filteredAlerts.length}</span>
-                <span className="stat-label">
-                  {hasActiveFilters ? "Filtered" : "Total"} Alerts
-                </span>
+                <span className="stat-label">Total</span>
               </div>
-              <div className="stat-card active">
-                <span className="stat-number">{statusCounts.active}</span>
-                <span className="stat-label">Active</span>
-              </div>
-              <div className="stat-card critical">
-                <span className="stat-number">{severityCounts.CRITICAL}</span>
-                <span className="stat-label">Critical</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="alerts-actions">
-            <div className="view-controls">
-              <div className="view-mode-buttons">
-                <RuxButton 
-                  size="small"
-                  secondary={viewMode !== "list"}
-                  onClick={() => setViewMode("list")}
-                >
-                  <RuxIcon icon="list" size="small" />
-                  List
-                </RuxButton>
-                <RuxButton 
-                  size="small"
-                  secondary={viewMode !== "grid"}
-                  onClick={() => setViewMode("grid")}
-                >
-                  <RuxIcon icon="grid-view" size="small" />
-                  Grid
-                </RuxButton>
-                <RuxButton 
-                  size="small"
-                  secondary={viewMode !== "timeline"}
-                  onClick={() => setViewMode("timeline")}
-                >
-                  <RuxIcon icon="timeline" size="small" />
-                  Timeline
-                </RuxButton>
-              </div>
-            </div>
-
-            {selectedAlerts.size > 0 && enableBulkOperations && (
-              <div className="bulk-actions">
-                <RuxStatus status="normal">{selectedAlerts.size}</RuxStatus>
-                <RuxPopUp closeOnSelect>
-                  <RuxButton slot="trigger" secondary>
-                    <RuxIcon icon="more-vert" slot="start" />
-                    Bulk Actions
-                  </RuxButton>
-                  <RuxMenu>
-                    {permissions.can.acknowledgeAlerts() && (
-                      <RuxMenuItem 
-                        onClick={() => {
-                          setBulkAction("acknowledge");
-                          setShowBulkDialog(true);
-                        }}
-                      >
-                        <RuxIcon icon="check" slot="start" />
-                        Acknowledge Selected
-                      </RuxMenuItem>
-                    )}
-                    {enableExport && permissions.can.exportAlerts() && (
-                      <RuxMenuItem onClick={() => handleBulkOperation("export")}>
-                        <RuxIcon icon="download" slot="start" />
-                        Export Selected
-                      </RuxMenuItem>
-                    )}
-                    {permissions.can.deleteAlerts() && (
-                      <RuxMenuItem 
-                        onClick={() => {
-                          setBulkAction("delete");
-                          setShowBulkDialog(true);
-                        }}
-                        className="danger-item"
-                      >
-                        <RuxIcon icon="delete" slot="start" />
-                        Delete Selected
-                      </RuxMenuItem>
-                    )}
-                    <RuxMenuItem onClick={clearSelection}>
-                      <RuxIcon icon="clear" slot="start" />
-                      Clear Selection
-                    </RuxMenuItem>
-                  </RuxMenu>
-                </RuxPopUp>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="severity-summary">
-          <div className="severity-counts">
-            {Object.entries(severityCounts).map(([severity, count]) => (
-              <div
-                key={severity}
-                className={`severity-chip severity-${severity.toLowerCase()} ${
-                  severityFilter.includes(severity) ? "active" : ""
-                }`}
-                onClick={() => toggleSeverityFilter(severity)}
-              >
-                <span className="severity-label">{severity}</span>
-                <span className="severity-count">{count}</span>
-                {severityFilter.includes(severity) && (
-                  <RuxIcon icon="close" size="extra-small" className="remove-filter" />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="alerts-content">
-        <div className="alerts-filters">
-          <div className="quick-filters">
-            <RuxInput
-              type="search"
-              placeholder="Search alerts, devices, sites..."
-              value={searchTerm}
-              onRuxinput={(e: CustomEvent<{value: string}>) => setSearchTerm(e.detail.value)}
-              className="search-input"
-            />
-
-            <div className="filter-chips">
-              <div className="time-filters">
-                {[
-                  { value: "all", label: "All Time" },
-                  { value: "1h", label: "1 Hour" },
-                  { value: "4h", label: "4 Hours" },
-                  { value: "24h", label: "24 Hours" },
-                  { value: "7d", label: "7 Days" },
-                ].map((filter) => (
-                  <button
-                    key={filter.value}
-                    className={`filter-chip ${timeFilter === filter.value ? "active" : ""}`}
-                    onClick={() => setTimeFilter(filter.value as TimeFilter)}
-                  >
-                    {filter.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="filter-actions">
-              <RuxButton
-                secondary
-                size="small"
-                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              >
-                <RuxIcon icon="tune" slot="start" />
-                Filters
-              </RuxButton>
-              {hasActiveFilters && (
-                <RuxButton size="small" onClick={clearAllFilters}>
-                  <RuxIcon icon="clear-all" slot="start" />
-                  Clear All
-                </RuxButton>
+              {statusCounts.active > 0 && (
+                <div className="stat-card active">
+                  <span className="stat-number">{statusCounts.active}</span>
+                  <span className="stat-label">Active</span>
+                </div>
+              )}
+              {severityCounts.CRITICAL > 0 && (
+                <div className="stat-card critical">
+                  <span className="stat-number">{severityCounts.CRITICAL}</span>
+                  <span className="stat-label">Critical</span>
+                </div>
               )}
             </div>
           </div>
 
-          {showAdvancedFilters && (
-            <RuxCard className="advanced-filters">
-              <div className="filter-row">
-                <div className="filter-group">
-                  <label>Status</label>
-                  <select 
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="filter-select"
-                  >
-                    <option value="ALL">All Status</option>
-                    <option value="UNACKNOWLEDGED">Unacknowledged</option>
-                    <option value="ACKNOWLEDGED">Acknowledged</option>
-                    <option value="RESOLVED">Resolved</option>
-                    <option value="UNRESOLVED">Unresolved</option>
-                  </select>
-                </div>
+          <div className="alerts-actions">
 
-                <div className="filter-group">
-                  <label>Device Type</label>
-                  <select 
-                    value={deviceTypeFilter}
-                    onChange={(e) => setDeviceTypeFilter(e.target.value)}
-                    className="filter-select"
-                  >
-                    <option value="ALL">All Types</option>
-                    {uniqueDeviceTypes.map((type) => (
-                      <option key={type} value={type}>{type}</option>
-                    ))}
-                  </select>
-                </div>
+            {selectedAlerts.size > 0 && (
+              <RuxButton
+                size="small"
+                secondary
+                onClick={clearSelection}
+              >
+                Clear {selectedAlerts.size} Selected
+              </RuxButton>
+            )}
+            {hasActiveFilters && (
+              <RuxButton
+                size="small"
+                secondary
+                onClick={clearAllFilters}
+              >
+                Clear Filters
+              </RuxButton>
+            )}
+          </div>
+        </div>
 
-                <div className="filter-group">
-                  <label>Site</label>
-                  <select 
-                    value={siteFilter}
-                    onChange={(e) => setSiteFilter(e.target.value)}
-                    className="filter-select"
-                  >
-                    <option value="ALL">All Sites</option>
-                    {sites.map((site) => (
-                      <option key={site.siteId} value={site.siteId}>
-                        {site.siteName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </RuxCard>
-          )}
+      </div>
+
+      <div className="alerts-content">
+        <div className="alerts-filters" style={{ padding: 'var(--spacing-2)', borderBottom: '1px solid var(--color-border-interactive-muted)' }}>
+          <div className="quick-filters" style={{ display: 'flex', gap: 'var(--spacing-2)', alignItems: 'center' }}>
+            <RuxInput
+              type="search"
+              placeholder="Search alerts..."
+              value={searchTerm}
+              onRuxinput={(e: CustomEvent<{value: string}>) => setSearchTerm(e.detail.value)}
+              style={{ flex: 1, maxWidth: '300px' }}
+            />
+
+            <select
+              value={severityFilter.length === 1 ? severityFilter[0] : "ALL"}
+              onChange={(e) => setSeverityFilter(e.target.value === "ALL" ? [] : [e.target.value])}
+              style={{ padding: 'var(--spacing-1) var(--spacing-2)', background: 'var(--color-background-surface-default)', border: '1px solid var(--color-border-interactive-muted)', borderRadius: '4px', color: 'var(--color-text-primary)' }}
+            >
+              <option value="ALL">All Severities</option>
+              <option value="CRITICAL">Critical</option>
+              <option value="SERIOUS">Serious</option>
+              <option value="CAUTION">Caution</option>
+              <option value="INFO">Info</option>
+            </select>
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              style={{ padding: 'var(--spacing-1) var(--spacing-2)', background: 'var(--color-background-surface-default)', border: '1px solid var(--color-border-interactive-muted)', borderRadius: '4px', color: 'var(--color-text-primary)' }}
+            >
+              <option value="ALL">All Status</option>
+              <option value="UNACKNOWLEDGED">Unacknowledged</option>
+              <option value="ACKNOWLEDGED">Acknowledged</option>
+              <option value="RESOLVED">Resolved</option>
+            </select>
+
+            <select
+              value={timeFilter}
+              onChange={(e) => setTimeFilter(e.target.value as TimeFilter)}
+              style={{ padding: 'var(--spacing-1) var(--spacing-2)', background: 'var(--color-background-surface-default)', border: '1px solid var(--color-border-interactive-muted)', borderRadius: '4px', color: 'var(--color-text-primary)' }}
+            >
+              <option value="all">All Time</option>
+              <option value="1h">Last Hour</option>
+              <option value="24h">Last 24 Hours</option>
+              <option value="7d">Last 7 Days</option>
+            </select>
+          </div>
         </div>
 
         <div className="alerts-list-container">

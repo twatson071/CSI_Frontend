@@ -1,3 +1,4 @@
+/* Main container */
 .resizable-grid-container {
   display: grid;
   gap: var(--spacing-2);
@@ -5,12 +6,20 @@
   width: 100%;
   position: relative;
   overflow: hidden;
+  background: transparent;
 }
 
+/* Grid cells - clean panel look */
 .grid-cell {
   min-height: 0;
   overflow: hidden;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-background-surface-default);
+  border: 1px solid var(--color-background-surface-selected);
+  border-radius: var(--border-radius);
+  transition: all 0.2s ease;
 }
 
 .grid-cell.top-left {
@@ -29,6 +38,79 @@
   grid-area: 2 / 2 / 3 / 3;
 }
 
+/* Maximize button - clean and professional */
+.maximize-button {
+  position: absolute;
+  top: var(--spacing-2);
+  right: var(--spacing-2);
+  z-index: 100;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.2s ease;
+}
+
+.maximize-button svg {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.maximize-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 1);
+}
+
+.maximize-button:hover svg {
+  color: rgba(255, 255, 255, 1);
+}
+
+.maximize-button:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Always show maximize button when maximized */
+.grid-cell.maximized .maximize-button {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Grid cell content wrapper */
+.grid-cell-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Maximized state */
+.resizable-grid-container.has-maximized {
+  grid-template-columns: 100% !important;
+  grid-template-rows: 100% !important;
+}
+
+.grid-cell.maximized {
+  grid-area: 1 / 1 / -1 / -1 !important;
+  width: 100%;
+  height: 100%;
+}
+
+.grid-cell.hidden {
+  display: none !important;
+}
+
+/* Resize handles - subtle but visible */
 .resize-handle {
   position: absolute;
   z-index: 10;
@@ -43,57 +125,70 @@
 .resize-handle.column-handle {
   top: 0;
   bottom: 0;
-  width: 12px;
-  margin-left: -6px;
+  width: 8px;
+  margin-left: -4px;
   cursor: col-resize;
 }
 
 .resize-handle.row-handle {
   left: 0;
   right: 0;
-  height: 12px;
-  margin-top: -6px;
+  height: 8px;
+  margin-top: -4px;
   cursor: row-resize;
 }
 
 .resize-handle.center-handle {
-  width: 20px;
-  height: 20px;
-  margin-left: -10px;
-  margin-top: -10px;
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  margin-top: -8px;
   cursor: move;
   pointer-events: none;
 }
 
 .resize-handle-visual {
   position: absolute;
-  background: var(--color-palette-brightblue-400);
+  background: var(--color-palette-neutral-500);
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: all 0.2s ease;
+  border-radius: 2px;
 }
 
 .column-handle .resize-handle-visual {
   left: 50%;
-  top: 0;
-  bottom: 0;
+  top: 20%;
+  bottom: 20%;
   width: 2px;
   margin-left: -1px;
 }
 
 .row-handle .resize-handle-visual {
   top: 50%;
-  left: 0;
-  right: 0;
+  left: 20%;
+  right: 20%;
   height: 2px;
   margin-top: -1px;
 }
 
 .resize-handle:hover .resize-handle-visual {
-  opacity: 0.5;
+  opacity: 0.4;
+  background: var(--color-palette-brightblue-400);
+}
+
+.column-handle:hover .resize-handle-visual {
+  width: 3px;
+  margin-left: -1.5px;
+}
+
+.row-handle:hover .resize-handle-visual {
+  height: 3px;
+  margin-top: -1.5px;
 }
 
 .resize-handle:active .resize-handle-visual {
   opacity: 1;
+  background: var(--color-palette-brightblue-300);
 }
 
 .resize-handle-center-visual {
@@ -101,15 +196,15 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   background: var(--color-background-surface-selected);
-  border: 2px solid var(--color-palette-brightblue-400);
+  border: 1px solid var(--color-palette-neutral-500);
   border-radius: 50%;
-  opacity: 0.5;
+  opacity: 0.3;
 }
 
-/* Visual feedback during drag */
+/* Visual feedback during resize */
 .resizable-grid-container:has(.resize-handle:active) {
   user-select: none;
 }
@@ -122,7 +217,7 @@
 
 /* Drag and drop styles */
 .grid-cell {
-  cursor: grab;
+  cursor: move;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -132,42 +227,40 @@
 
 .grid-cell.dragging {
   opacity: 0.5;
-  transform: scale(0.95);
+  transform: scale(0.98);
   z-index: 1000;
 }
 
 .grid-cell.drag-over {
   background: var(--color-background-surface-selected);
-  box-shadow: 
-    inset 0 0 0 3px var(--color-palette-brightblue-400),
-    0 0 20px rgba(var(--color-palette-brightblue-400-rgb), 0.3);
-  transform: scale(1.02);
+  box-shadow: inset 0 0 0 2px var(--color-palette-brightblue-400);
+  transform: scale(1.01);
 }
 
-/* Drag handle indicator */
-.grid-cell::before {
+/* Subtle drag handle indicator */
+.grid-cell::after {
   content: '';
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 20px;
-  height: 20px;
-  background-image: 
-    radial-gradient(circle, var(--color-text-secondary) 2px, transparent 2px),
-    radial-gradient(circle, var(--color-text-secondary) 2px, transparent 2px);
-  background-size: 8px 8px;
-  background-position: 0 0, 4px 4px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 4px;
+  background: var(--color-background-surface-selected);
+  border-radius: 2px;
   opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
 }
 
-.grid-cell:hover::before {
-  opacity: 0.3;
+.grid-cell:hover::after {
+  opacity: 0.2;
 }
 
-.grid-cell.dragging::before {
-  opacity: 0;
+/* Hide drag indicator when dragging or when panel is maximized */
+.grid-cell.dragging::after,
+.grid-cell.maximized::after {
+  display: none;
 }
 
 /* Responsive behavior */
@@ -175,18 +268,32 @@
   .resize-handle {
     display: none;
   }
-  
+
   .resizable-grid-container {
     display: block;
     overflow-y: auto;
   }
-  
+
   .grid-cell {
     margin-bottom: var(--spacing-2);
     cursor: default;
   }
-  
-  .grid-cell::before {
+
+  .grid-cell::after {
     display: none;
   }
+}
+
+/* Hide resize/drag indicators for child containers */
+.grid-cell rux-container {
+  pointer-events: none;
+}
+
+.grid-cell rux-container * {
+  pointer-events: auto;
+}
+
+/* Ensure children don't interfere with drag */
+.grid-cell-content > * {
+  pointer-events: auto;
 }
